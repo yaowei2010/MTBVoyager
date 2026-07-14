@@ -1,0 +1,3 @@
+FROM takeshi945/nckumtb:frontend-20260701
+
+COPY build /usr/share/nginx/html

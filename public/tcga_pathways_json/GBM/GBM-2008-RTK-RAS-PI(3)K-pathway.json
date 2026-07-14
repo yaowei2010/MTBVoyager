@@ -1,0 +1,169 @@
+{
+  "name": "GBM-2008-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "iD415efHLG3J",
+      "name": "PDGFRA",
+      "type": "GENE",
+      "parent": "Idrkrh8-K31j",
+      "x": 441,
+      "y": -61,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8XXLbCwXLtrQ",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 246,
+      "y": 53,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Ke7_FRmuLw42",
+      "name": "NF1",
+      "type": "GENE",
+      "parent": null,
+      "x": 21,
+      "y": 54,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Idrkrh8-K31j",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 365,
+      "y": -61,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "uWMSz1XlL2nL",
+      "name": "PI(3)K",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 529,
+      "y": 50,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "LOErZTMUL6hc",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 721,
+      "y": 50,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "sgb8KI1XMIrn",
+      "name": "AKT",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 529,
+      "y": 129,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "7T8gHIR6LG2s",
+      "name": "EGFR",
+      "type": "GENE",
+      "parent": "Idrkrh8-K31j",
+      "x": 134,
+      "y": -61,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1cIfqNkTMN--",
+      "name": "FOXO",
+      "type": "GENE",
+      "parent": null,
+      "x": 529,
+      "y": 205,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "XcKqo6xILG3V",
+      "name": "MET",
+      "type": "GENE",
+      "parent": "Idrkrh8-K31j",
+      "x": 597,
+      "y": -61,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "vJOD-MZOLG2-",
+      "name": "ERBB2",
+      "type": "GENE",
+      "parent": "Idrkrh8-K31j",
+      "x": 287,
+      "y": -61,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "k9I_xTrbMS6S",
+      "name": "Proliferation, survival, translation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 247,
+      "y": 206,
+      "width": 240,
+      "height": 24
+    }
+  ],
+  "edges": [
+    {
+      "id": "ApGQ0rEtL1TV",
+      "source": "Ke7_FRmuLw42",
+      "target": "8XXLbCwXLtrQ",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "s5CFkxUKL0kl",
+      "source": "Idrkrh8-K31j",
+      "target": "8XXLbCwXLtrQ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "jrs5QL8rMbv3",
+      "source": "8XXLbCwXLtrQ",
+      "target": "k9I_xTrbMS6S",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "WEpyeQmyMeC8",
+      "source": "sgb8KI1XMIrn",
+      "target": "1cIfqNkTMN--",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "ytXepIulMGGL",
+      "source": "Idrkrh8-K31j",
+      "target": "uWMSz1XlL2nL",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "_g47pqc4MGwz",
+      "source": "LOErZTMUL6hc",
+      "target": "uWMSz1XlL2nL",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "u1UwLh90MdLo",
+      "source": "uWMSz1XlL2nL",
+      "target": "sgb8KI1XMIrn",
+      "type": "ACTIVATES"
+    }
+  ]
+}

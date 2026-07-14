@@ -1,0 +1,81 @@
+{
+  "name": "HNSC-2015-Oxidative-stress-response-pathway",
+  "nodes": [
+    {
+      "id": "gt4I0Om0FTv6",
+      "name": "NFE2L2",
+      "type": "GENE",
+      "parent": null,
+      "x": 436,
+      "y": 285,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ZsX3OXk3FSsm",
+      "name": "KEAP1",
+      "type": "GENE",
+      "parent": null,
+      "x": 529,
+      "y": 167,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "BvJxfxK3FnBO",
+      "name": "NOTCH",
+      "type": "GENE",
+      "parent": null,
+      "x": 169,
+      "y": 285,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "IcPGDcXRFSKm",
+      "name": "CUL3",
+      "type": "GENE",
+      "parent": null,
+      "x": 339,
+      "y": 167,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "fVzq-7uHFVEN",
+      "name": "Oxidative damage",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 436,
+      "y": 413,
+      "width": 120,
+      "height": 24
+    }
+  ],
+  "edges": [
+    {
+      "id": "EnpWtdTqFdCy",
+      "source": "IcPGDcXRFSKm",
+      "target": "gt4I0Om0FTv6",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "evdmv52VFpzm",
+      "source": "gt4I0Om0FTv6",
+      "target": "BvJxfxK3FnBO",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "cPEAdB0SFfMR",
+      "source": "gt4I0Om0FTv6",
+      "target": "fVzq-7uHFVEN",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "H-KG07b7Fd8r",
+      "source": "ZsX3OXk3FSsm",
+      "target": "gt4I0Om0FTv6",
+      "type": "INHIBITS"
+    }
+  ]
+}

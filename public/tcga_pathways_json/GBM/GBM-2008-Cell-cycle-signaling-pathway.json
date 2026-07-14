@@ -1,0 +1,127 @@
+{
+  "name": "GBM-2008-Cell-cycle-signaling-pathway",
+  "nodes": [
+    {
+      "id": "0cQitpJLOoEG",
+      "name": "RB1",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 472,
+      "y": 279,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "SBGkYw2NOhMr",
+      "name": "CYCLINS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 472,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "0kD7D3DGOtD1",
+      "name": "G1/S Progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 472,
+      "y": 374,
+      "width": 120,
+      "height": 24
+    },
+    {
+      "id": "GrNFDrs1AoNL",
+      "name": "CCND2",
+      "type": "GENE",
+      "parent": "SBGkYw2NOhMr",
+      "x": 472,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "TbTnj_R5ONS9",
+      "name": "CDKN2B",
+      "type": "GENE",
+      "parent": null,
+      "x": 444,
+      "y": 87,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Ps45UaX4AoNo",
+      "name": "CDK4",
+      "type": "GENE",
+      "parent": "SBGkYw2NOhMr",
+      "x": 317,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "VnEu6OlPAoNe",
+      "name": "CDK6",
+      "type": "GENE",
+      "parent": "SBGkYw2NOhMr",
+      "x": 627,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "r8WJLoQLOONy",
+      "name": "CDKN2C",
+      "type": "GENE",
+      "parent": null,
+      "x": 625,
+      "y": 87,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "cnleYFDsOMzx",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 294,
+      "y": 87,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "Rpso-cKyOzoj",
+      "source": "TbTnj_R5ONS9",
+      "target": "SBGkYw2NOhMr",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "3InwuSCoO0br",
+      "source": "r8WJLoQLOONy",
+      "target": "SBGkYw2NOhMr",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "-zXgQSv4Oy04",
+      "source": "cnleYFDsOMzx",
+      "target": "SBGkYw2NOhMr",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "6NO_fL3nO3r4",
+      "source": "SBGkYw2NOhMr",
+      "target": "0cQitpJLOoEG",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "1pimX-ZiO6F6",
+      "source": "0cQitpJLOoEG",
+      "target": "0kD7D3DGOtD1",
+      "type": "INHIBITS"
+    }
+  ]
+}

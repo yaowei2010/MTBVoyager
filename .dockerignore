@@ -1,0 +1,13 @@
+node_modules
+dist
+build
+!build
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+*.log
+.cache
+.next
+coverage
+.env

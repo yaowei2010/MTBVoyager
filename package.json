@@ -1,0 +1,77 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@fontsource/roboto": "^5.0.13",
+    "@mui/icons-material": "^5.15.16",
+    "@mui/lab": "^5.0.0-alpha.170",
+    "@mui/material": "^5.15.16",
+    "@mui/styled-engine-sc": "^6.0.0-alpha.18",
+    "@mui/x-data-grid": "^7.12.1",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "ajv": "^6.12.6",
+    "ajv-keywords": "^3.5.2",
+    "axios": "^1.7.2",
+    "bootstrap": "^5.3.3",
+    "cytoscape": "^3.32.1",
+    "cytoscape-dagre": "^2.5.0",
+    "d3-force": "^3.0.0",
+    "datatables.net": "^2.0.8",
+    "datatables.net-dt": "^2.1.0",
+    "datatables.net-fixedcolumns": "^5.0.0",
+    "file-saver": "^2.0.5",
+    "jquery": "^3.7.1",
+    "jquery-ui": "^1.13.3",
+    "jspdf": "^3.0.1",
+    "jspdf-autotable": "^5.0.2",
+    "papaparse": "^5.5.2",
+    "pdfjs-dist": "^5.4.149",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.10.2",
+    "react-bootstrap-submenu": "^3.0.3",
+    "react-cytoscapejs": "^2.0.0",
+    "react-dom": "^18.2.0",
+    "react-force-graph": "^1.47.6",
+    "react-force-graph-2d": "^1.27.1",
+    "react-router-dom": "^6.23.0",
+    "react-scripts": "^5.0.1",
+    "react-table": "^7.8.0",
+    "styled-components": "^6.1.9",
+    "sweetalert2": "^11.17.2",
+    "sweetalert2-react-content": "^5.1.0",
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "postinstall": "cp node_modules/pdfjs-dist/build/pdf.worker.mjs public/pdf.worker.mjs"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "homepage": "/variant"
+
+}

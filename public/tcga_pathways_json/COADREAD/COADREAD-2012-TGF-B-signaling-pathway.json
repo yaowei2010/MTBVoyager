@@ -1,0 +1,179 @@
+{
+  "name": "COADREAD-2012-TGF-B-signaling-pathway",
+  "nodes": [
+    {
+      "id": "nTPdmpNKy_zW",
+      "name": "TGF-B",
+      "type": "GENE",
+      "parent": null,
+      "x": -38,
+      "y": -358,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4qJ5NXmkEupe",
+      "name": "ACVR2A",
+      "type": "GENE",
+      "parent": "RckLIrYUzEOc",
+      "x": 278,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "7GmKbJadEtyf",
+      "name": "TGFBR2",
+      "type": "GENE",
+      "parent": "5i_MJPAPzCI1",
+      "x": 44,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Zc2sWHBVzArX",
+      "name": "ACTIVIN",
+      "type": "GENE",
+      "parent": null,
+      "x": 360,
+      "y": -358,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "RckLIrYUzEOc",
+      "name": "ACVR2A-ACVR1B",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": 360,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "7j1T7wlqzcoy",
+      "name": "SMAD",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 158,
+      "y": -86,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EgBC5uQzE1qC",
+      "name": "SMAD2",
+      "type": "GENE",
+      "parent": "7j1T7wlqzcoy",
+      "x": 82,
+      "y": -117,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "QuKCy3EaE1pk",
+      "name": "SMAD4",
+      "type": "GENE",
+      "parent": "7j1T7wlqzcoy",
+      "x": 160,
+      "y": -55,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "BIYl4Hkdzdoj",
+      "name": "MYC",
+      "type": "GENE",
+      "parent": null,
+      "x": -65,
+      "y": 74,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "5i_MJPAPzCI1",
+      "name": "TGFBR1-TGFBR2",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": -38,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "jQFRXXNIEtyK",
+      "name": "TGFBR1",
+      "type": "GENE",
+      "parent": "5i_MJPAPzCI1",
+      "x": -121,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "RSw1VMOMEupS",
+      "name": "ACVR1B",
+      "type": "GENE",
+      "parent": "RckLIrYUzEOc",
+      "x": 443,
+      "y": -262,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "x-JW3Hq6E1qN",
+      "name": "SMAD3",
+      "type": "GENE",
+      "parent": "7j1T7wlqzcoy",
+      "x": 235,
+      "y": -117,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "2jvzewjJ0UDH",
+      "source": "5i_MJPAPzCI1",
+      "target": "7j1T7wlqzcoy",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "X5m06a6REtyq",
+      "source": "jQFRXXNIEtyK",
+      "target": "7GmKbJadEtyf",
+      "type": "BINDS"
+    },
+    {
+      "id": "76dv_Epi0O5A",
+      "source": "nTPdmpNKy_zW",
+      "target": "5i_MJPAPzCI1",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "RBUTTCdV0RK3",
+      "source": "Zc2sWHBVzArX",
+      "target": "RckLIrYUzEOc",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "4m5j1DYC0VIG",
+      "source": "RckLIrYUzEOc",
+      "target": "7j1T7wlqzcoy",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "aVez8qmz0X7C",
+      "source": "7j1T7wlqzcoy",
+      "target": "BIYl4Hkdzdoj",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "dMNeGuPcEupl",
+      "source": "4qJ5NXmkEupe",
+      "target": "RSw1VMOMEupS",
+      "type": "BINDS"
+    }
+  ]
+}
