@@ -19,14 +19,22 @@ process VALIDATE_VCF {
         echo \"Expected one sample, found \$sample_count\" >&2
         exit 1
     fi
-    if [[ \"\$sample_name\" != \"${meta.id}\" ]]; then
-        echo \"Sample ID mismatch: samplesheet=${meta.id}, VCF=\$sample_name\" >&2
+    # Keep the uploaded VCF sample name for audit, but make the samplesheet ID
+    # chosen by the user authoritative for every downstream output.
+    printf '%s\t%s\n' \"\$sample_name\" '${meta.id}' > sample.rename.tsv
+    # Reheader via BCF so both ordinary gzip and BGZF VCF uploads are accepted.
+    bcftools view --output-type b --output source.bcf '${vcf}'
+    bcftools reheader --samples sample.rename.tsv --output renamed.bcf source.bcf
+    bcftools view --output-type z --output '${meta.id}.input.vcf.gz' renamed.bcf
+    tabix -f -p vcf '${meta.id}.input.vcf.gz'
+    renamed_sample=\$(bcftools query -l '${meta.id}.input.vcf.gz' | head -n 1)
+    if [[ \"\$renamed_sample\" != \"${meta.id}\" ]]; then
+        echo \"VCF reheader failed: expected ${meta.id}, found \$renamed_sample\" >&2
         exit 1
     fi
-    ln -s '${vcf}' '${meta.id}.input.vcf.gz'
     records=\$(bcftools index -n '${vcf}' 2>/dev/null || bcftools view -H '${vcf}' | wc -l)
     cat > '${meta.id}.validation.json' <<JSON
-{"sample_id":"${meta.id}","vcf_sample":"\$sample_name","sample_count":\$sample_count,"records":\$records,"status":"PASS"}
+{"sample_id":"${meta.id}","original_vcf_sample":"\$sample_name","vcf_sample":"\$renamed_sample","sample_count":\$sample_count,"records":\$records,"reheadered":true,"status":"PASS"}
 JSON
     bcftools --version | head -n 1 | awk '{print \"bcftools: \"\$2}' > versions.yml
     """

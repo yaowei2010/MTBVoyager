@@ -21,6 +21,9 @@ workflow GERMLINE_SNV {
             if (!row.sample_id || !row.snv_vcf || !row.sv_vcf || !row.cnv_vcf) {
                 error "samplesheet requires sample_id, snv_vcf, sv_vcf and cnv_vcf"
             }
+            if (!(row.sample_id ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/)) {
+                error "sample_id must start with a letter or digit and contain only letters, digits, dot, underscore or hyphen"
+            }
             def meta = [id: row.sample_id, sex: row.sex ?: 'unknown']
             def geneList = row.gene_list ? file(row.gene_list, checkIfExists: true) : []
             tuple(meta, file(row.snv_vcf, checkIfExists: true), file(row.sv_vcf, checkIfExists: true), file(row.cnv_vcf, checkIfExists: true), geneList)
