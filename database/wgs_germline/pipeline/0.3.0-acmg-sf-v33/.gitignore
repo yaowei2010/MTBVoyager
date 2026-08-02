@@ -1,0 +1,10 @@
+.nextflow/
+.nextflow.log*
+__pycache__/
+*.py[cod]
+dag-*.html
+report-*.html
+timeline-*.html
+trace-*.txt
+results/
+work/
