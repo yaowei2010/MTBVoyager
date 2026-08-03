@@ -50,7 +50,11 @@ def jobs(request):
         s=metadata['subject']; record=existJobs.jobs.create(jobID=job,subject_id=s['subject_id'],name='WGS Somatic Tumor-Only',dob=s['dob'],gender=s['gender'],history=s['history'],uploadFile_url=str(destination/'inputs'),resultFile_url=str(destination/'pipeline.finished'),user_id=s['user_id'],genome_build='hg38',status='running')
         try: pid=launch(job,metadata)
         except Exception:
-            record.status='failed';record.save(update_fields=['status']);raise
+            # Make a failed launch retryable: restore the uploaded files to the
+            # draft and remove the half-created job/database record.
+            restored=source/'uploads'/upload_id; restored.parent.mkdir(parents=True,exist_ok=True)
+            if (destination/'inputs').exists() and not restored.exists(): shutil.move(str(destination/'inputs'),str(restored))
+            record.delete(); shutil.rmtree(destination,ignore_errors=True); raise
         record.processID=str(pid);record.save(update_fields=['processID']);metadata.update({'status':'running','process_id':pid});write_json(destination/'metadata.json',metadata);shutil.rmtree(source,ignore_errors=True)
         return JsonResponse({'analysis_id':job,'status':'running'},status=202)
     except (ValueError,TypeError) as exc:return error(exc)

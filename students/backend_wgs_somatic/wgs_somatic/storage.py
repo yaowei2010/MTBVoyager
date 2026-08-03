@@ -24,7 +24,9 @@ def install_pipeline():
     source=Path(os.environ.get('WGS_SOMATIC_PIPELINE_SOURCE','/opt/wgs-somatic-pipeline'))
     version=(source/'VERSION').read_text().strip(); destination=root()/'pipeline'/version
     if not destination.exists():
-        tmp=destination.with_name(destination.name+'.tmp'); shutil.rmtree(tmp,ignore_errors=True); shutil.copytree(source,tmp); os.replace(tmp,destination)
+        tmp=destination.with_name(destination.name+'.tmp'); shutil.rmtree(tmp,ignore_errors=True)
+        ignored=shutil.ignore_patterns('work','results','test-results*','.nextflow*','.pytest_cache','report-*','timeline-*','trace-*','dag-*','__pycache__','*.pyc')
+        shutil.copytree(source,tmp,ignore=ignored); os.replace(tmp,destination)
     return destination
 def tsv_rows(path,limit=10000):
     if not Path(path).exists(): return []
