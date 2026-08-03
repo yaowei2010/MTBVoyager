@@ -11,6 +11,7 @@ process NORMALIZE_VCF {
     tuple val(meta), path("${meta.id}.normalized.vcf.gz"), path(gene_list), emit: vcf
     path "${meta.id}.normalized.vcf.gz.tbi", emit: index
     path "${meta.id}.normalization.stats.txt", emit: stats
+    path "${meta.id}.quality_filter.json", emit: quality_filter
     path "${meta.id}.excluded_contigs.txt", emit: excluded_contigs
 
     script:
@@ -32,9 +33,15 @@ process NORMALIZE_VCF {
         exit 1
     fi
 
+    # This is the only pre-annotation filter.  Keep it limited to call quality;
+    # population frequency, consequence, ClinVar, phenotype and ACMG filters
+    # remain downstream of VEP.  PharmCAT consumes VALIDATE_VCF directly and is
+    # deliberately unaffected by this branch.
     filter_expr='${params.pass_only.toString().toBoolean() ? "FILTER=\"PASS\" && " : ""}GT!="mis" && FORMAT/DP>=${params.dp_min} && FORMAT/GQ>=${params.gq_min}'
+    vaf_applied=false
     if bcftools view -h '${vcf}' | grep -q '^##FORMAT=<ID=AD,'; then
         filter_expr="\${filter_expr} && FORMAT/AD[0:1]/FORMAT/DP>=${params.vaf_min}"
+        vaf_applied=true
     fi
 
     bcftools view \
@@ -51,5 +58,9 @@ process NORMALIZE_VCF {
         --output '${meta.id}.normalized.vcf.gz'
     tabix -f -p vcf '${meta.id}.normalized.vcf.gz'
     bcftools stats '${meta.id}.normalized.vcf.gz' > '${meta.id}.normalization.stats.txt'
+    retained_records=\$(awk -F '\t' '\$1=="SN" && \$3=="number of records:" {print \$4; exit}' '${meta.id}.normalization.stats.txt')
+    cat > '${meta.id}.quality_filter.json' <<JSON
+{"sample_id":"${meta.id}","stage":"pre_vep","pass_only":${params.pass_only.toString().toBoolean()},"dp_min":${params.dp_min},"gq_min":${params.gq_min},"vaf_min":${params.vaf_min},"vaf_applied":\$vaf_applied,"retained_records":\$retained_records,"status":"PASS"}
+JSON
     """
 }

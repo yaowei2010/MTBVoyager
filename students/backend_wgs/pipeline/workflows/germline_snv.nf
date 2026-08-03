@@ -37,6 +37,8 @@ workflow GERMLINE_SNV {
     if (!params.reference) error "Missing --reference GRCh38 FASTA"
     reference_ch = Channel.value(file(params.reference, checkIfExists: true))
     reference_fai_ch = Channel.value(file("${params.reference}.fai", checkIfExists: true))
+    // Normalize and apply call-quality filters before any VEP annotation.
+    // The PGx branch below intentionally continues to use VALIDATE_VCF output.
     NORMALIZE_VCF(VALIDATE_VCF.out.vcf, reference_ch, reference_fai_ch)
 
     if (skipVep) {
