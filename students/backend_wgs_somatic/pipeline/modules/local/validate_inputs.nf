@@ -31,7 +31,7 @@ process VALIDATE_INPUTS {
     process_vcf cnv '${cnv}' '${meta.id}.cnv.vcf.gz'
     # GRCh38 primary contigs use chr1 length 248956422. Require this when the
     # header declares chr1 length; callers omitting lengths are recorded but accepted.
-    declared=\$(bcftools view -h '${meta.id}.snv.vcf.gz' | awk -F '[=,>]' '/^##contig=<ID=chr1,length=/ {print \$4; exit}')
+    declared=\$(bcftools view -h '${meta.id}.snv.vcf.gz' | awk -F '[=,>]' '/^##contig=<ID=chr1,length=/ {print \$5; exit}')
     if [[ -n "\$declared" && "\$declared" != 248956422 ]]; then echo "SNV VCF is not GRCh38 chr1" >&2; exit 1; fi
     snv_records=\$(bcftools index -n '${meta.id}.snv.vcf.gz')
     sv_records=\$(bcftools index -n '${meta.id}.sv.vcf.gz')

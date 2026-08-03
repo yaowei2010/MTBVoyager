@@ -1,5 +1,5 @@
 ##fileformat=VCFv4.2
-##contig=<ID=chr1>
+##contig=<ID=chr1,length=248956422>
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##FILTER=<ID=LowQual,Description="Low-quality call">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
