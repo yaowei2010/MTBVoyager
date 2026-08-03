@@ -23,13 +23,22 @@ import Exome_trio_setting from './component/Analysis/Exome_Trio_analysis/ana_Set
 import Tissue_subject from './component/Analysis/Tissue_analysis/Subject/Analysis_subject.js';
 import Tissue_sample from './component/Analysis/Tissue_analysis/ana_Sample/Analysis_sample.js';
 import Tissue_setting from './component/Analysis/Tissue_analysis/ana_Settings/Analysis_settings.js';
-import WgsPlaceholder from './component/Analysis/WGS/WgsPlaceholder.js';
+import WgsGermlineSubject from './component/Analysis/WGS_Germline/WgsGermlineSubject.js';
+import WgsGermlineSample from './component/Analysis/WGS_Germline/WgsGermlineSample.js';
+import WgsGermlineSettings from './component/Analysis/WGS_Germline/WgsGermlineSettings.js';
+import WgsGermlineResult from './component/Job_results/WGS_Germline_Detail/WgsGermlineResult.js';
+import WgsSomaticSubject from './component/Analysis/WGS_Somatic/WgsSomaticSubject.js';
+import WgsSomaticSample from './component/Analysis/WGS_Somatic/WgsSomaticSample.js';
+import WgsSomaticSettings from './component/Analysis/WGS_Somatic/WgsSomaticSettings.js';
+import WgsSomaticResult from './component/Job_results/WGS_Somatic_Detail/WgsSomaticResult.js';
 import VUS from './component/VUS/vus.js';
 
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { config } from './constant';
 import PrivateRoute from './privateRoute.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import clinicalTheme from './clinicalTheme';
 
 import LoginPage from './component/Auth/LoginPage.js';
 import RegisterPage from './component/Auth/RegisterPage.js';
@@ -40,7 +49,9 @@ import BlacklistAdd from "./component/Blacklist/Blacklist_add.js";
 
 function App() {
   return (
-    <AuthProvider>
+    <ThemeProvider theme={clinicalTheme}>
+      <CssBaseline />
+      <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path={config.rootPathPrefix + "/"}element={<Navigate to={config.rootPathPrefix + "/login"} replace />}/>
@@ -56,6 +67,8 @@ function App() {
             <Route path = { config.rootPathPrefix + "/Job_results/detail_germline_hg38/:analysis_ID" } element = { <Job_results_detail_hg38 /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail_germline_trio/:analysis_ID" } element = { <Job_results_detail_germline_trio /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail_somatic/:analysis_ID" } element = { <Job_results_detail_somatic /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Job_results/detail_wgs_germline/:analysis_ID" } element = { <WgsGermlineResult /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Job_results/detail_wgs_somatic/:analysis_ID" } element = { <WgsSomaticResult /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail/:analysis_ID/summary_report_germline" } element = { <Job_results_detail_report_germline /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail/:analysis_ID/summary_report_germline_trio" } element = { <Job_results_detail_report_germline_trio /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail/:analysis_ID/summary_report_somatic" } element = { <Job_results_detail_report_somatic /> }></Route>
@@ -74,8 +87,14 @@ function App() {
             <Route path = { config.rootPathPrefix + "/Analysis/Tissue/Sample" } element = { <Tissue_sample /> }></Route>
             <Route path = { config.rootPathPrefix + "/Analysis/Tissue/Settings" } element = { <Tissue_setting /> }></Route>
 
-            <Route path = { config.rootPathPrefix + "/Analysis/WGS_hg38_Germline" } element = { <WgsPlaceholder analysisType="WGS hg38 germline" /> }></Route>
-            <Route path = { config.rootPathPrefix + "/Analysis/WGS_hg38_Somatic" } element = { <WgsPlaceholder analysisType="WGS hg38 somatic" /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_hg38_Germline" } element = { <Navigate to={config.rootPathPrefix + "/Analysis/WGS_Germline/Subject"} replace /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Germline/Subject" } element = { <WgsGermlineSubject /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Germline/Sample" } element = { <WgsGermlineSample /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Germline/Settings" } element = { <WgsGermlineSettings /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_hg38_Somatic" } element = { <Navigate to={config.rootPathPrefix + "/Analysis/WGS_Somatic/Subject"} replace /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Subject" } element = { <WgsSomaticSubject /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Sample" } element = { <WgsSomaticSample /> }></Route>
+            <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Settings" } element = { <WgsSomaticSettings /> }></Route>
 
             <Route path = { config.rootPathPrefix + "/VUS" } element = { <VUS /> }></Route>
             <Route path = { config.rootPathPrefix + "/Blacklist" } element = { <BlacklistPage  /> }></Route>
@@ -83,7 +102,8 @@ function App() {
           </Route>  
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

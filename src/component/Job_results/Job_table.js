@@ -249,7 +249,11 @@ export default function Job_table(props) {
 
     let detailPath = `/Job_results/detail_germline/${row.analysis_ID}`; // default germline hg19
 
-    if (proto === 'somatic') {
+    if (proto === 'wgs germline' || proto === 'wgs_germline' || proto === 'wgs hg38 germline') {
+      detailPath = `/Job_results/detail_wgs_germline/${row.analysis_ID}`;
+    } else if (proto === 'wgs somatic tumor-only' || proto === 'wgs_somatic_tumor_only') {
+      detailPath = `/Job_results/detail_wgs_somatic/${row.analysis_ID}`;
+    } else if (proto === 'somatic') {
       detailPath = `/Job_results/detail_somatic/${row.analysis_ID}`;
     } else if (proto === 'germline trio') {
       detailPath = `/Job_results/detail_germline_trio/${row.analysis_ID}`;
