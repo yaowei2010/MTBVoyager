@@ -5,10 +5,12 @@ COPY nextflow /usr/local/bin/nextflow
 RUN chmod 0755 /usr/local/bin/nextflow && NXF_VER=${NEXTFLOW_VERSION} nextflow -version
 
 COPY wgs_germline /miRTI/wgs_germline
+COPY --from=wgs_somatic wgs_somatic /miRTI/wgs_somatic
 COPY uploadfunction/urls.py /miRTI/uploadfunction/urls.py
 COPY pipeline /opt/wgs-germline-pipeline
+COPY --from=wgs_somatic pipeline /opt/wgs-somatic-pipeline
 
 ENV WGS_PIPELINE_SOURCE=/opt/wgs-germline-pipeline \
+    WGS_SOMATIC_PIPELINE_SOURCE=/opt/wgs-somatic-pipeline \
     NXF_VER=${NEXTFLOW_VERSION} \
     NXF_ANSI_LOG=false
-

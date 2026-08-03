@@ -21,6 +21,7 @@ from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ncku_hospital/wgs-germline/', include('wgs_germline.urls')),
+    path('ncku_hospital/wgs-somatic/', include('wgs_somatic.urls')),
     path('ncku_hospital/', include('hw1.urls')),
     path('ncku_hospital/accounts/', include('accounts.urls')),
 ]
