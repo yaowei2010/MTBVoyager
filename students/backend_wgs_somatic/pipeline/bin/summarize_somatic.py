@@ -36,6 +36,15 @@ def mark_tumor_context(items, cancer_type):
         item['tumor_type_match']='unknown' if not query else ('true' if query in haystack else 'false')
     return items
 
+def collapse_vep_annotations(rows):
+    grouped=defaultdict(list)
+    for index,row in enumerate(rows):
+        key=clean(row.get('#Uploaded_variation',row.get('Uploaded_variation',''))) or f'row:{index}'
+        grouped[key].append(row)
+    def rank(row):
+        return (clean(row.get('PICK'))=='1',bool(clean(row.get('MANE_SELECT'))),clean(row.get('CANONICAL'))=='YES',bool(clean(row.get('SYMBOL'))),bool(clean(row.get('HGVSp'))))
+    return [max(group,key=rank) for group in grouped.values()]
+
 def protein_change(row):
     aa=clean(row.get('Amino_acids')); pos=clean(row.get('Protein_position')).split('-')[0]
     if '/' in aa and pos.isdigit():
@@ -141,7 +150,8 @@ def overlap_genes(path,chrom,start,end):
 def snv(args):
     with opener(args.input) as h:
         reader=csv.DictReader((line for line in h if not line.startswith('##')),delimiter='\t')
-        rows=list(reader); fields=reader.fieldnames or []
+        annotation_rows=list(reader); fields=reader.fieldnames or []
+    rows=collapse_vep_annotations(annotation_rows)
     db=CancerEvidence(args.cancer_db)
     for row in rows:
         items=mark_tumor_context(db.snv(row),args.cancer_type); row['cancer_evidence_sources']='|'.join(sorted({x['source'] for x in items})); row['cancer_evidence']=evidence_text(items); row['cancer_actionable']='true' if any(x.get('actionable') for x in items) else 'false'; row['cancer_type_match']='true' if any(x.get('tumor_type_match')=='true' for x in items) else ('false' if items and args.cancer_type else 'unknown')
@@ -160,7 +170,7 @@ def snv(args):
     write_rows(f'{args.output_prefix}.snv.all.tsv',fields,rows)
     write_rows(f'{args.output_prefix}.snv.actionable.tsv',fields,actionable)
     write_rows(f'{args.output_prefix}.snv.possible_germline.tsv',fields,possible)
-    json.dump({'all_variants':len(rows),'actionable':len(actionable),'possible_germline':len(possible),'cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'possible_germline':len(possible),'cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)

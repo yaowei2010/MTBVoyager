@@ -30,3 +30,13 @@ def test_protein_change_is_one_letter_exact():
 def test_tumor_context_is_explicit():
     rows = [{"source": "CIViC", "disease": "Lung Adenocarcinoma"}]
     assert module.mark_tumor_context(rows, "lung")[0]["tumor_type_match"] == "true"
+
+
+def test_vep_annotations_collapse_to_pick_per_allele():
+    rows = [
+        {"#Uploaded_variation": "chr7_1_A/T", "PICK": "-", "HGVSp": "wrong"},
+        {"#Uploaded_variation": "chr7_1_A/T", "PICK": "1", "HGVSp": "picked"},
+    ]
+    selected = module.collapse_vep_annotations(rows)
+    assert len(selected) == 1
+    assert selected[0]["HGVSp"] == "picked"
