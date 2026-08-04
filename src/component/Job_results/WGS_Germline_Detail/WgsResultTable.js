@@ -28,6 +28,9 @@ const preferredFields = [
   ['oncogenicity_classification', 'Oncogenicity'], ['oncogenicity_score', 'Oncogenicity score'],
   ['oncogenicity_criteria', 'Oncogenicity criteria'], ['oncogenicity_review_required', 'Oncogenicity review'],
   ['oncogenicity_evidence', 'Oncogenicity audit detail'],
+  ['oncovi_2026_classification', 'OncoVI 2026 reference'], ['oncovi_2026_score', 'OncoVI 2026 score'],
+  ['oncovi_2026_criteria', 'OncoVI 2026 criteria'], ['oncogenicity_profile_difference', 'Profile differences'],
+  ['oncovi_2026_validation_status', 'OncoVI validation status'], ['oncovi_2026_evidence', 'OncoVI 2026 audit detail'],
 ];
 
 const displayValue = (value) => {
@@ -57,7 +60,7 @@ export default function WgsResultTable({ rows, loading, error, analysisId, empty
   const configured = preferredFields.filter(([field]) => keys.has(field));
   const remaining = [...keys].filter((key) => key !== 'id' && !configured.some(([field]) => field === key));
   const columns = [...configured, ...remaining.map((key) => [key, key])].map(([field, headerName]) => ({
-    field, headerName, minWidth: ['recommendation', 'evidence', 'inheritance_reason', 'acmg_sf_disease', 'cancer_evidence', 'oncogenicity_evidence'].includes(field) ? 320 : 150, flex: 1,
+    field, headerName, minWidth: ['recommendation', 'evidence', 'inheritance_reason', 'acmg_sf_disease', 'cancer_evidence', 'oncogenicity_evidence', 'oncovi_2026_evidence'].includes(field) ? 320 : 150, flex: 1,
     valueGetter: (value) => displayValue(value),
     renderCell: field === 'classification' ? (params) => {
       const label = displayValue(params.value);
