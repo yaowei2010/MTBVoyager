@@ -22,6 +22,9 @@ const preferredFields = [
   ['inheritance_reason', 'Inheritance Assessment'], ['acmg_sf_variant_rule', 'ACMG-SF Rule'],
   ['gene_symbol', 'Gene'], ['diplotype', 'Star allele / Diplotype'], ['phenotype', 'Phenotype'],
   ['drug', 'Drug'], ['recommendation', 'Recommendation'], ['guideline', 'Guideline'], ['evidence_level', 'Evidence level'],
+  ['cancer_evidence_sources', 'Cancer evidence sources'], ['cancer_actionable', 'Actionable evidence'],
+  ['cancer_type_match', 'Tumor type match'], ['annotsv_gene_count', 'Overlapping genes'],
+  ['cancer_evidence', 'Cancer evidence detail'],
 ];
 
 const displayValue = (value) => {
@@ -51,7 +54,7 @@ export default function WgsResultTable({ rows, loading, error, analysisId, empty
   const configured = preferredFields.filter(([field]) => keys.has(field));
   const remaining = [...keys].filter((key) => key !== 'id' && !configured.some(([field]) => field === key));
   const columns = [...configured, ...remaining.map((key) => [key, key])].map(([field, headerName]) => ({
-    field, headerName, minWidth: ['recommendation', 'evidence', 'inheritance_reason', 'acmg_sf_disease'].includes(field) ? 320 : 150, flex: 1,
+    field, headerName, minWidth: ['recommendation', 'evidence', 'inheritance_reason', 'acmg_sf_disease', 'cancer_evidence'].includes(field) ? 320 : 150, flex: 1,
     valueGetter: (value) => displayValue(value),
     renderCell: field === 'classification' ? (params) => {
       const label = displayValue(params.value);

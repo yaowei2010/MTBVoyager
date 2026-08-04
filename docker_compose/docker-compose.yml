@@ -85,6 +85,8 @@ services:
       WGS_VEP_PLUGIN_ARGS: "${WGS_VEP_PLUGIN_ARGS}"
       WGS_VEP_MAX_PARALLEL: "${WGS_VEP_MAX_PARALLEL:-5}"
       WGS_VEP_FORK_PER_SHARD: "${WGS_VEP_FORK_PER_SHARD:-6}"
+      WGS_CANCER_DB: "${DATA_ROOT}/VEP/20241126Mondodatabase"
+      WGS_ANNOTSV_ANNOTATIONS: "${DATA_ROOT}/annotsv/database/Annotations_Human"
       MONDO_TERMS_TSV: "${DATA_ROOT}/mondo/mondo_terms.tsv"
       MONDO_GENE_ASSOCIATIONS_TSV: "${DATA_ROOT}/mondo/mondo_gene_associations.tsv"
       MONDO_RELEASE_FILE: "${DATA_ROOT}/mondo/release.json"
