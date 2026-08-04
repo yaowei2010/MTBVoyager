@@ -141,5 +141,20 @@ services:
       - "3002:80"
     restart: unless-stopped
 
+  gateway:
+    image: takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33
+    pull_policy: never
+    container_name: gateway
+    depends_on:
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./gateway.conf:/etc/nginx/conf.d/app.conf:ro
+      - ./tls/platform.crt:/etc/nginx/tls/platform.crt:ro
+      - ./tls/platform.key:/etc/nginx/tls/platform.key:ro
+    restart: unless-stopped
+
 volumes:
   pgdata:
