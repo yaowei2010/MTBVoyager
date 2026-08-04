@@ -31,6 +31,8 @@ const preferredFields = [
   ['oncovi_2026_classification', 'OncoVI 2026 reference'], ['oncovi_2026_score', 'OncoVI 2026 score'],
   ['oncovi_2026_criteria', 'OncoVI 2026 criteria'], ['oncogenicity_profile_difference', 'Profile differences'],
   ['oncovi_2026_validation_status', 'OncoVI validation status'], ['oncovi_2026_evidence', 'OncoVI 2026 audit detail'],
+  ['oncogenicity_input_scope', 'Oncogenicity input scope'], ['oncogenicity_coordinate_build', 'Input genome build'],
+  ['oncogenicity_limitations', 'Oncogenicity limitations'],
 ];
 
 const displayValue = (value) => {

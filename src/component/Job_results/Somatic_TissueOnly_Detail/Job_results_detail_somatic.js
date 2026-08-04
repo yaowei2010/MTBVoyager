@@ -28,6 +28,7 @@ import Fusion_gene from './Fusion_Gene.js'
 import Potential_Treatment_Bar from './Potential_Treatment_Bar.js'
 import Pathway from './Pathway_viewer.js'
 import Cancer_Type_Prediction from './Cancer_Type_Prediction.js'
+import WgsResultTable from '../WGS_Germline_Detail/WgsResultTable.js'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#C0C0C0',
@@ -72,6 +73,9 @@ function Job_results_detail_somatic() {
   const [GermlinePredictionData, SetGermlinePredictionData] = useState([]);
   const [CosmicData, SetCosmicData] = useState([]);
   const [PredictionData, SetPredictionData] = useState([]);
+  const [OncogenicityData, SetOncogenicityData] = useState([]);
+  const [oncogenicitySummary, setOncogenicitySummary] = useState(null);
+  const [oncogenicityError, setOncogenicityError] = useState('');
   const [MultipleSNPActionableData, SetMultipleSNPActionableData] = useState([]);
   const [MultipleSNPCivicData, SetMultipleSNPCivicData] = useState([]);
 
@@ -362,6 +366,14 @@ function Job_results_detail_somatic() {
             return { data: { data: [] } };
           });
 
+        const oncogenicity_response = await axios
+          .post(`${config.rootApiIP}/wgs-somatic/legacy-oncogenicity`, { newjobid: jobId })
+          .catch((error) => {
+            console.error('Oncogenicity API error:', error);
+            setOncogenicityError(error.response?.data?.detail || 'Unable to calculate oncogenicity.');
+            return { data: { data: [], summary: null } };
+          });
+
         const heredity_response = await axios
           .post(`${config.rootApiIP}/read_heredity`, { newjobid: jobId })
           .catch((error) => {
@@ -422,6 +434,8 @@ function Job_results_detail_somatic() {
         SetGermlinePredictionData(formatData(germlinePredictionData));
         SetCosmicData(formatData(cosmicData));
         SetPredictionData(formatData(predictionData));
+        SetOncogenicityData(Array.isArray(oncogenicity_response?.data?.data) ? oncogenicity_response.data.data : []);
+        setOncogenicitySummary(oncogenicity_response?.data?.summary || null);
         SetMultipleSNPActionableData(formatMultipleSNPActionableData(multiActionableData));
         SetMultipleSNPCivicData(formatMultipleSNPCivicData(multiCivicData));
       } catch (error) {
@@ -527,6 +541,7 @@ function Job_results_detail_somatic() {
                         <Tab label="Germline Prediction" value="3" />
                         <Tab label="Somatic" value="4" />
                         <Tab label="prediction" value="5" />
+                        <Tab label="Oncogenicity" value="6" />
                       </TabList>
                     </Box>
                     <TabPanel value="1">
@@ -567,6 +582,17 @@ function Job_results_detail_somatic() {
                         onSelectionChange={setSelectedPredictionData}
                         rowSelectionModel={selectedPredictionDataRowsid}
                         setrowSelectionModel={setSelectedPredictionDataRowsid}
+                      />
+                    </TabPanel>
+                    <TabPanel value="6">
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        Legacy Tumor-Only uses GRCh37/hg19 gene/protein annotations. Missing GRCh38 VEP and review-level evidence is not inferred, so every record requires manual review.
+                        {oncogenicitySummary ? ` Profile: ${oncogenicitySummary.profile}; variants: ${oncogenicitySummary.variants}.` : ''}
+                      </Alert>
+                      <WgsResultTable
+                        rows={OncogenicityData}
+                        error={oncogenicityError}
+                        emptyMessage="No variants were available for oncogenicity annotation."
                       />
                     </TabPanel>
                   </TabContext>
