@@ -13,6 +13,7 @@ def launch(job_id,metadata):
          '--vep_cache',os.environ.get('WGS_VEP_CACHE','/wgs_reference/vep'),'--vep_plugin_data',os.environ.get('WGS_VEP_PLUGIN_DATA','/wgs_reference/vep/Plugins'),
          '--vep_plugin_args',os.environ.get('WGS_VEP_PLUGIN_ARGS',''),'--vep_max_parallel',os.environ.get('WGS_VEP_MAX_PARALLEL','5'),'--vep_fork_per_shard',os.environ.get('WGS_VEP_FORK_PER_SHARD','6'),
          '--cancer_db',os.environ.get('WGS_CANCER_DB','/VEP/20241126Mondodatabase'),'--annotsv_annotations',os.environ.get('WGS_ANNOTSV_ANNOTATIONS','/annotsv/database/Annotations_Human'),
+         '--oncovi_resources',os.environ.get('WGS_ONCOVI_RESOURCES','/oncovi/resources'),
          '--cancer_type',settings.get('cancer_type',''),
          '--pass_only',str(settings['pass_only']).lower(),'--dp_min',str(settings['min_dp']),'--alt_reads_min',str(settings['min_alt_reads']),'--vaf_min',str(settings['min_vaf']),
          '--population_af_max',str(settings['population_af_max']),'-ansi-log','false']

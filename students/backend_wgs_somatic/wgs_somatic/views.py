@@ -72,7 +72,7 @@ def results(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];section=request.GET.get('section','snv_actionable')
-    paths={'snv_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','possible_germline':directory/'results'/sample/'interpretation'/f'{sample}.snv.possible_germline.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
+    paths={'snv_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','oncogenicity':directory/'results'/sample/'interpretation'/f'{sample}.snv.oncogenic.tsv','possible_germline':directory/'results'/sample/'interpretation'/f'{sample}.snv.possible_germline.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
     if section not in paths:return error('Unsupported result section')
     return JsonResponse({'status':metadata['status'],'results':tsv_rows(paths[section])})
 def summary(request,analysis_id):

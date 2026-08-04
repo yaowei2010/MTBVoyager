@@ -18,3 +18,18 @@ completion. Tumor-only results never assert that a variant is confirmed somatic.
 
 The versioned pipeline is stored in `pipeline/` and is installed as an immutable
 snapshot for each platform job.
+
+## Deterministic oncogenicity classification
+
+SNV and small-indel VEP results are scored with the ClinGen/CGC/VICC 2022
+oncogenicity point system before cancer-database matching. The implementation is
+deterministic and emits the score, classification, applied criteria, manual-review
+flag, and per-criterion audit JSON. It does not use generative AI inference.
+
+The `strict_sop_2022_with_oncovi_2026_resources` profile uses selected resources
+from OncoVI (DOI `10.1016/j.jmoldx.2026.03.004`) pinned to upstream commit
+`99fa5801163bb6bd32d97e916ca2249bb9429d81`. Intentional differences from the
+upstream reference implementation are recorded in
+`pipeline/resources/oncovi_manifest.json`; in particular, missing functional
+evidence is `not_assessable` and germline ClinVar is not substituted for OS2/SBS2.
+The classification applies only to SNV/small indels, not general SV, CNV, or fusions.

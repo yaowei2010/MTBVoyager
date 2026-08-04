@@ -158,6 +158,7 @@ def snv(args):
     fields=list(fields)+['cancer_evidence_sources','cancer_actionable','cancer_type_match','cancer_evidence']
     evidence=['CLIN_SIG','ClinVar_CLNSIG','CIVIC','CIVIC_annotation','OncoKB','oncoKB_annotation','CGI_annotation','COSMIC','Existing_variation','cancer_actionable']
     actionable=[r for r in rows if r.get('cancer_actionable')=='true' or truthy(r,evidence)]
+    oncogenic=[r for r in rows if clean(r.get('oncogenicity_classification')) in ('Oncogenic','Likely Oncogenic')]
     af_fields=['gnomADe_AF','gnomADg_AF','gnomAD_AF','AF']
     possible=[]
     for r in rows:
@@ -169,8 +170,13 @@ def snv(args):
         if vals and max(vals) >= float(args.population_af_max): possible.append(r)
     write_rows(f'{args.output_prefix}.snv.all.tsv',fields,rows)
     write_rows(f'{args.output_prefix}.snv.actionable.tsv',fields,actionable)
+    write_rows(f'{args.output_prefix}.snv.oncogenic.tsv',fields,oncogenic)
     write_rows(f'{args.output_prefix}.snv.possible_germline.tsv',fields,possible)
-    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'possible_germline':len(possible),'cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+    onco_counts={}
+    for row in rows:
+        label=clean(row.get('oncogenicity_classification'))
+        if label:onco_counts[label]=onco_counts.get(label,0)+1
+    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)

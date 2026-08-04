@@ -9,6 +9,7 @@ process SUMMARIZE_SNV {
     tuple val(meta), path("${meta.id}.snv.summary.json"), emit: summary
     path "${meta.id}.snv.all.tsv", emit: all
     path "${meta.id}.snv.actionable.tsv", emit: actionable
+    path "${meta.id}.snv.oncogenic.tsv", emit: oncogenic
     path "${meta.id}.snv.possible_germline.tsv", emit: possible_germline
     script:
     """
