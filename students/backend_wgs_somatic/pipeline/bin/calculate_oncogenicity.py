@@ -8,6 +8,7 @@ POINTS={'OVS1':8,'OS1':4,'OS2':4,'OS3':4,'OM1':2,'OM2':2,'OM3':2,'OM4':2,
         'OP1':1,'OP2':1,'OP3':1,'OP4':1,'SBVS1':-8,'SBS1':-4,'SBS2':-4,'SBP1':-1,'SBP2':-1}
 PROFILE='strict_sop_2022_with_oncovi_2026_resources'
 REFERENCE_PROFILE='oncovi_2026_reference_99fa580'
+REFERENCE_VALIDATION='classification_benchmark_93_of_93;score_exact_81_of_93;criteria_exact_80_of_93;vep112_20260804'
 COMMIT='99fa5801163bb6bd32d97e916ca2249bb9429d81'
 
 def clean(value):
@@ -55,6 +56,8 @@ class Resources:
         self.indels=self.load('inframe_indel_dict.txt'); self.domains=self.load('domains_dictionary.txt'); self.mutsplice=self.load('mut_splice_dict.txt')
         self.grantham=self._grantham(); self.cgi_residue=defaultdict(list)
         self.os2_selected={x.strip('"') for x in self.lines('os2_manually_selected.txt')} if (self.root/'os2_manually_selected.txt').exists() else set()
+        cosmic=self.root/'cosmic_all_dictionary.txt.gz'
+        self.cosmic=json.load(gzip.open(cosmic,'rt',encoding='utf-8')) if cosmic.exists() else {}
         for key in self.cgi:
             m=re.fullmatch(r'([^:]+):p\.([A-Z])(\d+)([A-Z*])',key)
             if m:self.cgi_residue[(m[1].upper(),m[2],int(m[3]))].append(m[4])
@@ -91,12 +94,21 @@ def evaluate(row,res,tumor_type=''):
     elif total>=50 and same>=10:ev['OS3']=result('OS3','met','Hotspot has at least 50 residue observations and 10 exact substitutions','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
     elif hotspot:ev['OS3']=result('OS3','not_met','Hotspot counts do not meet OS3','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
     else:ev['OS3']=result('OS3','not_met','Residue is absent from the staged Cancer Hotspots resource','Cancer Hotspots via OncoVI')
+    if not hotspot and ev['OS1']['status']!='met' and pos and gene in res.cosmic:
+        cosmic_residue=res.cosmic[gene].get(str(pos),{}); cosmic_total=sum(int(n) for changes in cosmic_residue.values() for n in changes.values())
+        cosmic_exact=sum(int(n) for n in cosmic_residue.get(f'p.{protein}',{}).values())
+        if cosmic_total>=50 and cosmic_exact>=10:
+            ev['OS3']=result('OS3','met','COSMIC fallback has at least 50 residue observations and 10 exact substitutions','OncoVI COSMIC',{'residue_count':cosmic_total,'exact_count':cosmic_exact})
 
     domain_hits=[]
-    if pos:
+    protein_positions=[]
+    if pos: protein_positions=[pos]
+    else:
+        protein_positions=[int(x) for x in re.findall(r'(?<=[A-Za-z])(\d+)',clean(row.get('HGVSp')))]
+    if protein_positions:
         for domain in res.domains.get(gene,[]):
             coords=[int(x) for x in re.findall(r'\d+',domain)]
-            if coords and min(coords)<=pos<=max(coords):domain_hits.append(domain)
+            if coords and min(protein_positions)<=max(coords) and max(protein_positions)>=min(coords):domain_hits.append(domain)
     if ev['OS1']['status']=='met' or ev['OS3']['status']=='met': ev['OM1']=result('OM1','excluded','Strong residue evidence already applies',excluded_by='OS1/OS3')
     elif domain_hits:ev['OM1']=result('OM1','met','Protein position overlaps a UniProt functional domain, following the OncoVI 2026 interpretation','OncoVI UniProt domains',domain_hits[:10])
     else:ev['OM1']=result('OM1','not_met','No staged UniProt domain overlap','OncoVI UniProt domains')
@@ -107,17 +119,16 @@ def evaluate(row,res,tumor_type=''):
     elif om2:ev['OM2']=result('OM2','met','Qualifying protein-length change in an oncogene or tumor suppressor','VEP+OncoVI gene roles')
     else:ev['OM2']=result('OM2','not_met','No qualifying protein-length change and gene-role combination')
 
-    if ev['OS3']['status']=='met' or ev['OM1']['status']=='met':ev['OM3']=result('OM3','excluded','OS3 or OM1 already applies',excluded_by='OS3/OM1')
-    elif total<50 and same>=10:ev['OM3']=result('OM3','met','Hotspot has fewer than 50 residue observations and at least 10 exact substitutions','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
-    else:ev['OM3']=result('OM3','not_met','Hotspot counts do not meet OM3','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
-
     alternatives=res.cgi_residue.get((gene,refaa,pos),[]) if pos else []; comparable=[]
     for known_alt in alternatives:
         if known_alt!=altaa and (refaa,known_alt) in res.grantham and (refaa,altaa) in res.grantham and res.grantham[(refaa,altaa)]>=res.grantham[(refaa,known_alt)]: comparable.append(known_alt)
-    blockers=[x for x in ('OS1','OS3','OM1','OM3') if ev[x]['status']=='met']
-    if blockers:ev['OM4']=result('OM4','excluded','Higher-priority evidence already applies',excluded_by='/'.join(blockers))
-    elif comparable:ev['OM4']=result('OM4','met','Different oncogenic substitution at the same residue has no greater Grantham distance','OncoVI CGI+Grantham',comparable)
-    else:ev['OM4']=result('OM4','not_met','No qualifying alternative oncogenic substitution at this residue','OncoVI CGI+Grantham')
+    blockers=[x for x in ('OS3','OM1') if ev[x]['status']=='met']
+    if blockers:ev['OM3']=result('OM3','excluded','OS3 or OM1 already applies',excluded_by='/'.join(blockers))
+    elif comparable:ev['OM3']=result('OM3','met','Different oncogenic substitution at the same residue has no greater Grantham distance','OncoVI CGI+Grantham',comparable)
+    else:ev['OM3']=result('OM3','not_met','No qualifying alternative oncogenic substitution at this residue','OncoVI CGI+Grantham')
+    if ev['OS3']['status']=='met' or ev['OM1']['status']=='met' or ev['OM3']['status']=='met':ev['OM4']=result('OM4','excluded','Higher-priority residue evidence already applies',excluded_by='OS3/OM1/OM3')
+    elif total<50 and same>=10:ev['OM4']=result('OM4','met','Hotspot has fewer than 50 residue observations and at least 10 exact substitutions','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
+    else:ev['OM4']=result('OM4','not_met','Hotspot counts do not meet OM4','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
 
     predictors=[]
     def add_pred(name,value,damaging):
@@ -132,7 +143,15 @@ def evaluate(row,res,tumor_type=''):
     else:ev['OP1']=result('OP1','not_met','Available predictor groups are benign or conflicting','VEP plugins',predictors)
     ev['OP2']=result('OP2','not_assessable','Requires a curated tumor-type/single-genetic-etiology mapping',value=tumor_type or '')
 
-    if ev['OS3']['status']=='met' or ev['OM4']['status']=='met':ev['OP3']=result('OP3','excluded','Higher-priority residue evidence already applies',excluded_by='OS3/OM4')
+    indel_hit=None
+    if consequences & {'inframe_insertion','inframe_deletion'} and protein_positions:
+        for key,changes in res.indels.get(gene,{}).items():
+            coords=[int(x) for x in key.split('-')]
+            if min(protein_positions)>=min(coords) and max(protein_positions)<=max(coords):
+                change=re.sub(r'^p\.','',clean(row.get('HGVSp')).split(':')[-1]); change=re.sub(r'([A-Z][a-z]{2})',lambda m:{'Asn':'N','Pro':'P','Ala':'A','Lys':'K','Val':'V','Arg':'R','Trp':'W','Thr':'T','Gln':'Q','Ile':'I'}.get(m.group(1),m.group(1)),change)
+                indel_hit=int(changes.get(change,0) or 0); break
+    if ev['OS3']['status']=='met' or ev['OM4']['status']=='met':ev['OP3']=result('OP3','excluded','Higher-priority hotspot evidence already applies',excluded_by='OS3/OM4')
+    elif indel_hit is not None and indel_hit<10:ev['OP3']=result('OP3','met','In-frame change occurs fewer than 10 times in Cancer Hotspots','OncoVI Cancer Hotspots',indel_hit)
     elif hotspot and same<10:ev['OP3']=result('OP3','met','Exact substitution occurs fewer than 10 times at a Cancer Hotspots residue','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
     else:ev['OP3']=result('OP3','not_met','No qualifying low-count hotspot evidence','Cancer Hotspots via OncoVI')
 
@@ -200,10 +219,10 @@ def main():
         ref_score,ref_label,ref_evidence=evaluate_reference(row,res,evidence); ref_met=[x['code'] for x in ref_evidence if x['status']=='met']
         strict_status={x['code']:x['status'] for x in evidence}; ref_status={x['code']:x['status'] for x in ref_evidence}; differences=[x for x in POINTS if strict_status[x]!=ref_status[x]]
         required=dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
-        row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':'implementation_compatible;published_93_variant_benchmark_pending','oncogenicity_profile_difference':'|'.join(differences)})
+        row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'oncogenicity_profile_difference':'|'.join(differences)})
         counts[label]+=1; reference_counts[ref_label]+=1; review+=required
     outopen=gzip.open if a.output.endswith('.gz') else open
     with outopen(a.output,'wt',encoding='utf-8',newline='') as h:
         w=csv.DictWriter(h,fieldnames=fields+extra,delimiter='\t',extrasaction='ignore');w.writeheader();w.writerows(rows)
-    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':'implementation_compatible;published_93_variant_benchmark_pending','variants':len(rows),'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
+    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'variants':len(rows),'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
 if __name__=='__main__':main()

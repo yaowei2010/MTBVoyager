@@ -36,6 +36,8 @@ The classification applies only to SNV/small indels, not general SV, CNV, or fus
 
 Each row also includes an `oncovi_2026_*` compatibility result following the
 operational decisions in pinned upstream commit `99fa580`, alongside a criteria
-difference list. It is explicitly labelled benchmark-pending until the published
-93-variant SOP data set has been reproduced with pinned annotation/database inputs;
-the compatibility label must not be presented as an independently validated result.
+difference list. On the frozen official 93-variant example, final classification
+reproduction was 93/93, exact score 81/93, and exact criteria set 80/93 using the
+platform VEP 112 annotation stack. The versioned report is under
+`pipeline/validation/`; this classification-reproduction result is distinct from
+the paper's accuracy against manually curated SOP ground truth.
