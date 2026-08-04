@@ -1,0 +1,2 @@
+#Uploaded_variation	Location	Allele	Gene	Feature	Feature_type	Consequence	Protein_position	Amino_acids	SYMBOL	HGVSp	CLIN_SIG	gnomADg_AF
+chr7_140753336_A/T	chr7:140753336	T	ENSG00000157764	ENST00000288602	Transcript	missense_variant	600	V/E	BRAF	ENSP00000288602.6:p.Val600Glu		0.00001

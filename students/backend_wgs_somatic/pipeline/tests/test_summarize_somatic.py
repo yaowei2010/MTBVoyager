@@ -20,3 +20,13 @@ def test_gzip_opener(tmp_path):
         handle.write("a\tb\n1\t2\n")
     with module.opener(path) as handle:
         assert handle.readline().strip() == "a\tb"
+
+
+def test_protein_change_is_one_letter_exact():
+    assert module.protein_change({"Amino_acids": "V/E", "Protein_position": "600"}) == "V600E"
+    assert module.protein_change({"HGVSp": "ENSP0001:p.Val600Glu"}) == "V600E"
+
+
+def test_tumor_context_is_explicit():
+    rows = [{"source": "CIViC", "disease": "Lung Adenocarcinoma"}]
+    assert module.mark_tumor_context(rows, "lung")[0]["tumor_type_match"] == "true"
