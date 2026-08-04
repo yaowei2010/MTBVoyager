@@ -15,6 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 
 import Actionable_data from './Actionable_data.js';
 import Heredity_data from './Heredity_data.js'
