@@ -42,3 +42,9 @@ platform VEP 112 annotation stack. The versioned report is under
 `pipeline/validation/`; this classification-reproduction result is distinct from
 the paper's accuracy against manually curated SOP ground truth. The remaining
 OM3/OM4 differences are recorded as frozen-output/resource drift.
+
+The platform also exposes programmatic oncogenicity annotation for legacy
+Tumor-Only results at `POST /wgs-somatic/legacy-oncogenicity`. It persists a TSV
+and JSON summary beside the old result. Since that input contains GRCh37/hg19
+gene/protein annotations instead of complete GRCh38 VEP fields, unavailable
+evidence is never inferred and every legacy result is marked for manual review.

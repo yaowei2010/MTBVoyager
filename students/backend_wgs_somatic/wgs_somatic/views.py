@@ -1,4 +1,4 @@
-import json,shutil
+import json,os,re,shutil
 from datetime import datetime,timezone
 from pathlib import Path
 from django.http import JsonResponse
@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from hw1.models import existJobs
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
+from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity
 
 SUFFIXES={'snv':('.vcf.gz','.vcf.bgz'),'sv':('.vcf.gz','.vcf.bgz'),'cnv':('.vcf.gz','.vcf.bgz')}
 def body(request):
@@ -72,10 +73,28 @@ def results(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];section=request.GET.get('section','snv_actionable')
-    paths={'snv_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','oncogenicity':directory/'results'/sample/'interpretation'/f'{sample}.snv.oncogenic.tsv','possible_germline':directory/'results'/sample/'interpretation'/f'{sample}.snv.possible_germline.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
+    paths={'snv_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','oncogenicity_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','oncogenicity':directory/'results'/sample/'interpretation'/f'{sample}.snv.oncogenic.tsv','possible_germline':directory/'results'/sample/'interpretation'/f'{sample}.snv.possible_germline.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
     if section not in paths:return error('Unsupported result section')
     return JsonResponse({'status':metadata['status'],'results':tsv_rows(paths[section])})
 def summary(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];return JsonResponse(read_json(directory/'results'/sample/'pipeline_complete.json',{'status':metadata['status']}))
+
+@csrf_exempt
+def legacy_oncogenicity(request):
+    if request.method!='POST':return error('POST required',405)
+    try:
+        job=str(body(request).get('newjobid','')).strip()
+        if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',job):raise ValueError('Invalid legacy job identifier')
+        directory=Path(os.environ.get('LEGACY_PATIENT_ROOT','/miRTI/media/patient'))/job
+        source=directory/'somatic_result.csv'
+        if not source.is_file():return error('Legacy somatic result not found',404)
+        output=directory/'somatic_result.oncogenicity.tsv';summary_path=directory/'somatic_result.oncogenicity.summary.json'
+        if not output.exists() or output.stat().st_mtime < source.stat().st_mtime:
+            rows,summary_data=annotate_legacy_oncogenicity(source,output,summary_path)
+        else:
+            rows=tsv_rows(output);summary_data=read_json(summary_path,{})
+        return JsonResponse({'status':'success','data':rows,'summary':summary_data})
+    except ValueError as exc:return error(exc)
+    except Exception as exc:return error(f'Unable to calculate legacy oncogenicity: {exc}',500)
