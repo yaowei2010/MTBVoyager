@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Deterministic ClinGen/CGC/VICC oncogenicity scoring for GRCh38 SNV/indel calls."""
-import argparse, csv, gzip, json, re
+import argparse, copy, csv, gzip, json, re
 from collections import defaultdict
 from pathlib import Path
 
 POINTS={'OVS1':8,'OS1':4,'OS2':4,'OS3':4,'OM1':2,'OM2':2,'OM3':2,'OM4':2,
         'OP1':1,'OP2':1,'OP3':1,'OP4':1,'SBVS1':-8,'SBS1':-4,'SBS2':-4,'SBP1':-1,'SBP2':-1}
 PROFILE='strict_sop_2022_with_oncovi_2026_resources'
+REFERENCE_PROFILE='oncovi_2026_reference_99fa580'
 COMMIT='99fa5801163bb6bd32d97e916ca2249bb9429d81'
 
 def clean(value):
@@ -53,6 +54,7 @@ class Resources:
         self.cgi=self.load('cgi_dictionary.txt'); self.hotspots=self.load('single_residue_dict.txt')
         self.indels=self.load('inframe_indel_dict.txt'); self.domains=self.load('domains_dictionary.txt'); self.mutsplice=self.load('mut_splice_dict.txt')
         self.grantham=self._grantham(); self.cgi_residue=defaultdict(list)
+        self.os2_selected={x.strip('"') for x in self.lines('os2_manually_selected.txt')} if (self.root/'os2_manually_selected.txt').exists() else set()
         for key in self.cgi:
             m=re.fullmatch(r'([^:]+):p\.([A-Z])(\d+)([A-Z*])',key)
             if m:self.cgi_residue[(m[1].upper(),m[2],int(m[3]))].append(m[4])
@@ -156,20 +158,52 @@ def evaluate(row,res,tumor_type=''):
     score=sum(x['points'] for x in ev.values()); dual_role=gene in res.tsg and gene in res.ogs
     return score,classify(score),[ev[x] for x in POINTS],dual_role
 
+def evaluate_reference(row,res,strict_evidence):
+    """Compatibility profile for upstream OncoVI commit 99fa580."""
+    ev={x['code']:copy.deepcopy(x) for x in strict_evidence}
+    gene=clean(row.get('SYMBOL')).upper(); consequence=clean(row.get('Consequence')); hgvsc=clean(row.get('HGVSc'))
+    if gene in res.bona_tsg and ('stop_lost' in consequence or ('splice' in consequence and re.search(r'[+-]([1-4])(?:\D|$)',hgvsc))):
+        ev['OVS1']=result('OVS1','met','OncoVI 2026 null/splice operational rule','OncoVI 99fa580')
+    review=clean(row.get('ClinVar_germline_ReviewStatus',row.get('ClinVar_review_status'))).casefold()
+    clinvar=clean(row.get('ClinVar_germline',row.get('CLIN_SIG')))
+    accepted={'practice guideline','reviewed by expert panel','criteria provided, single submitter','criteria provided, multiple submitters, no conflicts'}
+    if review in accepted and (('Pathogenic' in clinvar) or ('Likely pathogenic' in clinvar) or clinvar in res.os2_selected):
+        ev['OS2']=result('OS2','met','ClinVar germline classification and review level meet the upstream OncoVI rule','OncoVI 99fa580',{'classification':clinvar,'review_status':review})
+    else: ev['OS2']=result('OS2','not_met','Upstream OncoVI ClinVar rule is not met','OncoVI 99fa580')
+    if review in accepted and (('Benign' in clinvar) or ('Likely benign' in clinvar)):
+        ev['SBS2']=result('SBS2','met','ClinVar germline classification and review level meet the upstream OncoVI rule','OncoVI 99fa580',{'classification':clinvar,'review_status':review})
+    else: ev['SBS2']=result('SBS2','not_met','Upstream OncoVI ClinVar rule is not met','OncoVI 99fa580')
+    phy=numbers(row.get('phyloP100way_vertebrate_rankscore')); phast=numbers(row.get('phastCons100way_vertebrate_rankscore')); splice=clean(row.get('SpliceAI_cutoff')).upper()
+    damaging=(splice=='PASS') or bool(phy and max(phy)>=.5) or bool(phast and max(phast)>=.5)
+    ev['OP1']=result('OP1','met' if damaging else 'not_met','At least one available upstream predictor supports an effect' if damaging else 'No available upstream predictor supports an effect','OncoVI 99fa580')
+    benign=splice=='FAIL' and bool(phy) and max(phy)<.5 and bool(phast) and max(phast)<.5
+    ev['SBP1']=result('SBP1','met' if benign else 'not_met','All three upstream predictors support no effect' if benign else 'Upstream benign predictor conjunction is not met','OncoVI 99fa580')
+    synonymous='synonymous_variant' in consequence
+    ev['SBP2']=result('SBP2','met' if synonymous and benign else 'not_met','Synonymous and upstream benign predictor conjunction is met' if synonymous and benign else 'Upstream synonymous benign rule is not met','OncoVI 99fa580')
+    ev['OP2']=result('OP2','not_met','OP2 is not implemented by upstream OncoVI because no suitable resource was identified','OncoVI 99fa580')
+    continental=['gnomADe_AFR_AF','gnomADe_EAS_AF','gnomADe_NFE_AF','gnomADe_AMR_AF','gnomADe_SAS_AF','gnomADg_AFR_AF','gnomADg_EAS_AF','gnomADg_NFE_AF','gnomADg_AMR_AF','gnomADg_SAS_AF']
+    pop=[x for k in continental for x in numbers(row.get(k)) if x != 0]
+    ev['SBVS1']=result('SBVS1','met' if pop and max(pop)>.05 else 'not_met','Continental AF exceeds 5%' if pop and max(pop)>.05 else 'No continental AF exceeds 5%','OncoVI 99fa580',max(pop) if pop else None)
+    ev['SBS1']=result('SBS1','met' if pop and max(pop)>.01 else 'not_met','Continental AF exceeds 1%' if pop and max(pop)>.01 else 'No continental AF exceeds 1%','OncoVI 99fa580',max(pop) if pop else None)
+    score=sum(x['points'] for x in ev.values())
+    return score,classify(score),[ev[x] for x in POINTS]
+
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--input',required=True);p.add_argument('--output',required=True);p.add_argument('--summary',required=True);p.add_argument('--resources',required=True);p.add_argument('--tumor-type',default='');a=p.parse_args()
     opener=gzip.open if a.input.endswith(('.gz','.bgz')) else open
     with opener(a.input,'rt',encoding='utf-8',errors='replace') as h:
         reader=csv.DictReader((x for x in h if not x.startswith('##')),delimiter='\t'); fields=reader.fieldnames or []; rows=collapse(list(reader))
-    res=Resources(a.resources); counts=defaultdict(int); review=0
-    extra=['oncogenicity_score','oncogenicity_classification','oncogenicity_criteria','oncogenicity_review_required','oncogenicity_evidence','oncogenicity_profile','oncovi_resource_commit']
+    res=Resources(a.resources); counts=defaultdict(int); reference_counts=defaultdict(int); review=0
+    extra=['oncogenicity_score','oncogenicity_classification','oncogenicity_criteria','oncogenicity_review_required','oncogenicity_evidence','oncogenicity_profile','oncovi_resource_commit','oncovi_2026_score','oncovi_2026_classification','oncovi_2026_criteria','oncovi_2026_evidence','oncovi_2026_profile','oncovi_2026_validation_status','oncogenicity_profile_difference']
     for row in rows:
         score,label,evidence,dual=evaluate(row,res,a.tumor_type); met=[x['code'] for x in evidence if x['status']=='met']; unassessed=[x['code'] for x in evidence if x['status']=='not_assessable']
+        ref_score,ref_label,ref_evidence=evaluate_reference(row,res,evidence); ref_met=[x['code'] for x in ref_evidence if x['status']=='met']
+        strict_status={x['code']:x['status'] for x in evidence}; ref_status={x['code']:x['status'] for x in ref_evidence}; differences=[x for x in POINTS if strict_status[x]!=ref_status[x]]
         required=dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
-        row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT})
-        counts[label]+=1; review+=required
+        row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':'implementation_compatible;published_93_variant_benchmark_pending','oncogenicity_profile_difference':'|'.join(differences)})
+        counts[label]+=1; reference_counts[ref_label]+=1; review+=required
     outopen=gzip.open if a.output.endswith('.gz') else open
     with outopen(a.output,'wt',encoding='utf-8',newline='') as h:
         w=csv.DictWriter(h,fieldnames=fields+extra,delimiter='\t',extrasaction='ignore');w.writeheader();w.writerows(rows)
-    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'variants':len(rows),'classification_counts':dict(counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
+    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':'implementation_compatible;published_93_variant_benchmark_pending','variants':len(rows),'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
 if __name__=='__main__':main()

@@ -56,3 +56,32 @@ def test_ovs1_uses_null_variant_in_bona_fide_tsg():
     assert evidence["OVS1"]["status"] == "met"
     assert score == 9
     assert label == "Likely Oncogenic"
+
+
+def test_oncovi_2026_reference_uses_upstream_predictor_or_rule():
+    _, _, strict, _ = evidence_map({
+        "SYMBOL": "BRAF", "Consequence": "missense_variant", "Amino_acids": "V/E",
+        "Protein_position": "600", "gnomADe_AF": "0.00001",
+        "phyloP100way_vertebrate_rankscore": "0.95", "SpliceAI_cutoff": "FAIL"
+    })
+    score, label, evidence = oncogenicity.evaluate_reference({}, RESOURCES, list(strict.values()))
+    assert {item["code"]: item["status"] for item in evidence}["OP1"] == "not_met"
+
+    row = {"SYMBOL": "BRAF", "Consequence": "missense_variant", "Amino_acids": "V/E",
+           "Protein_position": "600", "gnomADe_AF": "0.00001",
+           "phyloP100way_vertebrate_rankscore": "0.95", "SpliceAI_cutoff": "FAIL"}
+    strict_score, _, strict_evidence, _ = oncogenicity.evaluate(row, RESOURCES)
+    score, label, evidence = oncogenicity.evaluate_reference(row, RESOURCES, strict_evidence)
+    assert strict_score == 5
+    assert score == 6
+    assert label == "Likely Oncogenic"
+
+
+def test_oncovi_2026_reference_reproduces_population_double_counting():
+    row = {"SYMBOL": "BRAF", "Consequence": "missense_variant", "Amino_acids": "V/K",
+           "Protein_position": "600", "gnomADe_AF": "0.2", "gnomADe_EAS_AF": "0.2"}
+    _, _, strict_evidence, _ = oncogenicity.evaluate(row, RESOURCES)
+    _, _, evidence = oncogenicity.evaluate_reference(row, RESOURCES, strict_evidence)
+    statuses = {item["code"]: item["status"] for item in evidence}
+    assert statuses["SBVS1"] == "met"
+    assert statuses["SBS1"] == "met"

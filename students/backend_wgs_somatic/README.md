@@ -33,3 +33,9 @@ upstream reference implementation are recorded in
 `pipeline/resources/oncovi_manifest.json`; in particular, missing functional
 evidence is `not_assessable` and germline ClinVar is not substituted for OS2/SBS2.
 The classification applies only to SNV/small indels, not general SV, CNV, or fusions.
+
+Each row also includes an `oncovi_2026_*` compatibility result following the
+operational decisions in pinned upstream commit `99fa580`, alongside a criteria
+difference list. It is explicitly labelled benchmark-pending until the published
+93-variant SOP data set has been reproduced with pinned annotation/database inputs;
+the compatibility label must not be presented as an independently validated result.

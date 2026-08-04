@@ -22,6 +22,7 @@
     "grantham.tsv",
     "inframe_indel_dict.txt",
     "mut_splice_dict.txt",
+    "os2_manually_selected.txt",
     "ogs_list.txt",
     "single_residue_dict.txt",
     "tsg_list.txt"

@@ -173,10 +173,13 @@ def snv(args):
     write_rows(f'{args.output_prefix}.snv.oncogenic.tsv',fields,oncogenic)
     write_rows(f'{args.output_prefix}.snv.possible_germline.tsv',fields,possible)
     onco_counts={}
+    oncovi_counts={}
     for row in rows:
         label=clean(row.get('oncogenicity_classification'))
         if label:onco_counts[label]=onco_counts.get(label,0)+1
-    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+        ref_label=clean(row.get('oncovi_2026_classification'))
+        if ref_label:oncovi_counts[ref_label]=oncovi_counts.get(ref_label,0)+1
+    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'implementation_compatible;published_93_variant_benchmark_pending','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)
