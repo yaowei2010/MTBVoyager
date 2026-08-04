@@ -8,8 +8,9 @@ POINTS={'OVS1':8,'OS1':4,'OS2':4,'OS3':4,'OM1':2,'OM2':2,'OM3':2,'OM4':2,
         'OP1':1,'OP2':1,'OP3':1,'OP4':1,'SBVS1':-8,'SBS1':-4,'SBS2':-4,'SBP1':-1,'SBP2':-1}
 PROFILE='strict_sop_2022_with_oncovi_2026_resources'
 REFERENCE_PROFILE='oncovi_2026_reference_99fa580'
-REFERENCE_VALIDATION='classification_benchmark_93_of_93;score_exact_81_of_93;criteria_exact_80_of_93;vep112_20260804'
+REFERENCE_VALIDATION='classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804'
 COMMIT='99fa5801163bb6bd32d97e916ca2249bb9429d81'
+AA3={'Ala':'A','Arg':'R','Asn':'N','Asp':'D','Cys':'C','Gln':'Q','Glu':'E','Gly':'G','His':'H','Ile':'I','Leu':'L','Lys':'K','Met':'M','Phe':'F','Pro':'P','Ser':'S','Thr':'T','Trp':'W','Tyr':'Y','Val':'V','Ter':'*'}
 
 def clean(value):
     value=str(value or '').strip()
@@ -45,8 +46,14 @@ def one_letter_change(row):
         if len(ref)==len(alt)==1:return ref.upper(),int(pos),alt.upper()
     hgvsp=clean(row.get('HGVSp'))
     match=re.search(r'p\.([A-Z][a-z]{2})(\d+)([A-Z][a-z]{2}|Ter)',hgvsp)
-    code={'Ala':'A','Arg':'R','Asn':'N','Asp':'D','Cys':'C','Gln':'Q','Glu':'E','Gly':'G','His':'H','Ile':'I','Leu':'L','Lys':'K','Met':'M','Phe':'F','Pro':'P','Ser':'S','Thr':'T','Trp':'W','Tyr':'Y','Val':'V','Ter':'*'}
-    return (code.get(match[1],''),int(match[2]),code.get(match[3],'')) if match else ('',None,'')
+    return (AA3.get(match[1],''),int(match[2]),AA3.get(match[3],'')) if match else ('',None,'')
+
+def protein_key(row):
+    hgvsp=clean(row.get('HGVSp')).split(':')[-1]
+    if hgvsp.startswith('p.'):
+        return re.sub(r'Ala|Arg|Asn|Asp|Cys|Gln|Glu|Gly|His|Ile|Leu|Lys|Met|Phe|Pro|Ser|Thr|Trp|Tyr|Val|Ter',lambda m:AA3[m.group(0)],hgvsp[2:])
+    ref,pos,alt=one_letter_change(row)
+    return f'{ref}{pos}{alt}' if ref and pos and alt else ''
 
 class Resources:
     def __init__(self,root):
@@ -66,6 +73,8 @@ class Resources:
     def _grantham(self):
         with open(self.root/'grantham.tsv',encoding='utf-8') as h:
             r=csv.DictReader(h,delimiter='\t'); return {(x[r.fieldnames[0]],aa):float(x[aa]) for x in r for aa in r.fieldnames[1:] if clean(x[aa])}
+    def grantham_distance(self,ref,alt):
+        return max(self.grantham.get((ref,alt),0),self.grantham.get((alt,ref),0))
 
 def result(code,status,reason,source='',value=None,excluded_by=''):
     item={'code':code,'status':status,'points':POINTS[code] if status=='met' else 0,'reason':reason}
@@ -85,7 +94,7 @@ def evaluate(row,res,tumor_type=''):
     elif gene in res.mutsplice and cdna in res.mutsplice[gene].get(transcript,[]): ev['OVS1']=result('OVS1','met','Experimentally catalogued splice defect in MutSpliceDB','OncoVI MutSpliceDB',cdna)
     else: ev['OVS1']=result('OVS1','not_met','No qualifying null or curated splice consequence')
 
-    cgi_key=f'{gene}:p.{protein}' if protein else ''
+    cgi_protein=protein_key(row); cgi_key=f'{gene}:p.{cgi_protein}' if cgi_protein else ''
     ev['OS1']=result('OS1','met','Exact protein change is in the OncoVI CGI oncogenic seed','OncoVI CGI',cgi_key) if cgi_key in res.cgi else result('OS1','not_met','No exact protein match in the oncogenic seed','OncoVI CGI')
     ev['OS2']=result('OS2','not_assessable','Requires explicitly curated reproducible in-vitro/in-vivo functional evidence; germline ClinVar is not substituted')
 
@@ -121,7 +130,7 @@ def evaluate(row,res,tumor_type=''):
 
     alternatives=res.cgi_residue.get((gene,refaa,pos),[]) if pos else []; comparable=[]
     for known_alt in alternatives:
-        if known_alt!=altaa and (refaa,known_alt) in res.grantham and (refaa,altaa) in res.grantham and res.grantham[(refaa,altaa)]>=res.grantham[(refaa,known_alt)]: comparable.append(known_alt)
+        if known_alt!=altaa and res.grantham_distance(refaa,altaa)>=res.grantham_distance(refaa,known_alt): comparable.append(known_alt)
     blockers=[x for x in ('OS3','OM1') if ev[x]['status']=='met']
     if blockers:ev['OM3']=result('OM3','excluded','OS3 or OM1 already applies',excluded_by='/'.join(blockers))
     elif comparable:ev['OM3']=result('OM3','met','Different oncogenic substitution at the same residue has no greater Grantham distance','OncoVI CGI+Grantham',comparable)
@@ -152,7 +161,7 @@ def evaluate(row,res,tumor_type=''):
                 indel_hit=int(changes.get(change,0) or 0); break
     if ev['OS3']['status']=='met' or ev['OM4']['status']=='met':ev['OP3']=result('OP3','excluded','Higher-priority hotspot evidence already applies',excluded_by='OS3/OM4')
     elif indel_hit is not None and indel_hit<10:ev['OP3']=result('OP3','met','In-frame change occurs fewer than 10 times in Cancer Hotspots','OncoVI Cancer Hotspots',indel_hit)
-    elif hotspot and same<10:ev['OP3']=result('OP3','met','Exact substitution occurs fewer than 10 times at a Cancer Hotspots residue','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
+    elif hotspot and 0<same<10:ev['OP3']=result('OP3','met','Exact substitution occurs between 1 and 9 times at a Cancer Hotspots residue','Cancer Hotspots via OncoVI',{'residue_count':total,'exact_count':same})
     else:ev['OP3']=result('OP3','not_met','No qualifying low-count hotspot evidence','Cancer Hotspots via OncoVI')
 
     af_fields=['gnomADe_AF','gnomADg_AF']; af=[x for k in af_fields for x in numbers(row.get(k))]
@@ -200,6 +209,9 @@ def evaluate_reference(row,res,strict_evidence):
     synonymous='synonymous_variant' in consequence
     ev['SBP2']=result('SBP2','met' if synonymous and benign else 'not_met','Synonymous and upstream benign predictor conjunction is met' if synonymous and benign else 'Upstream synonymous benign rule is not met','OncoVI 99fa580')
     ev['OP2']=result('OP2','not_met','OP2 is not implemented by upstream OncoVI because no suitable resource was identified','OncoVI 99fa580')
+    exome=numbers(row.get('gnomADe_AF')); genome=numbers(row.get('gnomADg_AF'))
+    upstream_op4=(not exome and not genome) or bool(genome and min(genome)<=.01) or bool(exome and min(exome)<=.01)
+    ev['OP4']=result('OP4','met' if upstream_op4 else 'not_met','At least one available gnomAD data set is at most 1%, following upstream ordering' if upstream_op4 else 'Neither available gnomAD data set is at most 1%','OncoVI 99fa580',{'gnomADe_AF':exome,'gnomADg_AF':genome})
     continental=['gnomADe_AFR_AF','gnomADe_EAS_AF','gnomADe_NFE_AF','gnomADe_AMR_AF','gnomADe_SAS_AF','gnomADg_AFR_AF','gnomADg_EAS_AF','gnomADg_NFE_AF','gnomADg_AMR_AF','gnomADg_SAS_AF']
     pop=[x for k in continental for x in numbers(row.get(k)) if x != 0]
     ev['SBVS1']=result('SBVS1','met' if pop and max(pop)>.05 else 'not_met','Continental AF exceeds 5%' if pop and max(pop)>.05 else 'No continental AF exceeds 5%','OncoVI 99fa580',max(pop) if pop else None)

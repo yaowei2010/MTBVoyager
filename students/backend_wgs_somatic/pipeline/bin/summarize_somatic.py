@@ -179,7 +179,7 @@ def snv(args):
         if label:onco_counts[label]=onco_counts.get(label,0)+1
         ref_label=clean(row.get('oncovi_2026_classification'))
         if ref_label:oncovi_counts[ref_label]=oncovi_counts.get(ref_label,0)+1
-    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'classification_benchmark_93_of_93;score_exact_81_of_93;criteria_exact_80_of_93;vep112_20260804','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)

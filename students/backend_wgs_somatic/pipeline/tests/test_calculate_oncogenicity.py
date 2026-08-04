@@ -85,3 +85,26 @@ def test_oncovi_2026_reference_reproduces_population_double_counting():
     statuses = {item["code"]: item["status"] for item in evidence}
     assert statuses["SBVS1"] == "met"
     assert statuses["SBS1"] == "met"
+
+
+def test_op3_requires_the_exact_substitution_to_exist():
+    row = {"SYMBOL": "BRAF", "Consequence": "missense_variant", "Amino_acids": "V/K",
+           "Protein_position": "600", "gnomADe_AF": "0.00001"}
+    _, _, evidence, _ = oncogenicity.evaluate(row, RESOURCES)
+    assert {item["code"]: item["status"] for item in evidence}["OP3"] == "met"
+    row["Amino_acids"] = "V/R"
+    _, _, evidence, _ = oncogenicity.evaluate(row, RESOURCES)
+    assert {item["code"]: item["status"] for item in evidence}["OP3"] == "not_met"
+
+
+def test_frameshift_hgvsp_is_converted_to_one_letter_cgi_key():
+    assert oncogenicity.protein_key({"HGVSp": "NP_006209.2:p.Asn1068LysfsTer5"}) == "N1068Kfs*5"
+
+
+def test_reference_op4_follows_upstream_either_dataset_rule():
+    row={"SYMBOL":"BRAF","Consequence":"missense_variant","Amino_acids":"V/K","Protein_position":"600",
+         "gnomADe_AF":"0.00148","gnomADg_AF":"0.01329"}
+    _,_,strict,_=oncogenicity.evaluate(row,RESOURCES)
+    _,_,reference=oncogenicity.evaluate_reference(row,RESOURCES,strict)
+    assert {item["code"]:item["status"] for item in strict}["OP4"] == "not_met"
+    assert {item["code"]:item["status"] for item in reference}["OP4"] == "met"
