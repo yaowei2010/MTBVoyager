@@ -64,7 +64,17 @@ def install_pipeline() -> Path:
     if not destination.exists():
         temporary = destination.with_name(destination.name + ".tmp")
         shutil.rmtree(temporary, ignore_errors=True)
-        shutil.copytree(source, temporary)
+        # The image may contain Nextflow artefacts from pipeline validation.
+        # Work entries commonly contain absolute symlinks and must never become
+        # part of the immutable pipeline installation used by platform jobs.
+        shutil.copytree(
+            source,
+            temporary,
+            ignore=shutil.ignore_patterns(
+                "work", ".nextflow", ".nextflow.log*", "results",
+                "dag-*.html", "report-*.html", "timeline-*.html", "trace-*.txt",
+            ),
+        )
         os.replace(temporary, destination)
     return destination
 
@@ -74,4 +84,3 @@ def tsv_rows(path: Path, limit: int = 10000):
         return []
     with path.open(encoding="utf-8", errors="replace", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))[:limit]
-
