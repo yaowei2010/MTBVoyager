@@ -87,6 +87,7 @@ services:
       WGS_VEP_FORK_PER_SHARD: "${WGS_VEP_FORK_PER_SHARD:-6}"
       WGS_CANCER_DB: "${DATA_ROOT}/VEP/20241126Mondodatabase"
       WGS_ANNOTSV_ANNOTATIONS: "${DATA_ROOT}/annotsv/database/Annotations_Human"
+      WGS_ONCOVI_RESOURCES: "${DATA_ROOT}/oncovi/99fa5801163bb6bd32d97e916ca2249bb9429d81/resources"
       MONDO_TERMS_TSV: "${DATA_ROOT}/mondo/mondo_terms.tsv"
       MONDO_GENE_ASSOCIATIONS_TSV: "${DATA_ROOT}/mondo/mondo_gene_associations.tsv"
       MONDO_RELEASE_FILE: "${DATA_ROOT}/mondo/release.json"
