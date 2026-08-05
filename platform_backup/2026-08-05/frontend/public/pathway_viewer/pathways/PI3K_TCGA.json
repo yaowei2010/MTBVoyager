@@ -1,0 +1,1 @@
+{"elements": {"nodes": [{"data": {"id": "PIK3CA", "label": "PIK3CA"}}, {"data": {"id": "PTEN", "label": "PTEN"}}, {"data": {"id": "TSC2", "label": "TSC2"}}, {"data": {"id": "AKT1", "label": "AKT1"}}], "edges": [{"data": {"source": "PTEN", "target": "PIK3CA"}}, {"data": {"source": "PIK3CA", "target": "AKT1"}}, {"data": {"source": "AKT1", "target": "TSC2"}}]}}

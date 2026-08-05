@@ -1,0 +1,65 @@
+{
+  "name": "LUAD-2014-Oxidative-stress-response-pathway",
+  "nodes": [
+    {
+      "id": "x6qal2M_6fp6",
+      "name": "KEAP1",
+      "type": "GENE",
+      "parent": null,
+      "x": 292,
+      "y": 147,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "3OAnmFLj6kBV",
+      "name": "NFE2L2",
+      "type": "GENE",
+      "parent": null,
+      "x": 381,
+      "y": 244,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ax7M8UNp6gH0",
+      "name": "CUL3",
+      "type": "GENE",
+      "parent": null,
+      "x": 460,
+      "y": 147,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "qQRuLibB6k26",
+      "name": "Oxidative stress response",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 381,
+      "y": 345,
+      "width": 174,
+      "height": 24
+    }
+  ],
+  "edges": [
+    {
+      "id": "puzswCQS65LP",
+      "source": "x6qal2M_6fp6",
+      "target": "3OAnmFLj6kBV",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "ASasYVxW65_T",
+      "source": "ax7M8UNp6gH0",
+      "target": "3OAnmFLj6kBV",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "5XC9ZlAR67EJ",
+      "source": "3OAnmFLj6kBV",
+      "target": "qQRuLibB6k26",
+      "type": "INHIBITS"
+    }
+  ]
+}

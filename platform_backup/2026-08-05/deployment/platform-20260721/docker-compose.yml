@@ -1,0 +1,119 @@
+name: ncku-genomics-platform
+
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Taipei
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  db_restore_public:
+    profiles: ["restore"]
+    image: postgres:16
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./database/platform_public_20260721.dump:/dump/platform_public.dump:ro
+      - ./dbrestore_work:/work
+    command:
+      - bash
+      - -lc
+      - |
+        set -euo pipefail
+        if psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} -tAc \
+          "SELECT to_regclass('public.blacklist_ori')" | grep -q blacklist_ori; then
+          echo "[restore] database already contains platform data; skipped"
+          exit 0
+        fi
+        pg_restore -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} \
+          --no-owner --no-acl --exit-on-error /dump/platform_public.dump
+        echo "[restore] completed"
+    restart: "no"
+
+  backend:
+    image: takeshi945/nckumtb:backend-wgs-germline-20260721
+    pull_policy: never
+    build:
+      context: ./backend_wgs
+      dockerfile: Dockerfile
+    working_dir: /miRTI
+    command: ["bash", "-lc", "python manage.py runserver 0.0.0.0:8217"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HOST_VEP_DIR: ${DATA_ROOT}/VEP
+      HOST_TMP_DIR: ${DATA_ROOT}/tmp
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_DB: ${POSTGRES_DB}
+      PG_USER: ${POSTGRES_USER}
+      PG_PW: ${POSTGRES_PASSWORD}
+      WGS_DATA_ROOT: ${DATA_ROOT}/wgs_germline
+      WGS_REFERENCE_FASTA: ${WGS_REFERENCE_ROOT}/hg38.fa
+      WGS_VEP_CACHE: ${DATA_ROOT}/VEP/database
+      WGS_VEP_PLUGIN_DATA: ${DATA_ROOT}/VEP/database/Plugins
+      WGS_VEP_PLUGIN_ARGS: ${WGS_VEP_PLUGIN_ARGS}
+      WGS_VEP_MAX_PARALLEL: ${WGS_VEP_MAX_PARALLEL:-8}
+      WGS_VEP_FORK_PER_SHARD: ${WGS_VEP_FORK_PER_SHARD:-3}
+      MONDO_TERMS_TSV: ${DATA_ROOT}/mondo/mondo_terms.tsv
+      MONDO_GENE_ASSOCIATIONS_TSV: ${DATA_ROOT}/mondo/mondo_gene_associations.tsv
+      MONDO_RELEASE_FILE: ${DATA_ROOT}/mondo/release.json
+      LITERATURE_RAG_DB: ${DATA_ROOT}/literature_rag/literature.sqlite3
+      LITERATURE_LLM_URL: http://literature_llm:8080/v1/chat/completions
+      LITERATURE_LLM_MODEL: ${LITERATURE_LLM_MODEL:-local-medical-instruct}
+      NCBI_EMAIL: ${NCBI_EMAIL:-}
+    volumes:
+      - ${DATA_ROOT}/VEP:/VEP
+      - ${DATA_ROOT}/annovar/annovar:/annovar
+      - ${DATA_ROOT}/annotsv:/annotsv
+      - ${DATA_ROOT}/media:/miRTI/media
+      - ${DATA_ROOT}/tmp:${DATA_ROOT}/tmp
+      - ${DATA_ROOT}:${DATA_ROOT}
+      - ${WGS_REFERENCE_ROOT}:${WGS_REFERENCE_ROOT}:ro
+      - ${DATA_ROOT}/backend/db.sqlite3:/miRTI/db.sqlite3
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+  literature_llm:
+    profiles: ["literature-llm"]
+    image: ghcr.io/ggml-org/llama.cpp:server
+    container_name: literature_llm
+    command: ["-m", "/models/${LITERATURE_LLM_MODEL_FILE:-model.gguf}", "--host", "0.0.0.0", "--port", "8080", "-c", "8192", "-t", "${LITERATURE_LLM_THREADS:-16}"]
+    volumes:
+      - ${LITERATURE_MODEL_ROOT:-./models}:/models:ro
+    restart: unless-stopped
+
+  wgs_tools:
+    profiles: ["build-only"]
+    image: ncku-wgs-python:20260721
+    pull_policy: never
+    build:
+      context: ./backend_wgs
+      dockerfile: Dockerfile.tools
+    command: ["python", "--version"]
+
+  frontend:
+    image: takeshi945/nckumtb:frontend-clinical-ui-20260721
+    pull_policy: never
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3002}:80"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

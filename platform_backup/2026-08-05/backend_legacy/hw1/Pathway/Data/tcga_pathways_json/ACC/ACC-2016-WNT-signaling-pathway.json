@@ -1,0 +1,81 @@
+{
+  "name": "ACC-2016-WNT-signaling-pathway",
+  "nodes": [
+    {
+      "id": "aS-MtgKvdBTI",
+      "name": "CTNNB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 396,
+      "y": 371,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "WoDJQ15LdCGw",
+      "name": "MEN1",
+      "type": "GENE",
+      "parent": null,
+      "x": 615,
+      "y": 371,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "quRewaVqdAAg",
+      "name": "APC",
+      "type": "GENE",
+      "parent": null,
+      "x": 396,
+      "y": 277,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "g2oPjTN1c_MF",
+      "name": "WNT",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 396,
+      "y": 183,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "D1VT3C7Tc9uz",
+      "name": "ZNRF3",
+      "type": "GENE",
+      "parent": null,
+      "x": 396,
+      "y": 87,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "mcDc9E8ddKPh",
+      "source": "WoDJQ15LdCGw",
+      "target": "aS-MtgKvdBTI",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "xhr-qCdhdMnS",
+      "source": "g2oPjTN1c_MF",
+      "target": "quRewaVqdAAg",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "MRNaHfmqdLIB",
+      "source": "quRewaVqdAAg",
+      "target": "aS-MtgKvdBTI",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "V58DLRlddN04",
+      "source": "D1VT3C7Tc9uz",
+      "target": "g2oPjTN1c_MF",
+      "type": "INHIBITS"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "name": "LUAD-2014-Histone-modification-pathway",
+  "nodes": [
+    {
+      "id": "TEmP07vg8mqu",
+      "name": "SETD2",
+      "type": "GENE",
+      "parent": null,
+      "x": 678,
+      "y": 182,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ZC3AHrzf8h-f",
+      "name": "ARID1B",
+      "type": "GENE",
+      "parent": null,
+      "x": 379,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "oQNlmw1I8ng2",
+      "name": "Histone methylation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 678,
+      "y": 333,
+      "width": 138,
+      "height": 24
+    },
+    {
+      "id": "UWhx7SxC8jmN",
+      "name": "ARID2",
+      "type": "GENE",
+      "parent": null,
+      "x": 226,
+      "y": 244,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "0ddAggf58hhA",
+      "name": "ARID1A",
+      "type": "GENE",
+      "parent": null,
+      "x": 226,
+      "y": 168,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "kv9VBnuH8l5E",
+      "name": "Nucleosome remodeling",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 306,
+      "y": 341,
+      "width": 150,
+      "height": 24
+    },
+    {
+      "id": "6xqXYMOE8kSp",
+      "name": "SMARCA4",
+      "type": "GENE",
+      "parent": null,
+      "x": 379,
+      "y": 244,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "7D5lYDIi83WM",
+      "source": "ZC3AHrzf8h-f",
+      "target": "kv9VBnuH8l5E",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "C0gJJbpq84Fz",
+      "source": "6xqXYMOE8kSp",
+      "target": "kv9VBnuH8l5E",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "_MCNndis82m-",
+      "source": "UWhx7SxC8jmN",
+      "target": "kv9VBnuH8l5E",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "fc6_K-lT85Yv",
+      "source": "TEmP07vg8mqu",
+      "target": "oQNlmw1I8ng2",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "PkwUIXyU81xJ",
+      "source": "0ddAggf58hhA",
+      "target": "kv9VBnuH8l5E",
+      "type": "ACTIVATES"
+    }
+  ]
+}

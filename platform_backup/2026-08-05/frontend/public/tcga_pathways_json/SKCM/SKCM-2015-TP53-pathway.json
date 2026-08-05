@@ -1,0 +1,97 @@
+{
+  "name": "SKCM-2015-TP53-pathway",
+  "nodes": [
+    {
+      "id": "Tc8UdIhSLCIT",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 289,
+      "y": 372,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "GBRktWHeLBFQ",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 381,
+      "y": 273,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-VggHhz9K-1w",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 381,
+      "y": 193,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "B3XBHs3yK9o7",
+      "name": "CDKN2B",
+      "type": "GENE",
+      "parent": null,
+      "x": 456,
+      "y": 108,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "cLoUlZOZLD0x",
+      "name": "Senescence",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 456,
+      "y": 372,
+      "width": 84,
+      "height": 24
+    },
+    {
+      "id": "hml0YQ9_K8tc",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 289,
+      "y": 108,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "gBzu2KRcLSuV",
+      "source": "B3XBHs3yK9o7",
+      "target": "-VggHhz9K-1w",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "XenUWWntLTzX",
+      "source": "-VggHhz9K-1w",
+      "target": "GBRktWHeLBFQ",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "WNkolmuaLVxV",
+      "source": "GBRktWHeLBFQ",
+      "target": "cLoUlZOZLD0x",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "N3sY9gBuLVHA",
+      "source": "GBRktWHeLBFQ",
+      "target": "Tc8UdIhSLCIT",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "2r21RRvbLR21",
+      "source": "hml0YQ9_K8tc",
+      "target": "-VggHhz9K-1w",
+      "type": "INHIBITS"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "benchmark": "Official OncoVI SOP_table_union frozen example output",
+  "date_utc": "2026-08-04",
+  "oncovi_commit": "99fa5801163bb6bd32d97e916ca2249bb9429d81",
+  "annotation": "Ensembl VEP 112 with platform dbNSFP, AlphaMissense, PrimateAI and SpliceAI plugins",
+  "expected_variants": 93,
+  "observed_variants": 93,
+  "classification_exact": 93,
+  "classification_concordance": 1.0,
+  "score_exact": 86,
+  "criteria_exact": 85,
+  "criteria_discordant": 8,
+  "interpretation": "Classification reproduction passed. After correcting transcript selection, OP3 exact-count handling, symmetric Grantham lookup, frameshift HGVS conversion, and the upstream OP4 rule, the remaining eight criteria differences are limited to OM3/OM4 and reflect drift between the frozen upstream Excel and the CGI/resource content currently shipped at the pinned repository commit. This is not the paper's accuracy against manual SOP ground truth.",
+  "sha256": {
+    "SOP_table_union.txt": "5afd72dad2694ba409d9b36682f36fb5c3203e7eea75b093e21e2e74e7536cfb",
+    "SOP_table_union_OncoVI_prediction.xlsx": "aa83393e556c5a10e8d0119e2de233eacdec3b0fcc6f2544b3e2e1a40e7ddc49",
+    "platform_vep_tsv_gz": "64052a77216f7290fa3bb4dde16bee2e3c639544c3371f86e64abf73f2f3c0d0",
+    "benchmark_input_tsv": "1e2b6658f8a8946e82a8f1f207864c6f64e06c2ffbe6c9deef1902a9372c31c2",
+    "observed_output_tsv": "43fa0d6b1bf531aba339fb8ea020ab68312ad35dbd526a96eda74eec49f56b3b"
+  }
+}

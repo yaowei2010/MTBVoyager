@@ -1,0 +1,269 @@
+{
+  "name": "BLCA-2014-Histone-modification-pathway",
+  "nodes": [
+    {
+      "id": "ibAwJma20izY",
+      "name": "KDM1A",
+      "type": "GENE",
+      "parent": null,
+      "x": 330,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "UdMq7kedz9FO",
+      "name": "K9 (Ac, me1-3)",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 441,
+      "y": 185,
+      "width": 108,
+      "height": 24
+    },
+    {
+      "id": "6Itl25k-0F3S",
+      "name": "K4 (me1-3)",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 214,
+      "y": 185,
+      "width": 84,
+      "height": 24
+    },
+    {
+      "id": "KGmluEtPHXqp",
+      "name": "KDM6B",
+      "type": "GENE",
+      "parent": "_aOp5kW01GfD",
+      "x": 685,
+      "y": 332,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "5_51HfxoHY9n",
+      "name": "KDM4B",
+      "type": "GENE",
+      "parent": "WWAQi_-h1FbJ",
+      "x": 500,
+      "y": 329,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "_L15u0RJ0Eq5",
+      "name": "H3",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 1128,
+      "y": 185,
+      "width": 36,
+      "height": 24
+    },
+    {
+      "id": "yE8mFlUU0AcJ",
+      "name": "K36 (me1-3)",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 785,
+      "y": 185,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "f-uYX8eW0o-j",
+      "name": "KDM1B",
+      "type": "GENE",
+      "parent": null,
+      "x": 330,
+      "y": 338,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "qU2DuUfoz_fU",
+      "name": "K27 (Ac, me1-3)",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 612,
+      "y": 185,
+      "width": 114,
+      "height": 24
+    },
+    {
+      "id": "sGOXj0dB0CoY",
+      "name": "K79 (me1-3)",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 945,
+      "y": 185,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "ZN4FWAEl0yGP",
+      "name": "KDM4A",
+      "type": "GENE",
+      "parent": null,
+      "x": 859,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "2NfOJGRNHYQB",
+      "name": "KDM5B",
+      "type": "GENE",
+      "parent": "NnEeq-Df1E_j",
+      "x": 151,
+      "y": 333,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "w2_Nlv2xHY9d",
+      "name": "KDM4A",
+      "type": "GENE",
+      "parent": "WWAQi_-h1FbJ",
+      "x": 500,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "HX269Het1CgI",
+      "name": "Demethylases",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 1107,
+      "y": 280,
+      "width": 96,
+      "height": 24
+    },
+    {
+      "id": "WWAQi_-h1FbJ",
+      "name": "KDM4A-KDM4B",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": 500,
+      "y": 304,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "NnEeq-Df1E_j",
+      "name": "KDM5A-KDM5B",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": 151,
+      "y": 306,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "tsbexFtHHXqU",
+      "name": "KDM6A",
+      "type": "GENE",
+      "parent": "_aOp5kW01GfD",
+      "x": 685,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ZGtryZF-HYPy",
+      "name": "KDM5A",
+      "type": "GENE",
+      "parent": "NnEeq-Df1E_j",
+      "x": 151,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "_aOp5kW01GfD",
+      "name": "KDM6A-KDM6B",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": 685,
+      "y": 306,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "QFzccFLP1rXn",
+      "source": "UdMq7kedz9FO",
+      "target": "qU2DuUfoz_fU",
+      "type": "BINDS"
+    },
+    {
+      "id": "1iLfbX2611ie",
+      "source": "sGOXj0dB0CoY",
+      "target": "_L15u0RJ0Eq5",
+      "type": "BINDS"
+    },
+    {
+      "id": "KtQPDuFH2B4M",
+      "source": "NnEeq-Df1E_j",
+      "target": "6Itl25k-0F3S",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "1ufB4tsp2MbY",
+      "source": "ZN4FWAEl0yGP",
+      "target": "yE8mFlUU0AcJ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "F6Hoq3VR2Fbi",
+      "source": "ibAwJma20izY",
+      "target": "6Itl25k-0F3S",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "c5Dw1pvh2GJ7",
+      "source": "ibAwJma20izY",
+      "target": "UdMq7kedz9FO",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "B85D8ro61xLn",
+      "source": "yE8mFlUU0AcJ",
+      "target": "sGOXj0dB0CoY",
+      "type": "BINDS"
+    },
+    {
+      "id": "e_aGaIGw1pWA",
+      "source": "6Itl25k-0F3S",
+      "target": "UdMq7kedz9FO",
+      "type": "BINDS"
+    },
+    {
+      "id": "EVjpyavJ2DfI",
+      "source": "f-uYX8eW0o-j",
+      "target": "6Itl25k-0F3S",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "f0P9R0dZ2J5O",
+      "source": "_aOp5kW01GfD",
+      "target": "qU2DuUfoz_fU",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "g_eFQ6zG2Hu-",
+      "source": "WWAQi_-h1FbJ",
+      "target": "UdMq7kedz9FO",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "T1GuzceK1uZK",
+      "source": "qU2DuUfoz_fU",
+      "target": "yE8mFlUU0AcJ",
+      "type": "BINDS"
+    }
+  ]
+}

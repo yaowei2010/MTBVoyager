@@ -1,0 +1,97 @@
+{
+  "name": "COADREAD-2012-TP53-pathway",
+  "nodes": [
+    {
+      "id": "FD2DCZc_8Eck",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 569,
+      "y": 199,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "2LzUgOci77hf",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 386,
+      "y": 239,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "eArivqeT78y7",
+      "name": "DNA replication stress",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 204,
+      "y": 145,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "B4xPctkP764L",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 386,
+      "y": 145,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "R-scgH-q793l",
+      "name": "Oncogenic stress",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 204,
+      "y": 239,
+      "width": 120,
+      "height": 24
+    },
+    {
+      "id": "ltgdAJkI8Hs-",
+      "name": "Cell survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 569,
+      "y": 266,
+      "width": 102,
+      "height": 24
+    }
+  ],
+  "edges": [
+    {
+      "id": "igOuMrr-QXvV",
+      "source": "R-scgH-q793l",
+      "target": "2LzUgOci77hf",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "WlE3wQIvQdms",
+      "source": "2LzUgOci77hf",
+      "target": "ltgdAJkI8Hs-",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "nfX2BMaKQcgf",
+      "source": "2LzUgOci77hf",
+      "target": "FD2DCZc_8Eck",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "gVpKeF6ZQW1o",
+      "source": "eArivqeT78y7",
+      "target": "B4xPctkP764L",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "KXWREHzWQaXR",
+      "source": "B4xPctkP764L",
+      "target": "2LzUgOci77hf",
+      "type": "ACTIVATES"
+    }
+  ]
+}

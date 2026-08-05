@@ -1,0 +1,161 @@
+{
+  "name": "TGF-Beta",
+  "nodes": [
+    {
+      "id": "0qBZliXOfmft",
+      "name": "SMAD2",
+      "type": "GENE",
+      "parent": "Xkk8SKlafmfn",
+      "x": 335,
+      "y": 410,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Xkk8SKlafmfn",
+      "name": "SMAD",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 424,
+      "y": 446,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "t_Q1Nr-BfmfR",
+      "name": "Activin ligands",
+      "type": "GENE",
+      "parent": null,
+      "x": 509,
+      "y": 146,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "9Ev1i-2HfmfX",
+      "name": "ACVR2B",
+      "type": "GENE",
+      "parent": "boabbY81fmfT",
+      "x": 508,
+      "y": 307,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "fXKkJObYfmfb",
+      "name": "TGFBR",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 329,
+      "y": 277,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "_sm7432ofmfV",
+      "name": "ACVR2A",
+      "type": "GENE",
+      "parent": "boabbY81fmfT",
+      "x": 509,
+      "y": 244,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "gepyfePvfmfz",
+      "name": "SMAD3",
+      "type": "GENE",
+      "parent": "Xkk8SKlafmfn",
+      "x": 514,
+      "y": 410,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "DOJnFoHNfmfi",
+      "name": "TGFBR2",
+      "type": "GENE",
+      "parent": "fXKkJObYfmfb",
+      "x": 329,
+      "y": 311,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "gOOpkueqfmfM",
+      "name": "TGFB ligands",
+      "type": "GENE",
+      "parent": null,
+      "x": 329,
+      "y": 146,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "boabbY81fmfT",
+      "name": "ACVR2",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 508,
+      "y": 275,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Sb4zGrL3fmfe",
+      "name": "TGFBR1",
+      "type": "GENE",
+      "parent": "fXKkJObYfmfb",
+      "x": 329,
+      "y": 244,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "A7jMDR2Mfmf-",
+      "name": "Proliferation, stem/progenitor phenotype",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 427,
+      "y": 588,
+      "width": 264,
+      "height": 24
+    },
+    {
+      "id": "OKApI7Qwfmf4",
+      "name": "SMAD4",
+      "type": "GENE",
+      "parent": "Xkk8SKlafmfn",
+      "x": 428,
+      "y": 483,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "7FzJ455ZfmgP",
+      "source": "boabbY81fmfT",
+      "target": "Xkk8SKlafmfn",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "WEH0_CRqfmgL",
+      "source": "fXKkJObYfmfb",
+      "target": "Xkk8SKlafmfn",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "hnOBi-Z1fmgI",
+      "source": "t_Q1Nr-BfmfR",
+      "target": "boabbY81fmfT",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "Ax3S1Kd8fmgE",
+      "source": "gOOpkueqfmfM",
+      "target": "fXKkJObYfmfb",
+      "type": "ACTIVATES"
+    }
+  ]
+}

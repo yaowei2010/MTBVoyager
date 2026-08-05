@@ -1,0 +1,223 @@
+{
+  "name": "UCEC-2013-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "ZAPqdjSDgCgU",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 391,
+      "y": 148,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "BXxulVFjgHIs",
+      "name": "SOX17",
+      "type": "GENE",
+      "parent": null,
+      "x": 227,
+      "y": 344,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "76Wg78V_gDdz",
+      "name": "KRAS",
+      "type": "GENE",
+      "parent": null,
+      "x": 391,
+      "y": 260,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "soh0TxsPgq1P",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 803,
+      "y": 409,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "Qha2pMPigm3R",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 1085,
+      "y": 215,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "0L6ulMimgteS",
+      "name": "Translation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 1056,
+      "y": 409,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "MsHCffb6gNY_",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 391,
+      "y": 515,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "i1tsajIagMAh",
+      "name": "CTNNB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 391,
+      "y": 430,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "OJ-s2c_vgnZa",
+      "name": "PIK3R1",
+      "type": "GENE",
+      "parent": null,
+      "x": 1085,
+      "y": 295,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "wXwgUTNkgFnQ",
+      "name": "GSK3B",
+      "type": "GENE",
+      "parent": null,
+      "x": 391,
+      "y": 344,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "57SvZmLzgKXg",
+      "name": "FBXW7",
+      "type": "GENE",
+      "parent": null,
+      "x": 557,
+      "y": 344,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "NI-5QJa7gr4W",
+      "name": "Cell survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 935,
+      "y": 409,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "Y1idRwsY3N1k",
+      "name": "ERBB2",
+      "type": "GENE",
+      "parent": "ZAPqdjSDgCgU",
+      "x": 469,
+      "y": 148,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "sJDwUf9sgpI_",
+      "name": "PIK3CA",
+      "type": "GENE",
+      "parent": null,
+      "x": 915,
+      "y": 256,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "M56YC0J03N1R",
+      "name": "FGFR2",
+      "type": "GENE",
+      "parent": "ZAPqdjSDgCgU",
+      "x": 313,
+      "y": 148,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "pauS7C64g9TO",
+      "source": "OJ-s2c_vgnZa",
+      "target": "sJDwUf9sgpI_",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "9ZMCIs5Ygf4j",
+      "source": "wXwgUTNkgFnQ",
+      "target": "i1tsajIagMAh",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "BXhEIXgdhBkV",
+      "source": "sJDwUf9sgpI_",
+      "target": "0L6ulMimgteS",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "DLrHfIVSgegJ",
+      "source": "76Wg78V_gDdz",
+      "target": "wXwgUTNkgFnQ",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "y_ifcFbCgcdH",
+      "source": "ZAPqdjSDgCgU",
+      "target": "76Wg78V_gDdz",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "F5LjanELggnD",
+      "source": "BXxulVFjgHIs",
+      "target": "i1tsajIagMAh",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "2-tF8Ncmgiab",
+      "source": "i1tsajIagMAh",
+      "target": "MsHCffb6gNY_",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "tJv0DWt8g-nF",
+      "source": "sJDwUf9sgpI_",
+      "target": "soh0TxsPgq1P",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "rps45EGCg_aW",
+      "source": "sJDwUf9sgpI_",
+      "target": "NI-5QJa7gr4W",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "w8Id1r73g8Xz",
+      "source": "Qha2pMPigm3R",
+      "target": "sJDwUf9sgpI_",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "daN2ajyqghSz",
+      "source": "57SvZmLzgKXg",
+      "target": "i1tsajIagMAh",
+      "type": "INHIBITS"
+    }
+  ]
+}

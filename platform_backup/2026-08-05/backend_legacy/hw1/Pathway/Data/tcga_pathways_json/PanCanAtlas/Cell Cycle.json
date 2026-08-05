@@ -1,0 +1,205 @@
+{
+  "name": "Cell Cycle",
+  "nodes": [
+    {
+      "id": "xPwjUPwi3Y86",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 413,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "FQbPaPlV3Y9Q",
+      "name": "CDKN1A",
+      "type": "GENE",
+      "parent": null,
+      "x": 526,
+      "y": 264,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "_Honmyd33Y9K",
+      "name": "FBXW7",
+      "type": "GENE",
+      "parent": null,
+      "x": 625,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Kf3hsGsT3Y9F",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 264,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yazwmMvz3Y8y",
+      "name": "Cell cycle progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 414,
+      "y": 436,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "4-ZVTw8b3Y81",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": null,
+      "x": 414,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "SwnDUEnB3Y8_",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 689,
+      "y": 264,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "AFGazwPj3Y9U",
+      "name": "RB1",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 219,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "b7YoPaEx3Y88",
+      "name": "E2F3",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "E6EgzvEy3Y9C",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "mIL53nP63Y83",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 605,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4fc8CUod3Y9N",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 605,
+      "y": 85,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "3H557euy3Y9b",
+      "source": "_Honmyd33Y9K",
+      "target": "4-ZVTw8b3Y81",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "rC-lNx0W3Y9d",
+      "source": "AFGazwPj3Y9U",
+      "target": "b7YoPaEx3Y88",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "Qm2ZEnCl3Y9Z",
+      "source": "Kf3hsGsT3Y9F",
+      "target": "AFGazwPj3Y9U",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "pPO3_YVM3Y9e",
+      "source": "E6EgzvEy3Y9C",
+      "target": "Kf3hsGsT3Y9F",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "pGNnucwd3Y9g",
+      "source": "mIL53nP63Y83",
+      "target": "xPwjUPwi3Y86",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "ygTYWu2k3Y9k",
+      "source": "E6EgzvEy3Y9C",
+      "target": "xPwjUPwi3Y86",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "tq-BTuks3Y9i",
+      "source": "FQbPaPlV3Y9Q",
+      "target": "4-ZVTw8b3Y81",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "HPSR11Er3Y9b",
+      "source": "mIL53nP63Y83",
+      "target": "FQbPaPlV3Y9Q",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "h7AyF28j3Y9n",
+      "source": "mIL53nP63Y83",
+      "target": "SwnDUEnB3Y8_",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "vYHEvpqL3Y9f",
+      "source": "4fc8CUod3Y9N",
+      "target": "mIL53nP63Y83",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "4ELiZPT23Y9j",
+      "source": "4-ZVTw8b3Y81",
+      "target": "AFGazwPj3Y9U",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "jDEpTZhK3Y9X",
+      "source": "b7YoPaEx3Y88",
+      "target": "yazwmMvz3Y8y",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "_gVnliZV3Y9a",
+      "source": "xPwjUPwi3Y86",
+      "target": "mIL53nP63Y83",
+      "type": "INHIBITS"
+    }
+  ]
+}

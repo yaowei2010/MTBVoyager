@@ -1,0 +1,40 @@
+from django.urls import path
+from . import views,record_delete,find_db,analysis_cosmic,knotannotsv_url
+
+urlpatterns = [
+    path('api', views.search_page,name='api'),
+    
+    path('save_info/test', views.save_info, name='save_info'),  
+    path('job_list', views.show_job_list, name='show_job_list'),  
+    path('select_job', views.select_job_for_interpretation, name='select_job_for_interpretation'), 
+    path('api_test/test', views.api_test,name='api_test'),
+    path('api_test', views.api_page,name='api_page'),
+    path('react_send_page1',views.react_send_page1,name='react_send_page1'),  
+    path('react_send_page2',views.react_send_page2,name='react_send_page2'),
+    path('react_send_page3',views.react_send_page3,name='react_send_page3'),
+    path('react_send_page4',views.react_send_page4,name='react_send_page4'),
+    path('react_send_page5',views.react_send_page5,name='react_send_page5'),
+    path('known_pathogenic_to_json',record_delete.known_pathogenic_to_json,name='known_pathogenic_to_json'),
+    path('other_variant', record_delete.other_variant, name='other_variant'),
+    path('predicted_suspect_variant',record_delete.predicted_suspect_variant,name='predicted_suspect_variant'),
+    path('incidental_finding_variant',record_delete.incidental_finding_variant,name='incidental_finding_variant'),
+    path('drug_response_variant',record_delete.drug_response_variant,name='drug_response_variant'),
+    path('get_newjobid',record_delete.get_newjobid,name='get_newjobid'),
+    path('delete_job',record_delete.delete_job,name='delete_job'),
+    path('vep_test_page4',views.vep_test_page4,name='vep_test_page4'),
+    path('get_summary_info',record_delete.get_summary_info,name='get_summary_info'),
+    path('get_summary_info_somatic',record_delete.get_summary_info_somatic,name='get_summary_info_somatic'),
+    path('summary_page',record_delete.summary_page,name='summary_page'),
+    path('summary_page_somatic',record_delete.summary_page_somatic,name='summary_page_somatic'),
+    path('somatic_result',find_db.somatic_result,name='somatic_result'),
+    path('read_heredity',find_db.read_heredity,name='read_heredity'),
+    path('read_cosmic',find_db.read_cosmic,name='read_cosmic'),
+    path('read_suspect',find_db.read_suspect,name='read_suspect'),
+    path('read_germline_prediction',find_db.read_germline_prediction,name='read_germline_prediction'),
+    path('analysis_cosmic',analysis_cosmic.process_cosmic,name='analysis_cosmic'),
+    path('mutisnp_civic',analysis_cosmic.mutisnp_civic,name='mutisnp_civic'),
+    path('mutation_signature',analysis_cosmic.mutation_signature,name='mutation_signature'),
+    path('postgresql',analysis_cosmic.postgresql,name='postgresql'),
+    path('knotannotsv_url',knotannotsv_url.knotannotsv1,name='knotannotsv_url'),
+
+]

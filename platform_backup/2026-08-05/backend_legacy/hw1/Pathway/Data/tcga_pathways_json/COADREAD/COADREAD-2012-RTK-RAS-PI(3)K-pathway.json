@@ -1,0 +1,261 @@
+{
+  "name": "COADREAD-2012-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "ZvdL-fZM3WuZ",
+      "name": "IRS2",
+      "type": "GENE",
+      "parent": null,
+      "x": 189,
+      "y": 452,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "MBUXnNN2z5Dt",
+      "name": "PIK3CA",
+      "type": "GENE",
+      "parent": "aDGGPsUl3doC",
+      "x": 189,
+      "y": 525,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "rKR_2SY2z0N3",
+      "name": "KRAS",
+      "type": "GENE",
+      "parent": "D6EmJIZx6Gzg",
+      "x": 555,
+      "y": 462,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "StF--npjzyS_",
+      "name": "ERBB2",
+      "type": "GENE",
+      "parent": "js1qiakd6GP4",
+      "x": 404,
+      "y": 298,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Wv-EmNFT15yN",
+      "name": "IGF2",
+      "type": "GENE",
+      "parent": null,
+      "x": 189,
+      "y": 298,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "aDGGPsUl3doC",
+      "name": "PI3K",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 110,
+      "y": 526,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "PUJ8AKki53pG",
+      "name": "BRAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 479,
+      "y": 549,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8s1jKwvjz0Nm",
+      "name": "NRAS",
+      "type": "GENE",
+      "parent": "D6EmJIZx6Gzg",
+      "x": 406,
+      "y": 462,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1UmcnGh24P6f",
+      "name": "Cell survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 323,
+      "y": 697,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "dg3Vl9qGzyTZ",
+      "name": "ERBB3",
+      "type": "GENE",
+      "parent": "js1qiakd6GP4",
+      "x": 556,
+      "y": 300,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "cYzz8jlS2HaK",
+      "name": "IGF1R",
+      "type": "GENE",
+      "parent": null,
+      "x": 189,
+      "y": 380,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "D6EmJIZx6Gzg",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 480,
+      "y": 462,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "o9hOOpRM0I1T",
+      "name": "PIK3R1",
+      "type": "GENE",
+      "parent": "aDGGPsUl3doC",
+      "x": 32,
+      "y": 527,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "js1qiakd6GP4",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 480,
+      "y": 299,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "RmlBMHs64SgD",
+      "name": "Translation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 478,
+      "y": 696,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "rlRx40Am4Oyw",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 164,
+      "y": 697,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "tSZugv-P3gVw",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 29,
+      "y": 452,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "6Shu_O4w4GqO",
+      "source": "cYzz8jlS2HaK",
+      "target": "ZvdL-fZM3WuZ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "kgTzvfUL0djR",
+      "source": "MBUXnNN2z5Dt",
+      "target": "RmlBMHs64SgD",
+      "type": "NONE"
+    },
+    {
+      "id": "LrWZyqWL6OUk",
+      "source": "D6EmJIZx6Gzg",
+      "target": "PUJ8AKki53pG",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "MIyPv49C6PmS",
+      "source": "PUJ8AKki53pG",
+      "target": "rlRx40Am4Oyw",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "6nSDsRMc6QPJ",
+      "source": "PUJ8AKki53pG",
+      "target": "1UmcnGh24P6f",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "AQSQDQcZ0XWo",
+      "source": "ZvdL-fZM3WuZ",
+      "target": "MBUXnNN2z5Dt",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "ZfrWje290c1T",
+      "source": "MBUXnNN2z5Dt",
+      "target": "1UmcnGh24P6f",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "_hzFGzTL6RE2",
+      "source": "PUJ8AKki53pG",
+      "target": "RmlBMHs64SgD",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "bp_I0EHv0cD4",
+      "source": "MBUXnNN2z5Dt",
+      "target": "rlRx40Am4Oyw",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "PQG4E-ga6Mza",
+      "source": "js1qiakd6GP4",
+      "target": "D6EmJIZx6Gzg",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "NKPl8Kdr0I1e",
+      "source": "o9hOOpRM0I1T",
+      "target": "MBUXnNN2z5Dt",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "OoqtDBRI0V5J",
+      "source": "tSZugv-P3gVw",
+      "target": "MBUXnNN2z5Dt",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "Vqm7Wl0M4AE0",
+      "source": "Wv-EmNFT15yN",
+      "target": "cYzz8jlS2HaK",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "09Csuz540e3h",
+      "source": "MBUXnNN2z5Dt",
+      "target": "RmlBMHs64SgD",
+      "type": "ACTIVATES"
+    }
+  ]
+}

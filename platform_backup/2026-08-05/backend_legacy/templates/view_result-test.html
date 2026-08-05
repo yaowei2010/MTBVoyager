@@ -1,0 +1,275 @@
+
+{% block title %} View jobs {% endblock %}
+{% block header %} 
+    <!-- Datatable and jQuery-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.24/css/jquery.dataTables.css">
+{% endblock %}
+{% block css %}
+    <style>
+.wrapper {
+    position: relative;
+  }
+  
+  button {
+    z-index: 1;
+  }
+  
+  .dropdown {
+    position: absolute;
+    background-color: white;
+    border-style:ridge;
+    top: 100%;
+    left: 0;
+    z-index: 2;
+  }
+        .btn_download {
+          background-color: Transparent;
+          border: none;
+          color: black;
+          padding: 0px 10px;
+          font-size: 20px;
+          cursor: pointer;
+       }
+        .btn_layer {
+          background-color: Transparent;
+          border: none;
+          color: black;
+          padding: 0px 10px;
+          font-size: 20px;
+          cursor: pointer;
+       }
+       .btn_delete {
+          background-color: Transparent;
+          border: none;
+          color: black;
+          padding: 0px 10px;
+          font-size: 20px;
+          cursor: pointer;
+       }
+       .btn_reAnnotate {
+          background-color: Transparent;
+          border: none;
+          color: black;
+          padding: 0px 10px;
+          font-size: 20px;
+          cursor: pointer;
+       }
+       #inputGenePanel {
+          width: 100%;
+          padding: 50px 0;
+          text-align: center;
+          background-color: lightblue;
+          margin-top: 20px;
+          display: none;
+       }
+       #toolbars{
+          display: none;
+       }
+       
+    </style>
+    <style>
+        .container {
+            padding-top: 30px;
+            max-width: 100%;
+        }
+    
+        .wrapper {
+            margin-bottom: 20px;
+        }
+    
+        #toggleColumnBtn {
+            margin-bottom: 10px;
+        }
+    
+        .table-wrapper {
+            padding-top: 20px;
+        }
+    
+        .btn_layer,
+        .btn_delete,
+        .btn_reAnnotate {
+            margin-right: 5px;
+        }
+    </style>
+    
+{% endblock %}
+{% block content %}
+    <div class="container" style="max-width: 100%;padding-top: 30px;">
+        <h1>Job list</h1>
+        <div class="row">
+            <div class="wrapper">
+                <button type="button" id="toggleColumnBtn" class="btn btn-outline-primary button">Show/Hide columns</button>
+                <ul id="columnList" style="display: none;" class="dropdown"></ul>
+            </div>
+        </div>
+       <div style="padding-top: 20px;" class="table-wrapper">
+           <div class="table-responsive">
+               <table id="example" class="table table-hover table-bordered">
+                   <thead class="thead-light">
+                       <tr>
+                           <th><div>Job ID</div></th>
+                           <th><div>subject_id</div></th>
+                           <th><div>Name</div></th>
+                           <th><div>date</div></th>
+                           <th><div>Status</div></th>
+                           <th><div>processID</div></th>
+                           <th><div></div></th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       {% for row in jobs %}
+                       <tr>
+                           <td><div>{{row.jobID}}</div></td>
+                           <td><div>{{row.subject_id}}</div></td>
+                           <td><div>{{row.name}}</div></td>
+                           <td>{{row.date|date:"Y-m-d g:i:s"}}</td>
+                           <td><div>{{row.status}}</div></td>
+                           <td><div>{{row.processID}}</div></td>
+                           <td><div class="input-group-append">
+                               {% if row.status == 'finished' %}
+                               
+                               <form method="POST" enctype="multipart/form-data">
+                                   <input type="hidden" value="{{row.jobID}}" name="layer-id">
+                                   {% csrf_token %}
+                                   <button class="btn_layer" id="test_lay" type="submit">
+                                   <i class="fa fa-search"></i></button>
+                               </form>
+                               
+                             
+                               <form method="POST" enctype="multipart/form-data" >
+                                   <input type="hidden" value="{{row.jobID}}" name="delete-id">
+                                   {% csrf_token %}
+                                   <button onclick="return ConfirmDelete();" type="submit" class="btn_delete" title="Delete job">
+                                   <i class="fa fa-trash"></i> </button>
+                               </form>
+                               
+                               <form method="POST" enctype="multipart/form-data" >
+                                   <input type="hidden" value="{{row.jobID}}" name="reAnnotate-id">
+                                   {% csrf_token %}
+                                   <button onclick="return ConfirmReAnnotate();" type="submit" class="btn_reAnnotate" title="ReAnnotate job">
+                                   <i class="fa fa-refresh"></i> </button>
+                               </form>
+                              
+                               
+                               
+                               {% elif row.status == 'expired' %}
+                               <form method="POST" enctype="multipart/form-data" >
+                                   <input type="hidden" value="{{row.jobID}}" name="delete-id">
+                                   {% csrf_token %}
+                                   <button onclick="return ConfirmDelete();" type="submit" class="btn_delete" title="Delete job">
+                                   <i class="fa fa-trash"></i> </button>
+                               </form>
+                               
+                               {% elif row.status == '' %}
+                               <form method="POST" enctype="multipart/form-data" >
+                                   <input type="hidden" value="{{row.jobID}}" name="delete-id">
+                                   {% csrf_token %}
+                                   <button onclick="return ConfirmDelete();" type="submit" class="btn_delete" title="Delete job">
+                                   <i class="fa fa-trash"></i> </button>
+                               </form>
+                               {% else %}
+                               {% endif %}
+                               
+                               
+                               </div>
+                           </td>
+                       </tr>
+                       {% endfor %}
+                   </tbody>
+               </table>
+           </div>
+       </div>     
+   </div>
+{% endblock %}
+
+{% block javascript %} 
+    <script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.js"></script>
+ 
+<!-- Optional JavaScript -->
+    {% if running_jobs_cnt > 0 %}
+    <script>
+    function redirect(){
+       window.location.href = "/result/";
+    }
+
+    setTimeout(redirect, 300000); //1000 is equivalent to 1 seconds
+    </script>
+    {% endif %}
+
+    <script>
+    function ConfirmDelete(){
+        var x = confirm("Are you sure to delete this case?");
+        if (x)
+            return true;
+        else
+            return false;
+    }
+    function ConfirmReAnnotate(){
+        var x = confirm("Are you sure to reannotate this case?");
+        if (x)
+            return true;
+        else
+            return false;
+    }
+    </script>
+    <script>
+        // 當網頁loading完成時
+        $(document).ready(function() {
+            //進行paging並以第四欄sorting
+            var table = $('#example').DataTable({
+                "paging": true,
+                columnDefs: [{
+                    "targets": [3],
+                    "type": 'date'
+                },{
+                    "targets":[5],
+                    "visible": false
+                }],
+                "order": [[ 3, "desc" ]]
+            });
+        
+            // Hide columns with index > 3 (從第五欄開始隱藏)
+            //table.columns(':gt(3)').visible(false);
+        
+            // Create list of column names with checkboxes
+            // 取得columnList元素
+            var columnList = $('#columnList');
+        
+            //對於表格中的每個column進行下列動作
+            table.columns().every(function() {
+                //取得當前column
+                var column = this;
+        
+                //取得當前column是否可視
+                var isVisible = column.visible();
+        
+                //新增checkbox並依據當前可視與否初始化
+                var columnTitle = $('<li><input type="checkbox" ' + (isVisible ? 'checked' : '') + '> '+column.header().textContent+'</li>');
+        
+                //阻止事件冒泡
+                columnTitle.on('click', function(e) {
+                    e.stopPropagation();
+                });
+                    
+                //?
+                columnTitle.find('input').on('change', function() {
+                    var checked = $(this).is(':checked');
+                    if (isVisible !== checked) {
+                        column.visible(checked);
+                        isVisible = checked;
+                    }
+                });
+                    
+                //將checkbox加入columnList中
+                columnList.append(columnTitle);
+            });
+        
+            // Toggle visibility of column list
+            $('#toggleColumnBtn').on('click', function() {
+                columnList.toggle();
+            });
+        });
+        </script>
+{% endblock %}  

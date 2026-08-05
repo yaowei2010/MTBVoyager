@@ -1,0 +1,9 @@
+##fileformat=VCFv4.2
+##contig=<ID=chr1,length=248956422>
+##FILTER=<ID=PASS,Description="All filters passed">
+##INFO=<ID=SVTYPE,Number=1,Type=String,Description="SV type">
+##INFO=<ID=END,Number=1,Type=Integer,Description="End">
+##INFO=<ID=GENE,Number=1,Type=String,Description="Gene">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	CALLER_SAMPLE
+chr1	10	sv1	A	<DEL>	100	PASS	SVTYPE=DEL;END=20;GENE=TP53	GT	0/1

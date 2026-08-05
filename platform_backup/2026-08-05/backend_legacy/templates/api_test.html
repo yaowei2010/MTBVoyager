@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Info and Select Job</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Save Info and Select Job</h1>
+    <form method="post" enctype="multipart/form-data" id="combinedForm">
+        {% csrf_token %}
+        <label for="subject_id">Subject ID:</label><br>
+        <input type="text" id="subject_id" name="subject_id"><br>
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br>
+        <label for="dob">Date of Birth:</label><br>
+        <input type="text" id="dob" name="dob"><br>
+        <label for="gender">Gender:</label><br>
+        <input type="text" id="gender" name="gender"><br>
+        <label for="history">History/Description:</label><br>
+        <textarea id="history" name="history"></textarea><br>
+        <label for="myfile">Upload File:</label><br>
+        <input type="file" id="myfile" name="myfile"><br>
+        <label for="strategyRadioOptions">Strategy:</label><br>
+        <input type="text" id="strategyRadioOptions" name="strategyRadioOptions"><br>
+        <label for="evidenceRadioOptions">Review Status:</label><br>
+        <input type="text" id="evidenceRadioOptions" name="evidenceRadioOptions"><br>
+        <label for="maf_cutoff">MAF Cutoff:</label><br>
+        <input type="text" id="maf_cutoff" name="maf_cutoff"><br>
+        <label for="min_dp_cutoff">Min DP Cutoff:</label><br>
+        <input type="text" id="min_dp_cutoff" name="min_dp_cutoff"><br>
+        <label for="min_aaf">Min AAF:</label><br>
+        <input type="text" id="min_aaf" name="min_aaf"><br>
+        <label for="filteringOptions">Filtering Options:</label><br>
+        <input type="text" id="filteringOptions" name="filteringOptions"><br>
+        <label for="configName">Config Name:</label><br>
+        <input type="text" id="configName" name="configName"><br>
+        <input type="hidden" value="True" name="btn_layer">
+    </form>
+
+    <button type="button" id="btn_layer" value="True">Submit All Forms</button>
+
+    <script>
+        $('#btn_layer').click(function() {
+            // 防止表單默認提交行為
+            event.preventDefault();
+            
+            // 获取表单数据
+            var combinedFormData = new FormData($('#combinedForm')[0]);
+            
+            // 使用 AJAX 發送 POST 請求
+            $.ajax({
+                type: 'POST',
+                url: '/api_test/test',  // 将 URL 替换为你处理请求的视图的 URL
+                data: combinedFormData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    console.log('Form Data Submitted Successfully:', response);
+                    // 可以在这里处理成功的响应
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error Submitting Form Data:', error);
+                    // 可以在这里处理错误
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+{
+  "name": "HNSC-2015-Apoptosis-pathway",
+  "nodes": [
+    {
+      "id": "emPjU9d6DgGP",
+      "name": "Cell cycle and survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 348,
+      "y": 484,
+      "width": 162,
+      "height": 24
+    },
+    {
+      "id": "IBsoHlQJDZF8",
+      "name": "TRAF3",
+      "type": "GENE",
+      "parent": null,
+      "x": 530,
+      "y": 285,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "DLlGnDdfDTRw",
+      "name": "FADD",
+      "type": "GENE",
+      "parent": null,
+      "x": 373,
+      "y": 199,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "s0lGLs3rDXus",
+      "name": "TNFR-LTBR",
+      "type": "COMPARTMENT",
+      "parent": null,
+      "x": 451,
+      "y": 106,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "M8fueNVgIWYI",
+      "name": "LTBR",
+      "type": "GENE",
+      "parent": "s0lGLs3rDXus",
+      "x": 530,
+      "y": 106,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yeoJnxV0DfTf",
+      "name": "Inflammation angiogenesis migration",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 581,
+      "y": 484,
+      "width": 234,
+      "height": 24
+    },
+    {
+      "id": "54AiNjv7DUd9",
+      "name": "BIRC2",
+      "type": "GENE",
+      "parent": null,
+      "x": 530,
+      "y": 199,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "VeOlULKnDabs",
+      "name": "NF-kB",
+      "type": "GENE",
+      "parent": null,
+      "x": 455,
+      "y": 382,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "kpwET4bNDYMG",
+      "name": "CASP8",
+      "type": "GENE",
+      "parent": null,
+      "x": 373,
+      "y": 285,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1f2UD5ctIWYb",
+      "name": "TNFR",
+      "type": "GENE",
+      "parent": "s0lGLs3rDXus",
+      "x": 373,
+      "y": 106,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "lvrnvkjrD9P-",
+      "source": "s0lGLs3rDXus",
+      "target": "54AiNjv7DUd9",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "N_skSg-mECnc",
+      "source": "kpwET4bNDYMG",
+      "target": "VeOlULKnDabs",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "OMDbwzxED_x2",
+      "source": "54AiNjv7DUd9",
+      "target": "kpwET4bNDYMG",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "HH4ug7YuD7Fv",
+      "source": "s0lGLs3rDXus",
+      "target": "DLlGnDdfDTRw",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "f-O5DenwEBjr",
+      "source": "54AiNjv7DUd9",
+      "target": "IBsoHlQJDZF8",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "U1LEKmYqIWYs",
+      "source": "1f2UD5ctIWYb",
+      "target": "M8fueNVgIWYI",
+      "type": "BINDS"
+    },
+    {
+      "id": "hhJPfTk9EHgb",
+      "source": "VeOlULKnDabs",
+      "target": "emPjU9d6DgGP",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "h3Fekoz9EAiL",
+      "source": "DLlGnDdfDTRw",
+      "target": "kpwET4bNDYMG",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "Acyl78aaEDXf",
+      "source": "IBsoHlQJDZF8",
+      "target": "VeOlULKnDabs",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "O9oIu8SeEIN_",
+      "source": "VeOlULKnDabs",
+      "target": "yeoJnxV0DfTf",
+      "type": "ACTIVATES"
+    }
+  ]
+}

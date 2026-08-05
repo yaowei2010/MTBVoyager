@@ -1,0 +1,81 @@
+{
+  "name": "LUAD-2014-TP53-pathway",
+  "nodes": [
+    {
+      "id": "CQjbRdgs7ItD",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 436,
+      "y": 249,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "SVkWhzV37N80",
+      "name": "Cell survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 510,
+      "y": 348,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "fz0X8H7D7J7L",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 342,
+      "y": 347,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "gjYBW9Ea7HZc",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 510,
+      "y": 151,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "SdbPatXY7HDu",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 342,
+      "y": 151,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "npAcARys7a_k",
+      "source": "CQjbRdgs7ItD",
+      "target": "SVkWhzV37N80",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "VGJAIfU07X_O",
+      "source": "SdbPatXY7HDu",
+      "target": "CQjbRdgs7ItD",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "yaRRpgbw7aKj",
+      "source": "CQjbRdgs7ItD",
+      "target": "fz0X8H7D7J7L",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "6yEDoser7Y_S",
+      "source": "gjYBW9Ea7HZc",
+      "target": "CQjbRdgs7ItD",
+      "type": "ACTIVATES"
+    }
+  ]
+}

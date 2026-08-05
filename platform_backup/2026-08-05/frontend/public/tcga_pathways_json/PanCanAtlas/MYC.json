@@ -1,0 +1,247 @@
+{
+  "name": "MYC",
+  "nodes": [
+    {
+      "id": "Yd6m7-sCeh37",
+      "name": "MXD1",
+      "type": "GENE",
+      "parent": "TrTubnzSeh3h",
+      "x": 151,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "plDFXS0peh30",
+      "name": "MXD4",
+      "type": "GENE",
+      "parent": "TrTubnzSeh3h",
+      "x": 488,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "dNmw_8oVeh3k",
+      "name": "MXI1",
+      "type": "GENE",
+      "parent": "TrTubnzSeh3h",
+      "x": 651,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Gt92f6Iyeh3a",
+      "name": "MGA",
+      "type": "GENE",
+      "parent": "LwRHv9NUeh3R",
+      "x": 580,
+      "y": 310,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "OCJ3wBBPeh4J",
+      "name": "MYC/MAX Complex",
+      "type": "COMPLEX",
+      "parent": null,
+      "x": 479,
+      "y": 172,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "KDr5caJdeh4X",
+      "name": "MYC",
+      "type": "GENE",
+      "parent": "OCJ3wBBPeh4J",
+      "x": 313,
+      "y": 172,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "m1nG2P8zeh4p",
+      "name": "MYCL",
+      "type": "GENE",
+      "parent": "OCJ3wBBPeh4J",
+      "x": 645,
+      "y": 173,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "6ZvsmDKBeh3H",
+      "name": "MLXIPL",
+      "type": "GENE",
+      "parent": "IuhA7dyleh3B",
+      "x": 571,
+      "y": 658,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "TrTubnzSeh3h",
+      "name": "MAX/MXD Complex",
+      "type": "COMPLEX",
+      "parent": null,
+      "x": 483,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yGKkO3Ajeh3V",
+      "name": "MAX",
+      "type": "GENE",
+      "parent": "LwRHv9NUeh3R",
+      "x": 344,
+      "y": 310,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "a19O0LiCeh3p",
+      "name": "MXD3",
+      "type": "GENE",
+      "parent": "TrTubnzSeh3h",
+      "x": 323,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "O9V1RuKxeh3K",
+      "name": "MLXIP",
+      "type": "GENE",
+      "parent": "IuhA7dyleh3B",
+      "x": 395,
+      "y": 656,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "eH1TNcCVeh3F",
+      "name": "MLX",
+      "type": "GENE",
+      "parent": "IuhA7dyleh3B",
+      "x": 490,
+      "y": 550,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Mn3yUjZveh4v",
+      "name": "MYCN",
+      "type": "GENE",
+      "parent": "OCJ3wBBPeh4J",
+      "x": 478,
+      "y": 173,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "IuhA7dyleh3B",
+      "name": "MLX/MONDO Complex",
+      "type": "COMPLEX",
+      "parent": null,
+      "x": 483,
+      "y": 604,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "mfvZ3Tqreh3u",
+      "name": "MNT",
+      "type": "GENE",
+      "parent": "TrTubnzSeh3h",
+      "x": 815,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "LwRHv9NUeh3R",
+      "name": "MAX/MGA Complex",
+      "type": "COMPLEX",
+      "parent": null,
+      "x": 462,
+      "y": 310,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "rU4TiKfKeh43",
+      "name": "Cell growth, proliferation, apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": -237,
+      "y": 433,
+      "width": 246,
+      "height": 24
+    }
+  ],
+  "edges": [
+    {
+      "id": "w4MBdulYeh48",
+      "source": "OCJ3wBBPeh4J",
+      "target": "yGKkO3Ajeh3V",
+      "type": "BINDS"
+    },
+    {
+      "id": "kmXInTa9eh5O",
+      "source": "6ZvsmDKBeh3H",
+      "target": "eH1TNcCVeh3F",
+      "type": "BINDS"
+    },
+    {
+      "id": "Hv8GfgZPeh5T",
+      "source": "yGKkO3Ajeh3V",
+      "target": "Gt92f6Iyeh3a",
+      "type": "NONE"
+    },
+    {
+      "id": "9h-taWpfeh5Z",
+      "source": "LwRHv9NUeh3R",
+      "target": "rU4TiKfKeh43",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "eTpDGcg6eh5B",
+      "source": "OCJ3wBBPeh4J",
+      "target": "rU4TiKfKeh43",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "mfpvepQNeh5c",
+      "source": "TrTubnzSeh3h",
+      "target": "IuhA7dyleh3B",
+      "type": "BINDS"
+    },
+    {
+      "id": "QJOD8bddeh5I",
+      "source": "IuhA7dyleh3B",
+      "target": "rU4TiKfKeh43",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "9ShDYkfTeh5Q",
+      "source": "O9V1RuKxeh3K",
+      "target": "eH1TNcCVeh3F",
+      "type": "BINDS"
+    },
+    {
+      "id": "Vfrm_1Ezeh5E",
+      "source": "TrTubnzSeh3h",
+      "target": "rU4TiKfKeh43",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "nrV2aZn8eh5L",
+      "source": "yGKkO3Ajeh3V",
+      "target": "TrTubnzSeh3h",
+      "type": "BINDS"
+    }
+  ]
+}

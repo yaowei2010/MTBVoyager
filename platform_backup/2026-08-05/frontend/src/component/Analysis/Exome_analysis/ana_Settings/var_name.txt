@@ -1,0 +1,24 @@
+sampleID = request.POST.get('subject_id', '')  
+
+syndrome = request.POST.get('name', '')  
+
+dob = request.POST.get('dob', '')  
+
+gender = request.POST.get('gender', '')  
+
+history = request.POST.get('history', '') 
+
+strategy = request.POST['strategyRadioOptions']
+             
+review_status = request.POST['evidenceRadioOptions']
+                  
+MAF_cutoff = request.POST['maf_cutoff']
+
+Min_DP_cutoff = request.POST['min_dp_cutoff'] Cutoff of minimum depth
+  
+
+Min_AAF = request.POST['min_aaf'] Minimun alternative allele frequency
+     
+filtering = request.POST['filteringOptions']
+   
+config_name = request.POST['configName']

@@ -1,0 +1,88 @@
+from django.urls import path
+from . import views,record_delete,find_db,analysis_cosmic,knotannotsv_url,fusion_gene,potential_treatment,cancertype_prediction,HPO_test,germline_detail_backend
+from .VUS import vus_web
+from .Pathway import web
+from .black_list import Manually_import_data_get, blacklist_main_web, blacklist_manual_import
+from .black_list import blacklist_add_web
+from .black_list import blacklist_clinvar_web
+from .black_list import blacklist_compare_view
+from .black_list import clinvar_progress_api
+from .black_list import clinvar_dataset_get
+from .black_list import clinvar_blacklist_delete
+urlpatterns = [
+    path('api', views.search_page,name='api'),
+    
+    path('save_info/test', views.save_info, name='save_info'),  
+    path('job_list', views.show_job_list, name='show_job_list'),  
+    path('select_job', views.select_job_for_interpretation, name='select_job_for_interpretation'), 
+    path('api_test/test', views.api_test,name='api_test'),
+    path('api_test', views.api_page,name='api_page'),
+    path('react_send_page1',views.react_send_page1,name='react_send_page1'),  
+    path('react_send_page2',views.react_send_page2,name='react_send_page2'),
+    path('react_send_page3',views.react_send_page3,name='react_send_page3'),
+    path('react_send_page3_hg38',views.react_send_page3_hg38,name='react_send_page3_hg38'),
+    path('react_send_page4',views.react_send_page4,name='react_send_page4'),
+    path('react_send_page2_trio',views.react_send_page2_trio,name='react_send_page2_trio'),
+    path('react_send_page3_trio',views.react_send_page3_trio,name='react_send_page3_trio'),
+    path('react_send_page3_trio_shortcut',views.react_send_page3_trio_shortcut,name='react_send_page3_trio_shortcut'),
+    # path('known_pathogenic_to_json',record_delete.known_pathogenic_to_json,name='known_pathogenic_to_json'),
+    path('known_pathogenic_to_json',germline_detail_backend.known_pathogenic_to_json,name='known_pathogenic_to_json'),
+    path('known_pathogenic_to_json_trio',record_delete.known_pathogenic_to_json_trio,name='known_pathogenic_to_json_trio'),
+    path('known_ACMG_variant',record_delete.known_ACMG_variant,name='known_ACMG_variant'),
+    path('known_other_variant',record_delete.known_other_variant,name='known_other_variant'),
+    # path('other_variant', record_delete.other_variant, name='other_variant'),
+    path('other_variant', germline_detail_backend.other_variant, name='other_variant'),
+    path('other_variant_trio', record_delete.other_variant_trio, name='other_variant_trio'),
+    # path('predicted_suspect_variant',record_delete.predicted_suspect_variant,name='predicted_suspect_variant'),
+    path('predicted_suspect_variant',germline_detail_backend.predicted_suspect_variant,name='predicted_suspect_variant'),
+    path('predicted_suspect_variant_trio',record_delete.predicted_suspect_variant_trio,name='predicted_suspect_variant_trio'),
+    # path('predicted_ACMG_variant',record_delete.predicted_ACMG_variant,name='predicted_ACMG_variant'),
+    path('predicted_ACMG_variant',germline_detail_backend.predicted_ACMG_variant,name='predicted_ACMG_variant'),
+    path('predicted_ACMG_variant_trio',record_delete.predicted_ACMG_variant_trio,name='predicted_ACMG_variant_trio'),
+    # path('predicted_other_variant',record_delete.predicted_other_variant,name='predicted_other_variant'),
+    path('predicted_other_variant',germline_detail_backend.predicted_other_variant,name='predicted_other_variant'),
+    path('predicted_other_variant_trio',record_delete.predicted_other_variant_trio,name='predicted_other_variant_trio'),
+    # path('incidental_finding_variant',record_delete.incidental_finding_variant,name='incidental_finding_variant'),
+    path('incidental_finding_variant',germline_detail_backend.incidental_finding_variant,name='incidental_finding_variant'),
+
+    path('incidental_finding_variant_trio',record_delete.incidental_finding_variant_trio,name='incidental_finding_variant_trio'),
+    # path('drug_response_variant',record_delete.drug_response_variant,name='drug_response_variant'),
+    path('drug_response_variant',germline_detail_backend.drug_response_variant,name='drug_response_variant'),
+
+    path('drug_response_variant_trio',record_delete.drug_response_variant_trio,name='drug_response_variant_trio'),
+    path('get_newjobid',record_delete.get_newjobid,name='get_newjobid'),
+    path('delete_job',record_delete.delete_job,name='delete_job'),
+    path('vep_test_page4',views.vep_test_page4,name='vep_test_page4'),
+    path('get_summary_info',record_delete.get_summary_info,name='get_summary_info'),
+    path('get_summary_info_somatic',record_delete.get_summary_info_somatic,name='get_summary_info_somatic'),
+    path('summary_page',record_delete.summary_page,name='summary_page'),
+    path('summary_page_somatic',record_delete.summary_page_somatic,name='summary_page_somatic'),
+    path('somatic_result',find_db.somatic_result,name='somatic_result'),
+    path('read_heredity',find_db.read_heredity,name='read_heredity'),
+    path('read_cosmic',find_db.read_cosmic,name='read_cosmic'),
+    path('read_suspect',find_db.read_suspect,name='read_suspect'),
+    path('read_germline_prediction',find_db.read_germline_prediction,name='read_germline_prediction'),
+    path('analysis_cosmic',analysis_cosmic.process_cosmic,name='analysis_cosmic'),
+    path('mutisnp_civic',analysis_cosmic.mutisnp_civic,name='mutisnp_civic'),
+    path('mutation_signature',analysis_cosmic.mutation_signature,name='mutation_signature'),
+    path('postgresql',analysis_cosmic.postgresql,name='postgresql'),
+    path('knotannotsv_url',knotannotsv_url.knotannotsv1,name='knotannotsv_url'),
+    path('fusion_gene',fusion_gene.fusion_gene,name='fusion_gene'),
+    path('potential_treatment',potential_treatment.potential_treatment,name='potential_treatment'),
+    path('cancertype_prediction',cancertype_prediction.cancertype_prediction,name='cancertype_prediction'),
+    path('vus',vus_web.variant_lookup,name='vus'),
+    path('HPO_search',record_delete.HPO_search,name='HPO_search'),
+    path('pathway',web.run_pipeline_view,name='pathway'),
+    path('blacklist_main',blacklist_main_web.blacklist_api,name='blacklist_main'),
+    path("blacklist_user_summary", blacklist_add_web.blacklist_user_summary, name="blacklist_user_summary"),
+    # path("blacklist_user_clinvar", blacklist_clinvar_web.blacklist_user_clinvar, name="blacklist_user_clinvar"),
+    path("blacklist_compare", blacklist_compare_view.blacklist_compare_view, name="blacklist_compare"),
+    path("clinvar_start",  clinvar_progress_api.clinvar_start,name="clinvar_start"),
+    path("clinvar_status", clinvar_progress_api.clinvar_status,name="clinvar_status"),
+    path("clinvar_result", clinvar_dataset_get.clinvar_result,name="clinvar_result"),
+    path("clinvar_cancel", clinvar_progress_api.clinvar_cancel,name="clinvar_cancel"),
+    path("blacklist_import_from_clinvar", blacklist_manual_import.blacklist_import_from_clinvar,name="blacklist_import_from_clinvar"),
+    path("clinvar_blacklist_list", Manually_import_data_get.clinvar_blacklist_list,name="clinvar_blacklist_list"),
+    path("clinvar_blacklist_delete", clinvar_blacklist_delete.clinvar_blacklist_delete,name="clinvar_blacklist_delete"),
+    path('variants_by_gene', web.variants_by_gene, name='variants_by_gene'),
+]

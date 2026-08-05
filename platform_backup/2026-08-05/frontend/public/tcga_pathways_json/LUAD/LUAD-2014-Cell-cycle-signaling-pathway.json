@@ -1,0 +1,95 @@
+{
+  "name": "LUAD-2014-Cell-cycle-signaling-pathway",
+  "nodes": [
+    {
+      "id": "YWcsnrJvCMfJ",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": "EaAZ2J517xuW",
+      "x": 365,
+      "y": 177,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-65hVCUu7wNj",
+      "name": "RB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 521,
+      "y": 303,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yiKTF0xl7qs-",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 521,
+      "y": 88,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EaAZ2J517xuW",
+      "name": "CYCLINS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 520,
+      "y": 177,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "pYVVzOz7CMfp",
+      "name": "CDK4",
+      "type": "GENE",
+      "parent": "EaAZ2J517xuW",
+      "x": 521,
+      "y": 177,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "SBA7nphX7zI1",
+      "name": "Cell cycle progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 521,
+      "y": 400,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "0FQDESQiCMfb",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": "EaAZ2J517xuW",
+      "x": 676,
+      "y": 177,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "EbOzzWJa8KyF",
+      "source": "EaAZ2J517xuW",
+      "target": "-65hVCUu7wNj",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "eB12pAOW8MCi",
+      "source": "-65hVCUu7wNj",
+      "target": "SBA7nphX7zI1",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "u6mSj8wD8Jp9",
+      "source": "yiKTF0xl7qs-",
+      "target": "EaAZ2J517xuW",
+      "type": "INHIBITS"
+    }
+  ]
+}

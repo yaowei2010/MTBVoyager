@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TCGA Pathway Viewer (Cytoscape)</title>
+  <script src="https://unpkg.com/cytoscape@3.19.1/dist/cytoscape.min.js"></script>
+  <style>
+    body { font-family: Arial; margin: 0; padding: 0; }
+    #cy { width: 100%; height: 90vh; display: block; }
+    #info { padding: 10px; }
+  </style>
+</head>
+<body>
+  <div id="info">
+    <strong>TCGA Pathway Viewer</strong> -
+    <span id="status">Loading...</span>
+  </div>
+  <div id="cy"></div>
+  <script src="bundle.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+{
+  "name": "Cell Cycle",
+  "nodes": [
+    {
+      "id": "462df616-17f7-4d02-8fff-ef510377e4e8",
+      "name": "CDKN1B",
+      "type": "GENE",
+      "parent": "71f092b3-08f8-4fc8-b150-c7643a8da7bf",
+      "x": -153,
+      "y": 121,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "115f2462-1b3d-4c6c-94b6-846a6126fef0",
+      "name": "CDKN1A",
+      "type": "GENE",
+      "parent": "71f092b3-08f8-4fc8-b150-c7643a8da7bf",
+      "x": -325,
+      "y": 121,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "71f092b3-08f8-4fc8-b150-c7643a8da7bf",
+      "name": "CDKN1",
+      "type": "FAMILY",
+      "parent": null,
+      "x": -236,
+      "y": 122,
+      "width": 330.77642502335124,
+      "height": 57.82252468108477
+    },
+    {
+      "id": "19643bc7-84a3-4512-bd24-9309af9b5f03",
+      "name": "CDKN2",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 250,
+      "y": 122,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "391b3a5e-1fbc-46a3-a382-7e034f8ae083",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": "19643bc7-84a3-4512-bd24-9309af9b5f03",
+      "x": 89,
+      "y": 122,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "da0a6c3f-f5b3-4aab-99f3-08935b6c3148",
+      "name": "CDKN2B",
+      "type": "GENE",
+      "parent": "19643bc7-84a3-4512-bd24-9309af9b5f03",
+      "x": 251,
+      "y": 122,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "56341a49-4d3a-405e-b08e-cae19e8d6a5d",
+      "name": "CDKN2C",
+      "type": "GENE",
+      "parent": "19643bc7-84a3-4512-bd24-9309af9b5f03",
+      "x": 411,
+      "y": 122,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "name": "Cyclin/CDKs",
+      "type": "COMPLEX",
+      "parent": null,
+      "x": 8,
+      "y": 424,
+      "width": 320.90367086780816,
+      "height": 246.91603458263282
+    },
+    {
+      "id": "849ae27b-378a-4640-a681-9a9ee2815dc2",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": -75,
+      "y": 338,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "6e226684-23f3-4572-b7b8-76bb9277e493",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": -74,
+      "y": 398,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "41c5fa6d-3eda-48b1-b10b-761129a456d0",
+      "name": "CCND2",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": -72,
+      "y": 461,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "b2a988fd-ee7c-4793-ac1c-9abb6b164974",
+      "name": "CCND3",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": -75,
+      "y": 520,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "a278b723-c803-4e42-b451-021c54c93ddb",
+      "name": "CDK6",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": 90,
+      "y": 520,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "37442fbc-049e-4ae4-a4db-06d69d7c01b2",
+      "name": "CDK4",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": 92,
+      "y": 461,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "41d32e2a-496d-416f-a021-6ca7a8ae5aed",
+      "name": "CDK2",
+      "type": "GENE",
+      "parent": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "x": 92,
+      "y": 400,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "dc2c873f-2f66-42e7-8246-ecc99adef3de",
+      "name": "RB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 446,
+      "y": 427,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "c40ec7ce-e374-4f5f-a23c-64a413397077",
+      "name": "E2F",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 452,
+      "y": 586,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "cf5a29b7-94ad-44aa-9bfa-3539a6d00267",
+      "name": "E2F3",
+      "type": "GENE",
+      "parent": "c40ec7ce-e374-4f5f-a23c-64a413397077",
+      "x": 452,
+      "y": 615,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8f319184-df72-41ab-ae92-0fde3574b0e0",
+      "name": "E2F1",
+      "type": "GENE",
+      "parent": "c40ec7ce-e374-4f5f-a23c-64a413397077",
+      "x": 452,
+      "y": 557,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "03a39305-bdb1-4278-a101-4d9857cb99f0",
+      "name": "Cell Cycle",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 447,
+      "y": 756,
+      "width": 100,
+      "height": 35
+    }
+  ],
+  "edges": [
+    {
+      "id": "e34cd218-ba47-4376-a9af-9049c4904eb6",
+      "source": "71f092b3-08f8-4fc8-b150-c7643a8da7bf",
+      "target": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "78ea4dfa-f3c4-4739-8d83-f175f635ff66",
+      "source": "19643bc7-84a3-4512-bd24-9309af9b5f03",
+      "target": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "29f7cb21-c0c5-4163-b6a9-991f7a4e3b13",
+      "source": "36cd2e3a-722a-4eb1-9395-2ec7b600f755",
+      "target": "dc2c873f-2f66-42e7-8246-ecc99adef3de",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "955d703d-6284-4938-928f-26917635e5cb",
+      "source": "dc2c873f-2f66-42e7-8246-ecc99adef3de",
+      "target": "c40ec7ce-e374-4f5f-a23c-64a413397077",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "a94b068d-ac5b-407b-89dd-22a0d9047b1f",
+      "source": "c40ec7ce-e374-4f5f-a23c-64a413397077",
+      "target": "03a39305-bdb1-4278-a101-4d9857cb99f0",
+      "type": "ACTIVATES"
+    }
+  ]
+}

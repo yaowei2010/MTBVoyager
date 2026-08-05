@@ -1,0 +1,141 @@
+{
+  "name": "HNSC-2015-Notch-signaling-pathway",
+  "nodes": [
+    {
+      "id": "0_tmgKZGEdGo",
+      "name": "TP63",
+      "type": "GENE",
+      "parent": null,
+      "x": 290,
+      "y": 306,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "eeVhg40NEiK2",
+      "name": "Differentiation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 553,
+      "y": 481,
+      "width": 114,
+      "height": 24
+    },
+    {
+      "id": "B311fstqEcj1",
+      "name": "CTNNB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 485,
+      "y": 306,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Km28lPDkEe1-",
+      "name": "FAT1",
+      "type": "GENE",
+      "parent": null,
+      "x": 676,
+      "y": 253,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "xmIHMSMOEfhM",
+      "name": "AJUBA",
+      "type": "GENE",
+      "parent": null,
+      "x": 676,
+      "y": 350,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "uBK84iGaEx2k",
+      "name": "NFE2L2",
+      "type": "GENE",
+      "parent": null,
+      "x": 835,
+      "y": 108,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "cVmq2gc7EhfK",
+      "name": "Inflammation angiogenesis migration",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 290,
+      "y": 480,
+      "width": 234,
+      "height": 24
+    },
+    {
+      "id": "M36IzzXCEbYd",
+      "name": "NOTCH",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 485,
+      "y": 108,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "ICbcotEzE6EA",
+      "source": "Km28lPDkEe1-",
+      "target": "B311fstqEcj1",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "wuF8plb4E1Me",
+      "source": "uBK84iGaEx2k",
+      "target": "M36IzzXCEbYd",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "aGzvs7zSE3y2",
+      "source": "0_tmgKZGEdGo",
+      "target": "M36IzzXCEbYd",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "3EBZZzaxE5Fm",
+      "source": "M36IzzXCEbYd",
+      "target": "B311fstqEcj1",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "_u545Mo9E_ul",
+      "source": "0_tmgKZGEdGo",
+      "target": "eeVhg40NEiK2",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "n1ZzhYJJE6z0",
+      "source": "xmIHMSMOEfhM",
+      "target": "B311fstqEcj1",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "qJsbtzEME7xA",
+      "source": "B311fstqEcj1",
+      "target": "eeVhg40NEiK2",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "qbufdsXRFBiJ",
+      "source": "0_tmgKZGEdGo",
+      "target": "cVmq2gc7EhfK",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "XfMK86WqE21I",
+      "source": "M36IzzXCEbYd",
+      "target": "0_tmgKZGEdGo",
+      "type": "INHIBITS"
+    }
+  ]
+}
