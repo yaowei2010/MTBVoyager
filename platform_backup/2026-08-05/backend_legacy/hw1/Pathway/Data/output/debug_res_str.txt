@@ -1,9 +1,0 @@
-===== str(res) =====
-List of 2
- $ RWRM_Results:'data.frame':	12436 obs. of  2 variables:
-  ..$ NodeNames: chr [1:12436] "ABL1" "EGFR" "PDGFRB" "CTNNB1" ...
-  ..$ Score    : num [1:12436] 0.000392 0.000712 0.000472 0.000389 0.000444 ...
- $ Seed_Nodes  : chr [1:59] "MTOR" "PAX7" "PIK3R3" "RAD54L" ...
-
-===== names(res) =====
-[1] "RWRM_Results" "Seed_Nodes"  
