@@ -1,0 +1,177 @@
+{
+  "name": "TP53",
+  "nodes": [
+    {
+      "id": "xDGjGXGMfyG3",
+      "name": "Cell survival, proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 133,
+      "y": 449,
+      "width": 192,
+      "height": 24
+    },
+    {
+      "id": "gx_YWb90fyGp",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": -23,
+      "y": 235,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "sT2W03HDfyGe",
+      "name": "MDM4",
+      "type": "GENE",
+      "parent": "lK7pvMYZfyGU",
+      "x": 319,
+      "y": 127,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "YvaYsZcufyHH",
+      "name": "DNA replication stress",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 597,
+      "y": 51,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "Iu0kJKKGfyGM",
+      "name": "RPS6KA3",
+      "type": "GENE",
+      "parent": null,
+      "x": 597,
+      "y": 328,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "qv-3H9tXfyGZ",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": "lK7pvMYZfyGU",
+      "x": 149,
+      "y": 127,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Ikv91AlOfyG-",
+      "name": "Senescence, apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 325,
+      "y": 448,
+      "width": 150,
+      "height": 24
+    },
+    {
+      "id": "ES5FXiJLfyGu",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 233,
+      "y": 328,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "HZxSxJBmfyHE",
+      "name": "Oncogenic stress",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 333,
+      "y": 222,
+      "width": 120,
+      "height": 24
+    },
+    {
+      "id": "c4Ad6ZYBfyGx",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 597,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Jvx4WzdtfyGk",
+      "name": "CHEK2",
+      "type": "GENE",
+      "parent": null,
+      "x": 597,
+      "y": 225,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "8KZq5XsifyHL",
+      "source": "ES5FXiJLfyGu",
+      "target": "xDGjGXGMfyG3",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "5e5CkdqDfyHg",
+      "source": "gx_YWb90fyGp",
+      "target": "ES5FXiJLfyGu",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "WAvkWWubfyHO",
+      "source": "Jvx4WzdtfyGk",
+      "target": "Iu0kJKKGfyGM",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "wMOYIFFAfyHS",
+      "source": "gx_YWb90fyGp",
+      "target": "lK7pvMYZfyGU",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "Zd519CgjfyHd",
+      "source": "HZxSxJBmfyHE",
+      "target": "ES5FXiJLfyGu",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "lFKJrXsmfyHb",
+      "source": "ES5FXiJLfyGu",
+      "target": "Ikv91AlOfyG-",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "geyskuwAfyHV",
+      "source": "lK7pvMYZfyGU",
+      "target": "ES5FXiJLfyGu",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "t-G0U6EJfyHR",
+      "source": "Iu0kJKKGfyGM",
+      "target": "ES5FXiJLfyGu",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "vNvONKmFfyHj",
+      "source": "YvaYsZcufyHH",
+      "target": "c4Ad6ZYBfyGx",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "25K5WaLwfyHX",
+      "source": "c4Ad6ZYBfyGx",
+      "target": "Jvx4WzdtfyGk",
+      "type": "ACTIVATES"
+    }
+  ]
+}

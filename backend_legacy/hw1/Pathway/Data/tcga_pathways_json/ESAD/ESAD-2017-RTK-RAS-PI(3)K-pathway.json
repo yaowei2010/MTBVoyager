@@ -1,0 +1,179 @@
+{
+  "name": "ESAD-2017-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "51f0d970-2e2b-47e2-90bd-0d0d881d70ed",
+      "name": "PIK3R1",
+      "type": "GENE",
+      "parent": null,
+      "x": 1056,
+      "y": 335,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8214d1b9-75ba-4fbb-86d2-fe45dd392767",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 778,
+      "y": 335,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "name": "PIK3CA",
+      "type": "GENE",
+      "parent": null,
+      "x": 918,
+      "y": 227,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "bea46283-55f2-4650-acee-58d23d8c11fc",
+      "name": "KRAS",
+      "type": "GENE",
+      "parent": null,
+      "x": 358,
+      "y": 227,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "b33f6617-57e5-4e3a-bd28-6ff114d96321",
+      "name": "MYC",
+      "type": "GENE",
+      "parent": null,
+      "x": 1256,
+      "y": 227,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 673,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "82180331-e6f8-4487-9c6c-1c898cb05cf1",
+      "name": "MET",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 595,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "e7741571-a281-4b1d-ab5f-1e6d22cd3cf7",
+      "name": "IGF1R",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 754,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "230ace17-b770-4cc8-8d00-55c2a2075c3e",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 1075,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "fb4252b0-5bfd-495d-99bc-c7143789403c",
+      "name": "FGFR1",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 914,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "0c2d7f5d-9da8-4a3c-bf55-53976781fa86",
+      "name": "ERBB2",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 271,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "34b79c41-bc49-4c8e-b5f7-ddad188915bb",
+      "name": "EGFR",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 434,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "91dd9bca-e153-4016-8c4a-0dbb7e12d024",
+      "name": "FGFR2",
+      "type": "GENE",
+      "parent": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "x": 1075,
+      "y": 130,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "0738d86a-d46d-4a8f-b3f4-b96baba1bfa1",
+      "source": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "target": "b33f6617-57e5-4e3a-bd28-6ff114d96321",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "625b533f-ac20-4dbf-abdc-2c9fe3cafe97",
+      "source": "51f0d970-2e2b-47e2-90bd-0d0d881d70ed",
+      "target": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "f687da01-5f2a-4168-b41f-04f0014ab954",
+      "source": "8214d1b9-75ba-4fbb-86d2-fe45dd392767",
+      "target": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "49ee44ff-b6ff-47f0-81bf-effa2cf34191",
+      "source": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "target": "bea46283-55f2-4650-acee-58d23d8c11fc",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "d1a956b7-db6a-4653-9da4-d0b26357fb5a",
+      "source": "bea46283-55f2-4650-acee-58d23d8c11fc",
+      "target": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "73b63049-5e6c-4793-8536-86b4ec006b2d",
+      "source": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "target": "49a250be-042c-4910-9774-802dfb0e08f3",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "49655771-0e8d-42ce-a71e-76d3bc8c742c",
+      "source": "d76b7fd4-b8f5-4e92-b2ce-b783fe58b9f2",
+      "target": "bea46283-55f2-4650-acee-58d23d8c11fc",
+      "type": "ACTIVATES"
+    }
+  ]
+}

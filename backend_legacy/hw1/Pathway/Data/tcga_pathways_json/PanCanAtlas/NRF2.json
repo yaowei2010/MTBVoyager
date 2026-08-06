@@ -1,0 +1,65 @@
+{
+  "name": "NRF2",
+  "nodes": [
+    {
+      "id": "OkLgTv_3eszi",
+      "name": "KEAP1",
+      "type": "GENE",
+      "parent": null,
+      "x": 294,
+      "y": 147,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "pxCvh_ojeszm",
+      "name": "CUL3",
+      "type": "GENE",
+      "parent": null,
+      "x": 469,
+      "y": 147,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "E9bpVpoWeszr",
+      "name": "Oxidative Stress Response",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 598,
+      "y": 240,
+      "width": 174,
+      "height": 24
+    },
+    {
+      "id": "sKw8nuDgeszp",
+      "name": "NFE2L2",
+      "type": "GENE",
+      "parent": null,
+      "x": 385,
+      "y": 240,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "wIxLZx13eszt",
+      "source": "OkLgTv_3eszi",
+      "target": "sKw8nuDgeszp",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "aWKwI8rJesz1",
+      "source": "sKw8nuDgeszp",
+      "target": "E9bpVpoWeszr",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "Ng79Bysjeszx",
+      "source": "pxCvh_ojeszm",
+      "target": "sKw8nuDgeszp",
+      "type": "INHIBITS"
+    }
+  ]
+}

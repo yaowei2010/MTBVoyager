@@ -1,0 +1,101 @@
+{
+  "name": "LUSC-2012-Notch-signaling-pathway",
+  "nodes": [
+    {
+      "id": "jwpnNGJWSGmo",
+      "name": "TP63",
+      "type": "GENE",
+      "parent": null,
+      "x": 665,
+      "y": 118,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "uCLr0FZ-DVjI",
+      "name": "NOTCH1",
+      "type": "GENE",
+      "parent": "qDU9qUkVWgQy",
+      "x": 307,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "qDU9qUkVWgQy",
+      "name": "NOTCH",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 384,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "OQXnexCbWaQC",
+      "name": "FOXP1",
+      "type": "GENE",
+      "parent": null,
+      "x": 781,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8xqf1lEoDVjf",
+      "name": "NOTCH2",
+      "type": "GENE",
+      "parent": "qDU9qUkVWgQy",
+      "x": 462,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "z9OhKjOpSGPy",
+      "name": "SOX2",
+      "type": "GENE",
+      "parent": null,
+      "x": 392,
+      "y": 118,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "B7vcA7ATWYcn",
+      "name": "ASCL4",
+      "type": "GENE",
+      "parent": null,
+      "x": 624,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "PLEAy9rIWrEw",
+      "source": "z9OhKjOpSGPy",
+      "target": "qDU9qUkVWgQy",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "JC1sUBM-WtKp",
+      "source": "z9OhKjOpSGPy",
+      "target": "B7vcA7ATWYcn",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "lP_hmn57Wt5k",
+      "source": "z9OhKjOpSGPy",
+      "target": "OQXnexCbWaQC",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "NJbf1vyhWr_5",
+      "source": "jwpnNGJWSGmo",
+      "target": "qDU9qUkVWgQy",
+      "type": "INHIBITS"
+    }
+  ]
+}

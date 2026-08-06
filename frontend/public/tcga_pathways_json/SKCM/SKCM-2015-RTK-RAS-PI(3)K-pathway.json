@@ -1,0 +1,203 @@
+{
+  "name": "SKCM-2015-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "OpbQ5N5BIR7T",
+      "name": "Proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 528,
+      "y": 524,
+      "width": 102,
+      "height": 24
+    },
+    {
+      "id": "z9P8VET8IH-v",
+      "name": "NF1",
+      "type": "GENE",
+      "parent": null,
+      "x": 256,
+      "y": 147,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "stZUUqWp9HOb",
+      "name": "NRAS",
+      "type": "GENE",
+      "parent": "dQrC9TeNIX-m",
+      "x": 374,
+      "y": 236,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "DXOfiysJIUYY",
+      "name": "Survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 1107,
+      "y": 329,
+      "width": 72,
+      "height": 24
+    },
+    {
+      "id": "dQrC9TeNIX-m",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 529,
+      "y": 236,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8CZU3OY7IlD5",
+      "name": "RAC1",
+      "type": "GENE",
+      "parent": null,
+      "x": 880,
+      "y": 364,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yhNL3UBnIL-5",
+      "name": "KIT",
+      "type": "GENE",
+      "parent": null,
+      "x": 880,
+      "y": 120,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "5m3zxs1KINf7",
+      "name": "AKT Pathway",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 880,
+      "y": 241,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "eNN9GlQaIQwL",
+      "name": "MAP2K1",
+      "type": "GENE",
+      "parent": null,
+      "x": 528,
+      "y": 435,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "RtyOk-X-ITE3",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 1106,
+      "y": 241,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4dRiJZfvIPWm",
+      "name": "BRAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 528,
+      "y": 338,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "hksSbzGD9HOJ",
+      "name": "KRAS",
+      "type": "GENE",
+      "parent": "dQrC9TeNIX-m",
+      "x": 685,
+      "y": 236,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "NNEMBzDV9HNw",
+      "name": "HRAS",
+      "type": "GENE",
+      "parent": "dQrC9TeNIX-m",
+      "x": 530,
+      "y": 236,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "soPzg51UIxxj",
+      "source": "8CZU3OY7IlD5",
+      "target": "5m3zxs1KINf7",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "Cf02-ifyItuD",
+      "source": "dQrC9TeNIX-m",
+      "target": "4dRiJZfvIPWm",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "BqXWl69hI1zW",
+      "source": "yhNL3UBnIL-5",
+      "target": "5m3zxs1KINf7",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "1Aepvid-IqoA",
+      "source": "z9P8VET8IH-v",
+      "target": "dQrC9TeNIX-m",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "J01_493NIzbP",
+      "source": "4dRiJZfvIPWm",
+      "target": "5m3zxs1KINf7",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "PCKlXBgfIu2g",
+      "source": "4dRiJZfvIPWm",
+      "target": "eNN9GlQaIQwL",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "q7PHpnTgIwuD",
+      "source": "8CZU3OY7IlD5",
+      "target": "eNN9GlQaIQwL",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "FxAnigvrI2_i",
+      "source": "5m3zxs1KINf7",
+      "target": "DXOfiysJIUYY",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "uglecyI1IsGD",
+      "source": "yhNL3UBnIL-5",
+      "target": "dQrC9TeNIX-m",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "iCnUjDjmIvi5",
+      "source": "eNN9GlQaIQwL",
+      "target": "OpbQ5N5BIR7T",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "HEzFrHkCI0l-",
+      "source": "RtyOk-X-ITE3",
+      "target": "5m3zxs1KINf7",
+      "type": "INHIBITS"
+    }
+  ]
+}

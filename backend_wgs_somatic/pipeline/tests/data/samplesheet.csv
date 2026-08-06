@@ -1,0 +1,2 @@
+sample_id,snv_vcf,sv_vcf,cnv_vcf
+Tumor_Example_01,tests/data/snv.vcf.gz,tests/data/sv.vcf.gz,tests/data/cnv.vcf.gz

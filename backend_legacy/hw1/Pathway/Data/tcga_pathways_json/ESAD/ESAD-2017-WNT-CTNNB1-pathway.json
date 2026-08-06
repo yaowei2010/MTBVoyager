@@ -1,0 +1,181 @@
+{
+  "name": "ESAD-2017-WNT-CTNNB1-pathway",
+  "nodes": [
+    {
+      "id": "623d9d6b-6d32-4a0a-a826-df9b880ca03a",
+      "name": "PTCH1",
+      "type": "GENE",
+      "parent": null,
+      "x": 212,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "792b8fd9-ae87-4972-8da4-1140378b63e5",
+      "name": "APC",
+      "type": "GENE",
+      "parent": null,
+      "x": 382,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "faa556d4-6e8d-456d-b9d0-a4c35873f9a8",
+      "name": "FBXW7",
+      "type": "GENE",
+      "parent": null,
+      "x": 553,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1cdc0d84-e27f-44ed-981e-12994fed8711",
+      "name": "ARID1A",
+      "type": "GENE",
+      "parent": null,
+      "x": 731,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "d6eb299d-a7c3-4c78-b9e7-4808773bb690",
+      "name": "CTNNB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 446,
+      "y": 214,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "name": "MYC",
+      "type": "GENE",
+      "parent": null,
+      "x": 793,
+      "y": 214,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8009d529-453b-4c3e-b694-7e0070b7f0a5",
+      "name": "PIK3CA",
+      "type": "GENE",
+      "parent": null,
+      "x": 793,
+      "y": 303,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "d80f3360-7aa0-442a-ae2a-59f0e8379f86",
+      "name": "Cell proliferation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 999,
+      "y": 214,
+      "width": 132,
+      "height": 24
+    },
+    {
+      "id": "2e65076c-a0ae-47d9-8860-4ba6c1c89e1c",
+      "name": "Embryonic development",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 210,
+      "y": 214,
+      "width": 150,
+      "height": 24
+    },
+    {
+      "id": "08936961-1fad-4b39-ada5-839a1864de96",
+      "name": "SMAD",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 985,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "0235338c-0433-48b9-87e3-e50923aed67c",
+      "name": "SMAD2",
+      "type": "GENE",
+      "parent": "08936961-1fad-4b39-ada5-839a1864de96",
+      "x": 901,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1b3e587e-ec76-417a-92ef-34976b0f46bd",
+      "name": "SMAD4",
+      "type": "GENE",
+      "parent": "08936961-1fad-4b39-ada5-839a1864de96",
+      "x": 1070,
+      "y": 126,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "a1155daf-ac03-4bbd-9ae0-0a738ec73d95",
+      "source": "8009d529-453b-4c3e-b694-7e0070b7f0a5",
+      "target": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "0562cbe7-7462-45c1-bd49-109e7ef97f74",
+      "source": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "target": "d80f3360-7aa0-442a-ae2a-59f0e8379f86",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "b7fe88fe-76f0-4f45-b80c-eb9937d3fed0",
+      "source": "623d9d6b-6d32-4a0a-a826-df9b880ca03a",
+      "target": "2e65076c-a0ae-47d9-8860-4ba6c1c89e1c",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "d1682a0d-a521-4f33-8097-a57b695d6fe4",
+      "source": "792b8fd9-ae87-4972-8da4-1140378b63e5",
+      "target": "d6eb299d-a7c3-4c78-b9e7-4808773bb690",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "0e07ea0f-7144-42b7-831d-11a660f45ddb",
+      "source": "faa556d4-6e8d-456d-b9d0-a4c35873f9a8",
+      "target": "d6eb299d-a7c3-4c78-b9e7-4808773bb690",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "91b66dea-a6b4-4991-8ac2-184904f361b0",
+      "source": "faa556d4-6e8d-456d-b9d0-a4c35873f9a8",
+      "target": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "ba347f10-d89d-47ed-97fc-8eed4454b4ba",
+      "source": "d6eb299d-a7c3-4c78-b9e7-4808773bb690",
+      "target": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "b8423ddf-8f5c-4718-81b4-132ae25ed3e5",
+      "source": "1cdc0d84-e27f-44ed-981e-12994fed8711",
+      "target": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "a7180fc6-8113-47eb-b090-39d1cc8c5825",
+      "source": "08936961-1fad-4b39-ada5-839a1864de96",
+      "target": "dd894023-67b6-4bcc-baad-a441556f4168",
+      "type": "INHIBITS"
+    }
+  ]
+}

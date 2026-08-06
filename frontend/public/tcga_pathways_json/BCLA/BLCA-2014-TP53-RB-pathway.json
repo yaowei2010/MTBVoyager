@@ -1,0 +1,205 @@
+{
+  "name": "BLCA-2014-TP53-RB-pathway",
+  "nodes": [
+    {
+      "id": "ok7nDiB9oQJI",
+      "name": "Cell cycle progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 414,
+      "y": 436,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "hm8HJrbqoWfo",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": null,
+      "x": 414,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "JYRUofjRoSmI",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 605,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "2XKi6b0joGD_",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 413,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "mz71J5tHoOtX",
+      "name": "E2F3",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 436,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4-9gyc8LoX1s",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 689,
+      "y": 264,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "9A-DhP0-oFUi",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 179,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "CsMIDjOQoHLw",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": null,
+      "x": 219,
+      "y": 264,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "mULNbFKfoZFg",
+      "name": "FBXW7",
+      "type": "GENE",
+      "parent": null,
+      "x": 625,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "jsI1OPG9oTvl",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 605,
+      "y": 85,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "mBClqwIZoU7d",
+      "name": "CDKN1A",
+      "type": "GENE",
+      "parent": null,
+      "x": 526,
+      "y": 264,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-ACCNJRfoNBI",
+      "name": "RB1",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 219,
+      "y": 353,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "B1RLlLrEo4cn",
+      "source": "mz71J5tHoOtX",
+      "target": "ok7nDiB9oQJI",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "As7hIoBSo17y",
+      "source": "CsMIDjOQoHLw",
+      "target": "-ACCNJRfoNBI",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "mjgKjVX6ow0m",
+      "source": "2XKi6b0joGD_",
+      "target": "JYRUofjRoSmI",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "5BaXTZDuo7H8",
+      "source": "mULNbFKfoZFg",
+      "target": "hm8HJrbqoWfo",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "PMdhVppIoyDR",
+      "source": "JYRUofjRoSmI",
+      "target": "mBClqwIZoU7d",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "w2p9WUJxo22X",
+      "source": "-ACCNJRfoNBI",
+      "target": "mz71J5tHoOtX",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "0hmD92TIo0ux",
+      "source": "9A-DhP0-oFUi",
+      "target": "CsMIDjOQoHLw",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "RfMPHF4FouzT",
+      "source": "jsI1OPG9oTvl",
+      "target": "JYRUofjRoSmI",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "toSMm4K7owET",
+      "source": "JYRUofjRoSmI",
+      "target": "2XKi6b0joGD_",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "LPb5J4Quo8EC",
+      "source": "mBClqwIZoU7d",
+      "target": "hm8HJrbqoWfo",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "_PGdKZ50o5vL",
+      "source": "hm8HJrbqoWfo",
+      "target": "-ACCNJRfoNBI",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "Vcmxazyaoz8N",
+      "source": "9A-DhP0-oFUi",
+      "target": "2XKi6b0joGD_",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "sABkuA1_oywi",
+      "source": "JYRUofjRoSmI",
+      "target": "4-9gyc8LoX1s",
+      "type": "ACTIVATES"
+    }
+  ]
+}

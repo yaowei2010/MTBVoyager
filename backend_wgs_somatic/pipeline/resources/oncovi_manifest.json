@@ -1,0 +1,31 @@
+{
+  "name": "OncoVI resource mapping",
+  "upstream_repository": "https://github.com/MGCarta/oncovi",
+  "upstream_commit": "99fa5801163bb6bd32d97e916ca2249bb9429d81",
+  "upstream_commit_date": "2026-04-10",
+  "paper_doi": "10.1016/j.jmoldx.2026.03.004",
+  "guideline_doi": "10.1016/j.gim.2022.01.001",
+  "license": "MIT for upstream scripts; external database licenses apply",
+  "profile": "strict_sop_2022_with_oncovi_2026_resources",
+  "intentional_differences": [
+    "OP1 requires all available independent predictor groups to support oncogenicity; upstream OncoVI uses an OR condition.",
+    "OS2 and SBS2 are not inferred from germline ClinVar classification; functional evidence must be explicitly curated.",
+    "OVS1 does not treat stop-loss as a null variant.",
+    "SBVS1 and SBS1 are mutually exclusive to avoid double counting the same population evidence.",
+    "Missing evidence is reported as not_assessable, never as evidence against a criterion."
+  ],
+  "required_files": [
+    "amino_dict.txt",
+    "bona_fide_tsg.txt",
+    "cgi_dictionary.txt",
+    "cosmic_all_dictionary.txt.gz",
+    "domains_dictionary.txt",
+    "grantham.tsv",
+    "inframe_indel_dict.txt",
+    "mut_splice_dict.txt",
+    "os2_manually_selected.txt",
+    "ogs_list.txt",
+    "single_residue_dict.txt",
+    "tsg_list.txt"
+  ]
+}

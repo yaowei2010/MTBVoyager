@@ -1,0 +1,4 @@
+FROM takeshi945/nckumtb:frontend-wgs-germline-ui-20260721-v2
+
+COPY build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/app.conf

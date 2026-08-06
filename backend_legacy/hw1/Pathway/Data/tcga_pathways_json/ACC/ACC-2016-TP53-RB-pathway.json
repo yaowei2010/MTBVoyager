@@ -1,0 +1,97 @@
+{
+  "name": "ACC-2016-TP53-RB-pathway",
+  "nodes": [
+    {
+      "id": "wyMGXBw8cUj6",
+      "name": "CDK4",
+      "type": "GENE",
+      "parent": null,
+      "x": 262,
+      "y": 231,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "LrJe2ktmcVzK",
+      "name": "RB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 262,
+      "y": 340,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "N18olkvEcUJu",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 387,
+      "y": 127,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-VLZ5keBcXa3",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 488,
+      "y": 340,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "79evo3OUcVFA",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 488,
+      "y": 231,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-le5m2j6cWa2",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": null,
+      "x": 80,
+      "y": 340,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "d3auWK_1cit5",
+      "source": "79evo3OUcVFA",
+      "target": "-VLZ5keBcXa3",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "w4Yp60k9chhi",
+      "source": "N18olkvEcUJu",
+      "target": "79evo3OUcVFA",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "XhRgnqAscgwV",
+      "source": "N18olkvEcUJu",
+      "target": "wyMGXBw8cUj6",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "0E_Xe1cUckq-",
+      "source": "wyMGXBw8cUj6",
+      "target": "LrJe2ktmcVzK",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "K9h1lRMzclc1",
+      "source": "-le5m2j6cWa2",
+      "target": "LrJe2ktmcVzK",
+      "type": "INHIBITS"
+    }
+  ]
+}

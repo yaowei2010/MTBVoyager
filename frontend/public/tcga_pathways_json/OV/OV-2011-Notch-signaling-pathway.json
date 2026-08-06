@@ -1,0 +1,99 @@
+{
+  "name": "OV-2011-Notch-signaling-pathway",
+  "nodes": [
+    {
+      "id": "wTL7UE_SDIWe",
+      "name": "MAML3",
+      "type": "GENE",
+      "parent": "Z64sAxBCSrsH",
+      "x": 800,
+      "y": 380,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Ey82kzAQDKzS",
+      "name": "JAG1",
+      "type": "GENE",
+      "parent": "HPXERf3USgjx",
+      "x": 462,
+      "y": 280,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ICfP9aB2DIWS",
+      "name": "MAML1",
+      "type": "GENE",
+      "parent": "Z64sAxBCSrsH",
+      "x": 800,
+      "y": 247,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "FvIadI1RDKzA",
+      "name": "JAG2",
+      "type": "GENE",
+      "parent": "HPXERf3USgjx",
+      "x": 462,
+      "y": 351,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "HPXERf3USgjx",
+      "name": "JAG",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 462,
+      "y": 315,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "xiGB_3VdSfd3",
+      "name": "NOTCH3",
+      "type": "GENE",
+      "parent": null,
+      "x": 632,
+      "y": 316,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "9xWqi9JKDIWF",
+      "name": "MAML2",
+      "type": "GENE",
+      "parent": "Z64sAxBCSrsH",
+      "x": 800,
+      "y": 314,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Z64sAxBCSrsH",
+      "name": "MAML",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 800,
+      "y": 313,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "osh5OcaxTA2q",
+      "source": "HPXERf3USgjx",
+      "target": "xiGB_3VdSfd3",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "AivX6u8YTCYD",
+      "source": "Z64sAxBCSrsH",
+      "target": "xiGB_3VdSfd3",
+      "type": "INHIBITS"
+    }
+  ]
+}

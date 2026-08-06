@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    {% block header %}{% endblock %}
+      
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="/docs/4.4/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+    <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+    <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+    <link rel="manifest" href="/docs/4.4/assets/img/favicons/manifest.json">
+    <link rel="mask-icon" href="/docs/4.4/assets/img/favicons/safari-pinned-tab.svg" color="#563d7c">
+    <link rel="icon" href="/docs/4.4/assets/img/favicons/favicon.ico">
+    <meta name="msapplication-config" content="/docs/4.4/assets/img/favicons/browserconfig.xml">
+    <meta name="theme-color" content="#563d7c">
+      
+    <!-- Custom styles for this template -->
+    <link href="dashboard.css" rel="stylesheet">
+    <style>
+     .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+     }
+     @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+     .hideContent {
+            overflow: hidden;
+            line-height: 1em;
+            height: 2em;
+     }
+     .showContent {
+            line-height: 1em;
+            height: auto;
+     }
+     .showContent{
+            height: auto;
+     }
+     .show-more {
+            padding: 3px 0;
+            text-align: right;
+     }
+     table{
+            word-wrap:break-word;
+     }
+
+		/* 分隔線的CSS樣式 */
+		.separator {
+		  border-top: 1px solid #ccc;
+		  margin-top: 10px;
+		  margin-bottom: 10px;
+		}
+
+    </style>
+  {% block css %}{% endblock %}    
+  </head>
+  <body>
+      
+    <div class="container-fluid fixed">
+      <div class="row">
+        <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+          <div class="sidebar-sticky">
+           <h2 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <a href="/home/">
+                <span>Home</span>
+              </a>
+           </h2>
+           <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>User</span>
+           </h5>
+              {% load static %}
+            <div class="px-3 mt-4 mb-1">
+                <img src= "{% static 'account.png' %}" alt="account"  height="30"/>
+                {% if request.user.is_authenticated %}
+                    <span style="font-size: 20px;vertical-align: middle;">
+                        {{request.user.username}} ({{ doctor_type }})
+                    </span>
+                {% else %}
+                    <span style="font-size: 20px;vertical-align: middle;">
+                        <a href="{% url 'Login' %} " role="button">Please login</a>
+                    </span>
+                 {% endif %}
+            </div>
+            {% if request.user.is_authenticated %}
+              <div class="px-3 mt-4 mb-1">
+                    <a href="{% url 'password' %} ">
+                     <h5>Change password</h5>
+                    </a>
+              </div>
+            <div class="px-3 mt-4 mb-1">
+                <a href="{% url 'Logout' %} "><h5>Logout</h5></a>
+            </div>
+            {% endif %}
+              
+
+           <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>Annotation</span>
+           </h5>
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <h5>
+                <a class="nav-link" href="/input/">
+                  <span data-feather="home"></span>Input <span class="sr-only"></span>
+                </a>
+                </h5>
+              </li>
+              <li class="nav-item">
+                <h5>
+                <a class="nav-link" href="/result/">
+                  <span data-feather="file"></span>Job list
+                </a>
+                </h5>
+              </li>
+        </ul>
+
+        <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Interpretation</span>
+        </h5>
+        <ul class="nav flex-column mb-2">
+         <li class="nav-item"> 
+            <a class="nav-link" href='/selection/'>
+              <span data-feather="file-text"></span>
+              <h5>Analysis setups</h5>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Summary' %}">
+              <span data-feather="file-text"></span>
+              <h5>Summary</h5>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Known' %}">
+              <span data-feather="file-text"></span>
+              <h5>Known pathogenic</h5>
+            </a>
+          </li>
+	  <li class="nav-item">
+            <a class="nav-link" href="{% url 'Predicted' %}">
+              <span data-feather="file-text"></span>
+              <h5>Predicted suspect</h5>
+            </a>
+          </li>
+	  <li class="nav-item">
+            <a class="nav-link" href="{% url 'Others' %}">
+              <span data-feather="file-text"></span>
+              <h5>Other variants</h5>
+            </a>
+          </li>
+	  <li class="nav-item">
+              <a class="nav-link" href="/inheritance_matching/">
+	        <span data-feather="file-text"></span>
+	        <h5>Inheritance matching</h5>
+	      </a>
+          </li>
+          <div class="separator"></div>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Secondary' %}">
+              <span data-feather="file-text"></span>
+              <h5>Incidental finding</h5>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'Drug_response' %}">
+              <span data-feather="file-text"></span>
+              <h5>Drug response</h5>
+            </a>
+          </li>
+        </ul>
+      </div>
+            
+    </nav>
+
+   <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+    {% block content %}
+      
+    {% endblock %}
+    </main>          
+   
+  </div>
+</div>
+    
+    
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+    {% block javascript %}{% endblock %}  
+  </body>
+</html>

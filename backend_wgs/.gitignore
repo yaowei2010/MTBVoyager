@@ -1,0 +1,10 @@
+pipeline/.nextflow*
+pipeline/test-work/
+pipeline/test-results/
+pipeline/report-*
+pipeline/dag-*
+pipeline/timeline-*
+pipeline/trace-*
+**/__pycache__/
+*.py[cod]
+.pytest_cache/

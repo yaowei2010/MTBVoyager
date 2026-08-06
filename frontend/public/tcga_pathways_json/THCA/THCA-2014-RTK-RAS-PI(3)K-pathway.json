@@ -1,0 +1,447 @@
+{
+  "name": "THCA-2014-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "G9y6ZBee_nmX",
+      "name": "MTOR",
+      "type": "GENE",
+      "parent": null,
+      "x": 649,
+      "y": 417,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "OjQjq-cc7_5M",
+      "name": "NRAS",
+      "type": "GENE",
+      "parent": "EOfQTOkE_iLF",
+      "x": 646,
+      "y": 25,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "fi2ldWMn_lnk",
+      "name": "AKT",
+      "type": "GENE",
+      "parent": null,
+      "x": 647,
+      "y": 265,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "jwugB2iP_y0Y",
+      "name": "BCL2",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 559,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "urLIUCXQ70w-",
+      "name": "NTR1",
+      "type": "GENE",
+      "parent": "Ken9wGw8AKU3",
+      "x": 293,
+      "y": -7,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "1TJ8hV1I_ZR5",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 374,
+      "y": 186,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "xSi1Do6v_sYj",
+      "name": "RAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 186,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "7C2rFt7t_fdn",
+      "name": "DUSPs",
+      "type": "GENE",
+      "parent": null,
+      "x": 298,
+      "y": 524,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "pq87LogY_1LI",
+      "name": "BRAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 1024,
+      "y": 186,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "F4o-nfWI_urx",
+      "name": "pERK",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 344,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "AoCFeVPVAu6s",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 841,
+      "y": 636,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "PAsWh9Rz_dco",
+      "name": "BRAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 167,
+      "y": 276,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "LPvNA7nc7_57",
+      "name": "HRAS",
+      "type": "GENE",
+      "parent": "EOfQTOkE_iLF",
+      "x": 804,
+      "y": 25,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Ken9wGw8AKU3",
+      "name": "NTR",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 371,
+      "y": 22,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "UiVUw9Es_x5s",
+      "name": "BAD",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 489,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "tGen8Qvz_qez",
+      "name": "Cell proliferation/Growth",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 298,
+      "y": 628,
+      "width": 174,
+      "height": 24
+    },
+    {
+      "id": "r0hPxhCH7_5n",
+      "name": "KRAS",
+      "type": "GENE",
+      "parent": "EOfQTOkE_iLF",
+      "x": 961,
+      "y": 25,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "K3RfoHn2_kQ2",
+      "name": "PI3K",
+      "type": "GENE",
+      "parent": null,
+      "x": 647,
+      "y": 186,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "lMJhnvzk_tYZ",
+      "name": "pMEK",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 264,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "eM1eNr4K_cOi",
+      "name": "pMEK",
+      "type": "GENE",
+      "parent": null,
+      "x": 298,
+      "y": 346,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-6lLHt7R_v9K",
+      "name": "p90",
+      "type": "GENE",
+      "parent": null,
+      "x": 841,
+      "y": 419,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "JtRMUb9N70xa",
+      "name": "NTR3",
+      "type": "GENE",
+      "parent": "Ken9wGw8AKU3",
+      "x": 378,
+      "y": 51,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "WQ8orp6Y_ouv",
+      "name": "Protein synthesis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 649,
+      "y": 627,
+      "width": 126,
+      "height": 24
+    },
+    {
+      "id": "EOfQTOkE_iLF",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 803,
+      "y": 25,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "WK-XNi2970xq",
+      "name": "NTR2",
+      "type": "GENE",
+      "parent": "Ken9wGw8AKU3",
+      "x": 450,
+      "y": -7,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "CDUJn7rL_YRR",
+      "name": "RET",
+      "type": "GENE",
+      "parent": null,
+      "x": 167,
+      "y": 186,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Gyr_vYK7_eUm",
+      "name": "pERK",
+      "type": "GENE",
+      "parent": null,
+      "x": 298,
+      "y": 434,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EJdSJtPH_amI",
+      "name": "RAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 374,
+      "y": 276,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EhaBKk9-_mvL",
+      "name": "TSC2",
+      "type": "GENE",
+      "parent": null,
+      "x": 647,
+      "y": 345,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "HComBP3QBFSr",
+      "source": "xSi1Do6v_sYj",
+      "target": "lMJhnvzk_tYZ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "5ow_H43KBLyc",
+      "source": "jwugB2iP_y0Y",
+      "target": "AoCFeVPVAu6s",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "lafIlqasBaaQ",
+      "source": "EJdSJtPH_amI",
+      "target": "eM1eNr4K_cOi",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "pCtfuSydBdaS",
+      "source": "7C2rFt7t_fdn",
+      "target": "Gyr_vYK7_eUm",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "YyPlgJXcA__s",
+      "source": "EhaBKk9-_mvL",
+      "target": "G9y6ZBee_nmX",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "iA_J_DZbBefG",
+      "source": "7C2rFt7t_fdn",
+      "target": "tGen8Qvz_qez",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "sJ4XKEpFA6LY",
+      "source": "Ken9wGw8AKU3",
+      "target": "EOfQTOkE_iLF",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "8BieawZKA3u7",
+      "source": "CDUJn7rL_YRR",
+      "target": "1TJ8hV1I_ZR5",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "r79uM2_gBZKl",
+      "source": "1TJ8hV1I_ZR5",
+      "target": "EJdSJtPH_amI",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "ACvH-CYzA8yR",
+      "source": "EOfQTOkE_iLF",
+      "target": "K3RfoHn2_kQ2",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "TmRxcbx_Bbb7",
+      "source": "eM1eNr4K_cOi",
+      "target": "Gyr_vYK7_eUm",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "teHhboSJBVGJ",
+      "source": "pq87LogY_1LI",
+      "target": "xSi1Do6v_sYj",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "XmrMteXSBBt-",
+      "source": "G9y6ZBee_nmX",
+      "target": "WQ8orp6Y_ouv",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "hU00JaNWBYJR",
+      "source": "PAsWh9Rz_dco",
+      "target": "eM1eNr4K_cOi",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "FXb60wuvBcMi",
+      "source": "Gyr_vYK7_eUm",
+      "target": "7C2rFt7t_fdn",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "-iHJfCCVA_Hh",
+      "source": "fi2ldWMn_lnk",
+      "target": "EhaBKk9-_mvL",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "aW6elpjvBKyK",
+      "source": "UiVUw9Es_x5s",
+      "target": "jwugB2iP_y0Y",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "LlJV17wNBHMh",
+      "source": "lMJhnvzk_tYZ",
+      "target": "F4o-nfWI_urx",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "z-CbE5XoBJ5o",
+      "source": "-6lLHt7R_v9K",
+      "target": "UiVUw9Es_x5s",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "F9EcWkHvBUJ2",
+      "source": "pq87LogY_1LI",
+      "target": "xSi1Do6v_sYj",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "GqN5v_YIBEbi",
+      "source": "EOfQTOkE_iLF",
+      "target": "xSi1Do6v_sYj",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "FWnfRc3YBC44",
+      "source": "-6lLHt7R_v9K",
+      "target": "G9y6ZBee_nmX",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "AV9s-fteA9y7",
+      "source": "K3RfoHn2_kQ2",
+      "target": "fi2ldWMn_lnk",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "3BgREqkhA22-",
+      "source": "Ken9wGw8AKU3",
+      "target": "1TJ8hV1I_ZR5",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "r31OK-oJBIby",
+      "source": "F4o-nfWI_urx",
+      "target": "-6lLHt7R_v9K",
+      "type": "ACTIVATES"
+    }
+  ]
+}

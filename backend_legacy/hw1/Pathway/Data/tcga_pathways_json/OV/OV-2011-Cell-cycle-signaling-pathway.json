@@ -1,0 +1,95 @@
+{
+  "name": "OV-2011-Cell-cycle-signaling-pathway",
+  "nodes": [
+    {
+      "id": "oN50crvCRjmK",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 635,
+      "y": 68,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "tJj5RrqJRq1h",
+      "name": "RB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 635,
+      "y": 299,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Sx3IX8ExBTXu",
+      "name": "CCNE1",
+      "type": "GENE",
+      "parent": "FY8bF0WdRsru",
+      "x": 639,
+      "y": 148,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "BIDGlk8LBTX9",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": "FY8bF0WdRsru",
+      "x": 550,
+      "y": 207,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "FY8bF0WdRsru",
+      "name": "CYCLINS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 634,
+      "y": 177,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "nnswnmMyRv3y",
+      "name": "Cell cycle progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 635,
+      "y": 373,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "Ixg8lLJLBTXd",
+      "name": "CCND2",
+      "type": "GENE",
+      "parent": "FY8bF0WdRsru",
+      "x": 719,
+      "y": 207,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "duEMY1UXR86v",
+      "source": "FY8bF0WdRsru",
+      "target": "tJj5RrqJRq1h",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "__OC9xbiR-Fr",
+      "source": "tJj5RrqJRq1h",
+      "target": "nnswnmMyRv3y",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "VqDZTZnER7cZ",
+      "source": "oN50crvCRjmK",
+      "target": "FY8bF0WdRsru",
+      "type": "INHIBITS"
+    }
+  ]
+}

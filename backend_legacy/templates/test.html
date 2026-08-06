@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Save Info</title>
+</head>
+<body>
+    <center>
+    <h2>Save Patient Info</h2>
+    <form id="saveInfoForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="subject_id">Subject ID:</label>
+        <input type="text" id="subject_id" name="subject_id"><br><br>
+
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"><br><br>
+
+        <label for="dob">Date of Birth:</label>
+        <input type="text" id="dob" name="dob"><br><br>
+
+        <label for="gender">Gender:</label>
+        <input type="text" id="gender" name="gender"><br><br>
+
+        <label for="history">History/Description:</label><br>
+        <textarea id="history" name="history"></textarea><br><br>
+
+        <label for="myfile">Upload File:</label>
+        <input type="file" id="myfile" name="myfile"><br><br>
+
+        <label for="allele_frequency">allele_frequency</label>
+        <input type="text" id="allele_frequency" name="allele_frequency"><br><br>
+
+        <label for="panel_name">panel_name</label>
+        <input type="text" id="panel_name" name="panel_name"><br><br>
+
+        <label for="genes">genes</label>
+        <input type="text" id="genes" name="genes"><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</center>
+
+    <div id="message"></div>
+    <div id="pdfContainer" style="margin-top: 30px;">
+        <!-- PDF will be shown here -->
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // $('#saveInfoForm').submit(function (event) {
+            //     event.preventDefault();
+
+            //     var formData = new FormData(this);
+            //     var newjobid = $('#subject_id').val(); // 把 subject_id 當作 job ID
+
+            //     // $.ajax({
+            //     //     url: '/save_info/test',
+            //     //     type: 'POST',
+            //     //     data: formData,
+            //     //     processData: false,
+            //     //     contentType: false,
+            //     //     success: function (response) {
+            //     //         $('#message').html('<p style="color:green;">✔️ 資料送出成功</p>');
+            //     //         // 接下來打 API 去抓 PDF
+            //     //         fetchFusionPdf(newjobid);
+            //     //     },
+            //     //     error: function (xhr, status, error) {
+            //     //         $('#message').html('<p style="color:red;">❌ 發生錯誤：' + error + '</p>');
+            //     //     }
+            //     // });
+            // });
+
+            function fetchFusionPdf(newjobid) {
+                $.ajax({
+                    url: '/fusion_gene/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ newjobid: newjobid }),
+                    success: function (res) {
+                        if (res.pdf_base64) {
+                            const pdfData = 'data:application/pdf;base64,' + res.pdf_base64;
+                            $('#pdfContainer').html(`
+                                <h3>融合基因報告 PDF</h3>
+                                <iframe src="${pdfData}" width="100%" height="600px"></iframe>
+                            `);
+                        } else {
+                            $('#pdfContainer').html('<p style="color:red;">⚠️ 沒有收到 PDF 資料。</p>');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        $('#pdfContainer').html('<p style="color:red;">❌ 無法載入 PDF：' + error + '</p>');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

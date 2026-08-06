@@ -1,0 +1,117 @@
+{
+  "name": "SKCM-2015-Cell-cycle-signaling-pathway",
+  "nodes": [
+    {
+      "id": "npKTJggFJS4I",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 442,
+      "y": 89,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Iba11JzIJVxh",
+      "name": "CYCLINS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 520,
+      "y": 175,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "WcN_CcOrC9iS",
+      "name": "CDK4",
+      "type": "GENE",
+      "parent": "Iba11JzIJVxh",
+      "x": 442,
+      "y": 175,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "XI_rBXYxJXPk",
+      "name": "E2F",
+      "type": "GENE",
+      "parent": null,
+      "x": 520,
+      "y": 372,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "v_gEFTZBC9il",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": "Iba11JzIJVxh",
+      "x": 599,
+      "y": 175,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "e_ZEQUYtJz1B",
+      "name": "Cell cycle progression",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 520,
+      "y": 484,
+      "width": 156,
+      "height": 24
+    },
+    {
+      "id": "4vxRSXTEJWO8",
+      "name": "RB1",
+      "type": "GENE",
+      "parent": null,
+      "x": 520,
+      "y": 276,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "uK5CVzIeJayA",
+      "name": "CDKN2B",
+      "type": "GENE",
+      "parent": null,
+      "x": 599,
+      "y": 89,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "vJf6xitbJwIp",
+      "source": "npKTJggFJS4I",
+      "target": "Iba11JzIJVxh",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "MrgZ3psqKpK7",
+      "source": "XI_rBXYxJXPk",
+      "target": "e_ZEQUYtJz1B",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "fQLLdtj0JzEP",
+      "source": "4vxRSXTEJWO8",
+      "target": "XI_rBXYxJXPk",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "Msdh3q6kJxC4",
+      "source": "uK5CVzIeJayA",
+      "target": "Iba11JzIJVxh",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "vjchZOt9JyOV",
+      "source": "Iba11JzIJVxh",
+      "target": "4vxRSXTEJWO8",
+      "type": "INHIBITS"
+    }
+  ]
+}

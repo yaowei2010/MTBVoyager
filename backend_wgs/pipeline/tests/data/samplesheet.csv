@@ -1,0 +1,2 @@
+sample_id,snv_vcf,sv_vcf,cnv_vcf,gene_list,sex
+Custom_Test_01,tests/data/test.vcf.gz,tests/data/test.sv.vcf.gz,tests/data/test.cnv.vcf.gz,tests/data/test.genes.txt,unknown

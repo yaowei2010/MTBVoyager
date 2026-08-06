@@ -1,0 +1,133 @@
+{
+  "name": "SKCM-2015-Histone-modification-pathway",
+  "nodes": [
+    {
+      "id": "UUHLK2LeLlq4",
+      "name": "AURKA",
+      "type": "GENE",
+      "parent": null,
+      "x": 425,
+      "y": 166,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "yZeIXzgALlHL",
+      "name": "PPP6C",
+      "type": "GENE",
+      "parent": null,
+      "x": 231,
+      "y": 166,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4dCj0PbWLn10",
+      "name": "ARID2",
+      "type": "GENE",
+      "parent": null,
+      "x": 425,
+      "y": 308,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "xWY6P0idNRza",
+      "name": "Genetic stability",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 624,
+      "y": 195,
+      "width": 126,
+      "height": 24
+    },
+    {
+      "id": "-c29Xam0NfMu",
+      "name": "Chromatin remodeling",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 231,
+      "y": 263,
+      "width": 144,
+      "height": 24
+    },
+    {
+      "id": "Cl7g3xLYLmwQ",
+      "name": "Chromatid segregation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 624,
+      "y": 133,
+      "width": 150,
+      "height": 24
+    },
+    {
+      "id": "X7mpJiW8Lodu",
+      "name": "Transcriptional control",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 231,
+      "y": 342,
+      "width": 162,
+      "height": 24
+    },
+    {
+      "id": "8D0fnb8SLrSQ",
+      "name": "Epigenetic regulation",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 231,
+      "y": 437,
+      "width": 150,
+      "height": 24
+    },
+    {
+      "id": "uHqIeo66Lqq9",
+      "name": "IDH1",
+      "type": "GENE",
+      "parent": null,
+      "x": 425,
+      "y": 435,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "9WzDoyMZNXKq",
+      "source": "UUHLK2LeLlq4",
+      "target": "Cl7g3xLYLmwQ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "nh2AMryLNpj_",
+      "source": "uHqIeo66Lqq9",
+      "target": "8D0fnb8SLrSQ",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "3ixp2EynNWMa",
+      "source": "yZeIXzgALlHL",
+      "target": "UUHLK2LeLlq4",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "-scKWlPDNX6-",
+      "source": "UUHLK2LeLlq4",
+      "target": "xWY6P0idNRza",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "8YJTZK-INn2c",
+      "source": "4dCj0PbWLn10",
+      "target": "-c29Xam0NfMu",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "MdvHv-NFNoui",
+      "source": "4dCj0PbWLn10",
+      "target": "X7mpJiW8Lodu",
+      "type": "ACTIVATES"
+    }
+  ]
+}

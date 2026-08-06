@@ -1,0 +1,169 @@
+{
+  "name": "GBM-2013-RTK-RAS-PI(3)K-pathway",
+  "nodes": [
+    {
+      "id": "pQ2sq0Chk7o8",
+      "name": "NF1",
+      "type": "GENE",
+      "parent": null,
+      "x": 843,
+      "y": 223,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "XfDonLT2k9rr",
+      "name": "RAS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 674,
+      "y": 223,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "JKmqofwVk_cd",
+      "name": "BRAF",
+      "type": "GENE",
+      "parent": null,
+      "x": 674,
+      "y": 334,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "HG7A5p2q4D3f",
+      "name": "EGFR",
+      "type": "GENE",
+      "parent": "ZvpmFM7llCzi",
+      "x": 331,
+      "y": 113,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "E0625yTsk46l",
+      "name": "PI3K(3)K",
+      "type": "GENE",
+      "parent": null,
+      "x": 428,
+      "y": 225,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "TTwvf1BelBTM",
+      "name": "AKT Pathway",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 428,
+      "y": 338,
+      "width": 90,
+      "height": 24
+    },
+    {
+      "id": "sZJ7Kmrg4D35",
+      "name": "MET",
+      "type": "GENE",
+      "parent": "ZvpmFM7llCzi",
+      "x": 643,
+      "y": 113,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "dAkBkKN-lAKT",
+      "name": "MAPK Pathway",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 862,
+      "y": 335,
+      "width": 96,
+      "height": 24
+    },
+    {
+      "id": "8kyYeHGHk4NK",
+      "name": "PTEN",
+      "type": "GENE",
+      "parent": null,
+      "x": 255,
+      "y": 225,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "ZvpmFM7llCzi",
+      "name": "RTK",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 565,
+      "y": 113,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "8z2n3qaU4D3L",
+      "name": "FGFR",
+      "type": "GENE",
+      "parent": "ZvpmFM7llCzi",
+      "x": 800,
+      "y": 113,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-jXEzRew4D3r",
+      "name": "PDGFRA",
+      "type": "GENE",
+      "parent": "ZvpmFM7llCzi",
+      "x": 487,
+      "y": 113,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "f9EmKbzjlk77",
+      "source": "JKmqofwVk_cd",
+      "target": "dAkBkKN-lAKT",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "qj0ZCvR8le5E",
+      "source": "8kyYeHGHk4NK",
+      "target": "E0625yTsk46l",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "4DrueUbLljf-",
+      "source": "E0625yTsk46l",
+      "target": "TTwvf1BelBTM",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "c4Kpa4R5lgcQ",
+      "source": "ZvpmFM7llCzi",
+      "target": "XfDonLT2k9rr",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "CEeo6oGYlifg",
+      "source": "XfDonLT2k9rr",
+      "target": "JKmqofwVk_cd",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "zingzci6lhXA",
+      "source": "pQ2sq0Chk7o8",
+      "target": "XfDonLT2k9rr",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "LTVgdZNOld9G",
+      "source": "ZvpmFM7llCzi",
+      "target": "E0625yTsk46l",
+      "type": "ACTIVATES"
+    }
+  ]
+}

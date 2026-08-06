@@ -1,0 +1,1 @@
+2026-07-21 07:16:50	17.2s	scruffy_swanson	OK	b9d5f3b0dcb338bec93fbbaf2bcfca4c	bc22d2e9-26cb-4a83-a52c-bd2e6efe1cad	nextflow run main.nf -profile test --outdir /tmp/mtb-wgs-test-results -work-dir /tmp/mtb-wgs-test-work -ansi-log false

@@ -1,0 +1,12 @@
+[{'Location': 'chr1:183191250_183191250C>T', 
+'Gene': 'LAMC2',
+'RS ID': 'rs753268823',
+'MAF': {'gnomAD': '-1.0', '1000G': '-1.0', 'TW Biobank': '-1.0'}, 
+'Genotype / VAF': {'GT': 'het', 'VAF': 0.45, 'AD': '104,85', 'Otherinfo10': 'PASS'}, 
+'Evidence': {'Clinvar': 'Pathogenic/Likely pathogenic(2★)', 'LOVD': '.'}, 
+'Domain': 'Laminin IV', 
+'Pathogenicity': {'Summary': '(3/3)', 'Polyphen2_HVAR': '.', 'SIFT': '.', 'VEST3': '.', 'MutationTaster': 'A', 'MetaSVM': '.', 'MetaLR': '.', 'CADD': '36', 'DANN': '0.998'},
+'Splicing effect': {'Summary': '(1/1)', 'dbscsnv ADA score': '.', 'dbscsnv RF score': '.', 'SPIDEX zscore': '-3.985'},
+'OMIM': '150292',
+'Amelie Max score': '-1.0',
+'Amelie Mean score': '-1.0'}]

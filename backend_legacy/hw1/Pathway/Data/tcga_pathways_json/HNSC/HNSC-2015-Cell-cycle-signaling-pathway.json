@@ -1,0 +1,223 @@
+{
+  "name": "HNSC-2015-Cell-cycle-signaling-pathway",
+  "nodes": [
+    {
+      "id": "prbNZ7N4F2yz",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 346,
+      "y": 201,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "UF0yWD0cGVp6",
+      "name": "Cell cycle and survival",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 859,
+      "y": 466,
+      "width": 162,
+      "height": 24
+    },
+    {
+      "id": "1Fbfq0EnF4FD",
+      "name": "let-7c",
+      "type": "GENE",
+      "parent": null,
+      "x": 761,
+      "y": 201,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "tR7G7jSMFyKn",
+      "name": "HRAS",
+      "type": "GENE",
+      "parent": null,
+      "x": 456,
+      "y": 71,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "OUtOuzrFGWsp",
+      "name": "HPVE",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 347,
+      "y": 333,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "KkBOpjMSGBEp",
+      "name": "RB1",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 570,
+      "y": 334,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "m6QJybSmGSEj",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 531,
+      "y": 466,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Pu1nPMkoGUcO",
+      "name": "MYC",
+      "type": "GENE",
+      "parent": null,
+      "x": 931,
+      "y": 334,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "z2FkIMy8FypC",
+      "name": "PIK3CA",
+      "type": "GENE",
+      "parent": null,
+      "x": 678,
+      "y": 71,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "S0n0th2eCfb9",
+      "name": "CCND1",
+      "type": "GENE",
+      "parent": "-swYow3RF5GO",
+      "x": 570,
+      "y": 171,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "-swYow3RF5GO",
+      "name": "CYCLINS",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 570,
+      "y": 197,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "BNAC4UcvF_fD",
+      "name": "E2F1",
+      "type": "GENE",
+      "parent": null,
+      "x": 764,
+      "y": 334,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "6jlQIfmICrjy",
+      "name": "HPVE7",
+      "type": "GENE",
+      "parent": "OUtOuzrFGWsp",
+      "x": 347,
+      "y": 360,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "PPI7pGMpCfcQ",
+      "name": "CDK6",
+      "type": "GENE",
+      "parent": "-swYow3RF5GO",
+      "x": 570,
+      "y": 224,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "4bkc06NyCrjd",
+      "name": "HPVE6",
+      "type": "GENE",
+      "parent": "OUtOuzrFGWsp",
+      "x": 347,
+      "y": 307,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "idn2SG2QHMC0",
+      "source": "BNAC4UcvF_fD",
+      "target": "UF0yWD0cGVp6",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "njhnQe9vCfci",
+      "source": "z2FkIMy8FypC",
+      "target": "S0n0th2eCfb9",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "5CzfV-h-HQkB",
+      "source": "OUtOuzrFGWsp",
+      "target": "m6QJybSmGSEj",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "UpECTCkVHGkl",
+      "source": "1Fbfq0EnF4FD",
+      "target": "-swYow3RF5GO",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "wnpqGTZ4HNFG",
+      "source": "Pu1nPMkoGUcO",
+      "target": "UF0yWD0cGVp6",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "WfTDsR48HJ8K",
+      "source": "-swYow3RF5GO",
+      "target": "KkBOpjMSGBEp",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "mHie46k1HIGn",
+      "source": "prbNZ7N4F2yz",
+      "target": "-swYow3RF5GO",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "EJXQGmWDCfcZ",
+      "source": "tR7G7jSMFyKn",
+      "target": "S0n0th2eCfb9",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "naU-KiGLHOkS",
+      "source": "OUtOuzrFGWsp",
+      "target": "KkBOpjMSGBEp",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "lU11XAdWHRyG",
+      "source": "m6QJybSmGSEj",
+      "target": "UF0yWD0cGVp6",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "hgYpZiWwHLEw",
+      "source": "KkBOpjMSGBEp",
+      "target": "BNAC4UcvF_fD",
+      "type": "INHIBITS"
+    }
+  ]
+}

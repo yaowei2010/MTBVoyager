@@ -1,0 +1,117 @@
+{
+  "name": "BRCA-2012-TP53-pathway",
+  "nodes": [
+    {
+      "id": "AtC08ZQJc2KU",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 491,
+      "y": 349,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "oHj1iu9Nc3_k",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 491,
+      "y": 453,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "eUAyFKEv_rSt",
+      "name": "MDM4",
+      "type": "GENE",
+      "parent": "Y4IgKFahc81t",
+      "x": 690,
+      "y": 375,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EDekyeJO_rSa",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": "Y4IgKFahc81t",
+      "x": 690,
+      "y": 319,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "nWtQqBkt_evA",
+      "name": "AKT1",
+      "type": "GENE",
+      "parent": null,
+      "x": 491,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "EZw1mFjYc0Pb",
+      "name": "CHEK2",
+      "type": "GENE",
+      "parent": null,
+      "x": 300,
+      "y": 350,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "Y4IgKFahc81t",
+      "name": "MDM",
+      "type": "FAMILY",
+      "parent": null,
+      "x": 690,
+      "y": 347,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "DEtr5Wpj_eup",
+      "name": "ATM",
+      "type": "GENE",
+      "parent": null,
+      "x": 300,
+      "y": 245,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "EQR_Azwj_evL",
+      "source": "DEtr5Wpj_eup",
+      "target": "EZw1mFjYc0Pb",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "sV9ZEeJ9dMg3",
+      "source": "Y4IgKFahc81t",
+      "target": "AtC08ZQJc2KU",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "kudrU-U-_evP",
+      "source": "nWtQqBkt_evA",
+      "target": "AtC08ZQJc2KU",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "hxwMi4kydOBT",
+      "source": "AtC08ZQJc2KU",
+      "target": "oHj1iu9Nc3_k",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "uh5qfjUjdKB7",
+      "source": "EZw1mFjYc0Pb",
+      "target": "AtC08ZQJc2KU",
+      "type": "ACTIVATES"
+    }
+  ]
+}

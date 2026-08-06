@@ -1,0 +1,113 @@
+{
+  "name": "GBM-2008-TP53-pathway",
+  "nodes": [
+    {
+      "id": "x-laQtq0NSZI",
+      "name": "Activated oncogenes",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 724,
+      "y": 57,
+      "width": 138,
+      "height": 24
+    },
+    {
+      "id": "VIrh6R4jNYOQ",
+      "name": "MDM2",
+      "type": "GENE",
+      "parent": null,
+      "x": 724,
+      "y": 208,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "LxZckK4_NmKp",
+      "name": "Apoptosis",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 886,
+      "y": 297,
+      "width": 78,
+      "height": 24
+    },
+    {
+      "id": "0z81KeWTNfOj",
+      "name": "MDM4",
+      "type": "GENE",
+      "parent": null,
+      "x": 886,
+      "y": 234,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "X0XgoUzfNjH-",
+      "name": "Senescence",
+      "type": "PROCESS",
+      "parent": null,
+      "x": 546,
+      "y": 297,
+      "width": 84,
+      "height": 24
+    },
+    {
+      "id": "IXX8d7kuNVHa",
+      "name": "CDKN2A",
+      "type": "GENE",
+      "parent": null,
+      "x": 724,
+      "y": 135,
+      "width": 150,
+      "height": 52
+    },
+    {
+      "id": "6RLrPg8rNa4o",
+      "name": "TP53",
+      "type": "GENE",
+      "parent": null,
+      "x": 724,
+      "y": 297,
+      "width": 150,
+      "height": 52
+    }
+  ],
+  "edges": [
+    {
+      "id": "4PNvvSvKNtxu",
+      "source": "IXX8d7kuNVHa",
+      "target": "VIrh6R4jNYOQ",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "gX_WY_rANxtC",
+      "source": "VIrh6R4jNYOQ",
+      "target": "6RLrPg8rNa4o",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "EznJNkeAN1al",
+      "source": "6RLrPg8rNa4o",
+      "target": "X0XgoUzfNjH-",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "kaHvTklZNzas",
+      "source": "0z81KeWTNfOj",
+      "target": "6RLrPg8rNa4o",
+      "type": "INHIBITS"
+    },
+    {
+      "id": "wTOjoJHdNq6N",
+      "source": "x-laQtq0NSZI",
+      "target": "IXX8d7kuNVHa",
+      "type": "ACTIVATES"
+    },
+    {
+      "id": "5-9bxAL_N0gO",
+      "source": "6RLrPg8rNa4o",
+      "target": "LxZckK4_NmKp",
+      "type": "ACTIVATES"
+    }
+  ]
+}
