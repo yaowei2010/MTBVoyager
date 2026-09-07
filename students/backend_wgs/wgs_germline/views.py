@@ -90,6 +90,8 @@ def upload(request):
         files = {}
         for key, suffix in SUFFIXES.items():
             item = request.FILES.get(key)
+            if not item and key != "snv":
+                continue
             if not item or not item.name.lower().endswith(suffix):
                 raise ValueError(f"{key.upper()} file must end with {suffix}")
             if item.size <= 0:
@@ -286,30 +288,59 @@ def pharmcat_results(request, analysis_id):
         return _error("Analysis not found", 404)
     sample = metadata["subject"]["subject_id"]
     root = directory / "results" / sample / "pharmcat"
-    rows = []
-    for path in root.rglob("*.phenotype.json") if root.exists() else []:
+    calls, recommendations, variant_annotations = [], [], []
+    report_paths = list(root.rglob("*.report.json")) if root.exists() else []
+    for path in report_paths:
         try:
             report = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             continue
-        for gene, gene_report in report.get("geneReports", {}).items():
-            drugs = []
-            for drug in gene_report.get("relatedDrugs") or []:
-                drugs.append(str(drug.get("name") or drug.get("drugName") or drug.get("id") or drug) if isinstance(drug, dict) else str(drug))
+        for gene, gene_report in report.get("genes", {}).items():
+            drugs = [str(drug.get("name") or drug.get("id") or "") for drug in gene_report.get("relatedDrugs") or []]
             diplotypes = gene_report.get("recommendationDiplotypes") or gene_report.get("sourceDiplotypes") or [{}]
             for diplotype in diplotypes:
-                rows.append({
+                label = diplotype.get("label") or ""
+                no_call = "Unknown" in label or "No Result" in (diplotype.get("phenotypes") or [])
+                calls.append({
                     "gene": gene,
-                    "star_allele": diplotype.get("label") or "",
-                    "phenotype": ", ".join(diplotype.get("phenotypes") or []),
+                    "diplotype": "no call" if no_call else label,
+                    "phenotype": "Insufficient PGx positions" if no_call else ", ".join(diplotype.get("phenotypes") or []),
                     "activity_score": diplotype.get("activityScore") if diplotype.get("activityScore") is not None else "",
-                    "drugs": ", ".join(drugs),
+                    "drug": ", ".join(filter(None, drugs)),
                     "call_source": gene_report.get("callSource", ""),
                     "messages": "; ".join(str(item) for item in (gene_report.get("messages") or [])),
                     "source_file": path.name,
                 })
-    for path in root.rglob("*.tsv") if root.exists() else []:
-        for row in tsv_rows(path):
-            row["source_file"] = path.name
-            rows.append(row)
-    return JsonResponse({"results": rows[:10000], "status": metadata["status"]})
+        for source_name, drug_map in (report.get("drugs") or {}).items():
+            for drug_name, drug in drug_map.items():
+                for guideline in drug.get("guidelines") or []:
+                    for annotation in guideline.get("annotations") or []:
+                        genotypes = annotation.get("genotypes") or []
+                        genes = sorted({d.get("gene", "") for g in genotypes for d in g.get("diplotypes") or [] if d.get("gene")})
+                        recommendations.append({
+                            "gene": ", ".join(genes), "drug": drug_name,
+                            "recommendation": annotation.get("drugRecommendation") or "",
+                            "guideline": source_name, "classification": annotation.get("classification") or "",
+                            "phenotype": "; ".join(f"{k}: {v}" for k, v in (annotation.get("phenotypes") or {}).items()),
+                            "implications": "; ".join(annotation.get("implications") or []),
+                            "source_url": guideline.get("url") or "", "source_file": path.name,
+                        })
+    for path in root.rglob("*.clinpgx.tsv") if root.exists() else []:
+        variant_annotations.extend(tsv_rows(path))
+    # Older completed jobs have phenotype JSON until their Reporter-only refresh finishes.
+    if not report_paths:
+        for path in root.rglob("*.phenotype.json") if root.exists() else []:
+            try:
+                report = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+            for gene, gene_report in report.get("geneReports", {}).items():
+                for diplotype in gene_report.get("recommendationDiplotypes") or [{}]:
+                    label = diplotype.get("label") or ""
+                    calls.append({"gene": gene, "diplotype": "no call" if "Unknown" in label else label,
+                                  "phenotype": ", ".join(diplotype.get("phenotypes") or []), "drug": "", "source_file": path.name})
+    resolved_calls = [row for row in calls if row.get("diplotype") != "no call"]
+    no_calls = [row for row in calls if row.get("diplotype") == "no call"]
+    return JsonResponse({"results": resolved_calls[:10000], "calls": resolved_calls[:10000], "no_calls": no_calls[:10000],
+                         "recommendations": recommendations[:10000],
+                         "variant_annotations": variant_annotations[:10000], "status": metadata["status"]})

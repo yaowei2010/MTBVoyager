@@ -5,7 +5,9 @@ include { VEP_ANNOTATE_SHARD } from '../modules/local/vep_annotate'
 include { MERGE_VEP_SHARDS } from '../modules/local/merge_vep_shards'
 include { PRIORITIZE_VARIANTS } from '../modules/local/prioritize_variants'
 include { PRIORITIZE_STRUCTURAL } from '../modules/local/prioritize_structural'
+include { SKIP_STRUCTURAL } from '../modules/local/skip_structural'
 include { PHARMCAT_STANDARD } from '../modules/local/pharmcat_standard'
+include { CLINPGX_ANNOTATE } from '../modules/local/clinpgx_annotate'
 include { FINALIZE } from '../modules/local/finalize'
 include { TEST_PRIORITIZE } from '../modules/local/test_prioritize'
 
@@ -13,25 +15,38 @@ workflow GERMLINE_SNV {
     if (!params.input) error "Missing --input samplesheet.csv"
     def skipVep = params.skip_vep.toString().toBoolean()
     def skipPharmcat = params.skip_pharmcat.toString().toBoolean()
+    def skipStructural = params.skip_structural.toString().toBoolean()
 
     Channel.fromPath(params.input, checkIfExists: true)
         .splitCsv(header: true)
         .map { row ->
-            if (!row.sample_id || !row.snv_vcf || !row.sv_vcf || !row.cnv_vcf) {
-                error "samplesheet requires sample_id, snv_vcf, sv_vcf and cnv_vcf"
+            if (!row.sample_id || !row.snv_vcf) {
+                error "samplesheet requires sample_id and snv_vcf"
+            }
+            if (!skipStructural && (!row.sv_vcf || !row.cnv_vcf)) {
+                error "sv_vcf and cnv_vcf are required unless --skip_structural=true"
             }
             if (!(row.sample_id ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/)) {
                 error "sample_id must start with a letter or digit and contain only letters, digits, dot, underscore or hyphen"
             }
             def meta = [id: row.sample_id, sex: row.sex ?: 'unknown']
             def geneList = row.gene_list ? file(row.gene_list, checkIfExists: true) : []
-            tuple(meta, file(row.snv_vcf, checkIfExists: true), file(row.sv_vcf, checkIfExists: true), file(row.cnv_vcf, checkIfExists: true), geneList)
+            def sv = row.sv_vcf ? file(row.sv_vcf, checkIfExists: true) : []
+            def cnv = row.cnv_vcf ? file(row.cnv_vcf, checkIfExists: true) : []
+            tuple(meta, file(row.snv_vcf, checkIfExists: true), sv, cnv, geneList)
         }
         .set { all_samples_ch }
 
     snv_samples_ch = all_samples_ch.map { meta, snv, sv, cnv, genes -> tuple(meta, snv, genes) }
-    structural_ch = all_samples_ch.map { meta, snv, sv, cnv, genes -> tuple(meta, sv, cnv, genes) }
-    PRIORITIZE_STRUCTURAL(structural_ch)
+    if (skipStructural) {
+        skip_structural_ch = all_samples_ch.map { meta, snv, sv, cnv, genes -> meta }
+        SKIP_STRUCTURAL(skip_structural_ch)
+        structural_summary_ch = SKIP_STRUCTURAL.out.summary
+    } else {
+        structural_ch = all_samples_ch.map { meta, snv, sv, cnv, genes -> tuple(meta, sv, cnv, genes) }
+        PRIORITIZE_STRUCTURAL(structural_ch)
+        structural_summary_ch = PRIORITIZE_STRUCTURAL.out.summary
+    }
     VALIDATE_VCF(snv_samples_ch)
 
     if (!params.reference) error "Missing --reference GRCh38 FASTA"
@@ -67,10 +82,18 @@ workflow GERMLINE_SNV {
     if (!skipPharmcat) {
         pharmcatInput = VALIDATE_VCF.out.vcf.map { meta, vcf, geneList -> tuple(meta, vcf) }
         PHARMCAT_STANDARD(pharmcatInput)
+        if (params.clinpgx_variant_annotations) {
+            clinpgx_ch = Channel.value(file(params.clinpgx_variant_annotations, checkIfExists: true))
+            pharmcat_dirs = PHARMCAT_STANDARD.out.results.map { result ->
+                def sample = result.name.replaceFirst(/^pharmcat_/, '')
+                tuple([id: sample], result)
+            }
+            CLINPGX_ANNOTATE(pharmcat_dirs, clinpgx_ch)
+        }
     }
 
     completion_ch = snv_summary_ch
-        .join(PRIORITIZE_STRUCTURAL.out.summary)
+        .join(structural_summary_ch)
         .map { meta, snv_summary, structural_summary -> tuple(meta, snv_summary, structural_summary) }
     FINALIZE(completion_ch)
 }
