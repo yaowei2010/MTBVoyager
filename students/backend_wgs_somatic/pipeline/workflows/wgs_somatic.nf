@@ -1,4 +1,4 @@
-include { VALIDATE_INPUTS } from '../modules/local/validate_inputs'
+include { VALIDATE_INPUTS; VALIDATE_OPTIONAL_STRUCTURAL } from '../modules/local/validate_inputs'
 include { FILTER_NORMALIZE_SNV } from '../modules/local/filter_normalize_snv'
 include { SPLIT_VCF_BY_CONTIG } from '../modules/local/split_vcf_by_contig'
 include { VEP_ANNOTATE_SHARD } from '../modules/local/vep_annotate'
@@ -8,6 +8,7 @@ include { CALCULATE_ONCOGENICITY } from '../modules/local/calculate_oncogenicity
 include { SUMMARIZE_SNV } from '../modules/local/summarize_snv'
 include { SUMMARIZE_STRUCTURAL } from '../modules/local/summarize_structural'
 include { FINALIZE_SOMATIC } from '../modules/local/finalize_somatic'
+include { ESTIMATE_TMB } from '../modules/local/estimate_tmb'
 
 workflow WGS_SOMATIC_TUMOR_ONLY {
     if (!params.input) error 'Missing --input samplesheet.csv'
@@ -16,16 +17,24 @@ workflow WGS_SOMATIC_TUMOR_ONLY {
     if (!params.annotsv_annotations) error 'Missing --annotsv_annotations directory'
     if (!params.oncovi_resources) error 'Missing --oncovi_resources directory'
 
-    Channel.fromPath(params.input, checkIfExists: true).splitCsv(header: true).map { row ->
-        if (!row.sample_id || !row.snv_vcf || !row.sv_vcf || !row.cnv_vcf) {
-            error 'samplesheet requires sample_id,snv_vcf,sv_vcf,cnv_vcf'
+    rows_ch = Channel.fromPath(params.input, checkIfExists: true).splitCsv(header: true).map { row ->
+        if (!row.sample_id || !row.snv_vcf) {
+            error 'samplesheet requires sample_id and snv_vcf; sv_vcf and cnv_vcf are optional'
         }
         if (!(row.sample_id ==~ /[A-Za-z0-9][A-Za-z0-9._-]*/)) error 'Invalid sample_id'
-        tuple([id: row.sample_id], file(row.snv_vcf, checkIfExists: true),
-              file(row.sv_vcf, checkIfExists: true), file(row.cnv_vcf, checkIfExists: true))
-    }.set { samples_ch }
+        row
+    }
+    samples_ch = rows_ch.map { row -> tuple([id: row.sample_id], file(row.snv_vcf, checkIfExists: true)) }
+    optional_structural_ch = rows_ch.flatMap { row ->
+        def inputs=[]
+        if (row.sv_vcf?.trim()) inputs << tuple([id: row.sample_id], 'sv', file(row.sv_vcf, checkIfExists: true))
+        if (row.cnv_vcf?.trim()) inputs << tuple([id: row.sample_id], 'cnv', file(row.cnv_vcf, checkIfExists: true))
+        inputs
+    }
+    callable_ch = rows_ch.flatMap { row -> row.callable_regions?.trim() ? [tuple([id:row.sample_id],file(row.callable_regions,checkIfExists:true))] : [] }
 
     VALIDATE_INPUTS(samples_ch)
+    VALIDATE_OPTIONAL_STRUCTURAL(optional_structural_ch)
     reference_ch = Channel.value(file(params.reference, checkIfExists: true))
     reference_fai_ch = Channel.value(file("${params.reference}.fai", checkIfExists: true))
     cancer_db_ch = Channel.value(file(params.cancer_db, checkIfExists: true, type: 'dir'))
@@ -51,10 +60,17 @@ workflow WGS_SOMATIC_TUMOR_ONLY {
 
     CALCULATE_ONCOGENICITY(annotation_ch, oncovi_resources_ch)
     SUMMARIZE_SNV(CALCULATE_ONCOGENICITY.out.tsv, cancer_db_ch)
-    structural_ch = VALIDATE_INPUTS.out.structural.mix(VALIDATE_INPUTS.out.cnv)
-    SUMMARIZE_STRUCTURAL(structural_ch, cancer_db_ch, annotsv_annotations_ch)
-    structural_grouped = SUMMARIZE_STRUCTURAL.out.summary.groupTuple(by: 0).map { meta, kinds, files -> tuple(meta, kinds, files) }
-    completion_ch = SUMMARIZE_SNV.out.summary.join(structural_grouped)
-        .map { meta, snvSummary, kinds, structuralSummaries -> tuple(meta, snvSummary, kinds, structuralSummaries) }
+    if (params.gencode_gtf) {
+        tmb_inputs = callable_ch.join(SUMMARIZE_SNV.out.all,by:0).map { meta, callable, variants -> tuple(meta,callable,variants) }
+        ESTIMATE_TMB(tmb_inputs,Channel.value(file(params.gencode_gtf,checkIfExists:true)))
+    }
+    SUMMARIZE_STRUCTURAL(VALIDATE_OPTIONAL_STRUCTURAL.out.vcf, cancer_db_ch, annotsv_annotations_ch)
+    empty_structural_summary = file("${projectDir}/resources/empty_structural.json", checkIfExists: true)
+    structural_collected_ch = SUMMARIZE_STRUCTURAL.out.summary.collect(flat:false)
+        .map { summaries -> [items:summaries] }
+        .ifEmpty([items:[[[id:'none'], 'none', empty_structural_summary]]])
+    completion_ch = SUMMARIZE_SNV.out.summary.combine(structural_collected_ch).map { meta, snvSummary, structural ->
+        tuple(meta, snvSummary, structural.items.collect { it[1] }, structural.items.collect { it[2] })
+    }
     FINALIZE_SOMATIC(completion_ch)
 }

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse, csv, gzip, json, re
+from contextlib import ExitStack
 from collections import defaultdict
 from pathlib import Path
 
@@ -10,6 +11,24 @@ def truthy(row, names):
     text=' '.join(str(row.get(n,'')) for n in names).casefold()
     return any(x in text for x in ('pathogenic','oncogenic','actionable','sensitive','resistant','level 1','level 2'))
 
+def consequence_terms(row):
+    return {term.strip().casefold() for term in re.split(r'[,;&|]',clean(row.get('Consequence'))) if term.strip()}
+
+def is_non_synonymous(row):
+    terms=consequence_terms(row)
+    return bool(terms) and any(term not in ('synonymous_variant','stop_retained_variant') for term in terms)
+
+def clinvar_pathogenic(row):
+    value=clean(row.get('CLIN_SIG',row.get('ClinVar_CLNSIG',''))).casefold().replace('_',' ')
+    if any(term in value for term in ('conflict','uncertain','benign')): return False
+    return 'pathogenic' in value
+
+def oncogenic_high_risk(row):
+    return clean(row.get('oncogenicity_classification')) in ('Oncogenic','Likely Oncogenic')
+
+def reportable_high_risk(row):
+    return is_non_synonymous(row) and (clinvar_pathogenic(row) or oncogenic_high_risk(row))
+
 def write_rows(path, fields, rows):
     with open(path,'w',newline='',encoding='utf-8') as h:
         w=csv.DictWriter(h,fieldnames=fields,delimiter='\t',extrasaction='ignore'); w.writeheader(); w.writerows(rows)
@@ -17,6 +36,38 @@ def write_rows(path, fields, rows):
 def clean(value):
     value=str(value or '').strip()
     return '' if value.casefold() in ('nan','none','null','-') else value
+
+def number(value):
+    values=[]
+    for token in re.split(r'[,;|&]',str(value or '')):
+        try: values.append(float(token))
+        except ValueError: pass
+    return max(values) if values else None
+
+def secondary_categories(rows, gene_file):
+    genes={line.split('\t',1)[0].strip() for line in open(gene_file,encoding='utf-8') if line.strip() and not line.lower().startswith('gene')}
+    hereditary={}; insilico={}
+    for row in rows:
+        variant=clean(row.get('#Uploaded_variation',row.get('Uploaded_variation',''))); gene=clean(row.get('SYMBOL'))
+        clin=clean(row.get('CLIN_SIG',row.get('ClinVar_CLNSIG',''))).lower().replace('_',' ')
+        afs=[x for x in (number(row.get('gnomADe_AF')),number(row.get('gnomADg_AF'))) if x is not None]; maxaf=max(afs) if afs else 0
+        pathogenic='pathogenic' in clin and not any(x in clin for x in ('conflicting','benign','uncertain'))
+        base={'variant':variant,'gene':gene,'hgvsc':clean(row.get('HGVSc')),'hgvsp':clean(row.get('HGVSp')),'consequence':clean(row.get('Consequence')),'clinvar':clean(row.get('CLIN_SIG',row.get('ClinVar_CLNSIG',''))),'max_population_af':maxaf,'tumor_only_status':'germline confirmation required'}
+        if gene in genes and pathogenic and maxaf<=.01:
+            hereditary[variant]={**base,'hereditary_condition':'ACMG SF hereditary-cancer gene','evidence':'ClinVar P/LP; confirm with constitutional specimen'}
+        if pathogenic or maxaf>.01: continue
+        supports=[]
+        for field,threshold,label in [('CADD_phred',20,'CADD'),('REVEL_score',.5,'REVEL'),('ClinPred_score',.5,'ClinPred')]:
+            score=number(row.get(field))
+            if score is not None and score>=threshold: supports.append(f'{label}={score:g}')
+        if 'pathogenic' in clean(row.get('am_class')).lower(): supports.append('AlphaMissense=pathogenic')
+        if 'deleterious' in clean(row.get('SIFT')).lower(): supports.append('SIFT=deleterious')
+        if 'damaging' in clean(row.get('PolyPhen')).lower(): supports.append('PolyPhen=damaging')
+        if clean(row.get('SpliceAI_pred')).upper()=='PASS': supports.append('SpliceAI=PASS')
+        if len(supports)>=2:
+            item={**base,'prediction_support_count':len(supports),'prediction_support':'; '.join(supports),'evidence':'in-silico only; not clinically classified'}
+            if variant not in insilico or len(supports)>insilico[variant]['prediction_support_count']: insilico[variant]=item
+    return list(hereditary.values()),list(insilico.values())
 
 def compact(source, row, fields, match):
     values={k:clean(row.get(k,'')) for k in fields if clean(row.get(k,''))}
@@ -148,38 +199,45 @@ def overlap_genes(path,chrom,start,end):
     return sorted(genes)
 
 def snv(args):
-    with opener(args.input) as h:
-        reader=csv.DictReader((line for line in h if not line.startswith('##')),delimiter='\t')
-        annotation_rows=list(reader); fields=reader.fieldnames or []
-    rows=collapse_vep_annotations(annotation_rows)
     db=CancerEvidence(args.cancer_db)
-    for row in rows:
-        items=mark_tumor_context(db.snv(row),args.cancer_type); row['cancer_evidence_sources']='|'.join(sorted({x['source'] for x in items})); row['cancer_evidence']=evidence_text(items); row['cancer_actionable']='true' if any(x.get('actionable') for x in items) else 'false'; row['cancer_type_match']='true' if any(x.get('tumor_type_match')=='true' for x in items) else ('false' if items and args.cancer_type else 'unknown')
-    fields=list(fields)+['cancer_evidence_sources','cancer_actionable','cancer_type_match','cancer_evidence']
     evidence=['CLIN_SIG','ClinVar_CLNSIG','CIVIC','CIVIC_annotation','OncoKB','oncoKB_annotation','CGI_annotation','COSMIC','Existing_variation','cancer_actionable']
-    actionable=[r for r in rows if r.get('cancer_actionable')=='true' or truthy(r,evidence)]
-    oncogenic=[r for r in rows if clean(r.get('oncogenicity_classification')) in ('Oncogenic','Likely Oncogenic')]
     af_fields=['gnomADe_AF','gnomADg_AF','gnomAD_AF','AF']
-    possible=[]
-    for r in rows:
-        vals=[]
-        for k in af_fields:
-            for token in re.split('[,&]',str(r.get(k,''))):
-                try: vals.append(float(token))
-                except ValueError: pass
-        if vals and max(vals) >= float(args.population_af_max): possible.append(r)
-    write_rows(f'{args.output_prefix}.snv.all.tsv',fields,rows)
-    write_rows(f'{args.output_prefix}.snv.actionable.tsv',fields,actionable)
-    write_rows(f'{args.output_prefix}.snv.oncogenic.tsv',fields,oncogenic)
-    write_rows(f'{args.output_prefix}.snv.possible_germline.tsv',fields,possible)
-    onco_counts={}
-    oncovi_counts={}
-    for row in rows:
-        label=clean(row.get('oncogenicity_classification'))
-        if label:onco_counts[label]=onco_counts.get(label,0)+1
-        ref_label=clean(row.get('oncovi_2026_classification'))
-        if ref_label:oncovi_counts[ref_label]=oncovi_counts.get(ref_label,0)+1
-    json.dump({'all_variants':len(rows),'vep_transcript_annotations':len(annotation_rows),'actionable':len(actionable),'oncogenic_or_likely_oncogenic':len(oncogenic),'possible_germline':len(possible),'oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+    counts={'all':0,'reportable_high_risk':0,'actionable':0,'oncogenic':0,'possible':0}; onco_counts={}; oncovi_counts={}
+    category_rows=[]
+    with opener(args.input) as source, ExitStack() as stack:
+        reader=csv.DictReader((line for line in source if not line.startswith('##')),delimiter='\t')
+        fields=list(reader.fieldnames or [])+['high_risk','high_risk_basis','cancer_evidence_sources','cancer_actionable','cancer_type_match','cancer_evidence']
+        outputs={name:stack.enter_context(open(f'{args.output_prefix}.snv.{suffix}.tsv','w',encoding='utf-8',newline='')) for name,suffix in [('all','all'),('reportable','reportable'),('actionable','actionable'),('oncogenic','oncogenic'),('possible','possible_germline')]}
+        writers={name:csv.DictWriter(handle,fieldnames=fields,delimiter='\t',extrasaction='ignore') for name,handle in outputs.items()}
+        for writer in writers.values():writer.writeheader()
+        for row in reader:
+            category_rows.append(dict(row))
+            high_risk=reportable_high_risk(row); bases=[]
+            if high_risk and clinvar_pathogenic(row): bases.append('ClinVar Pathogenic/Likely pathogenic')
+            if high_risk and oncogenic_high_risk(row): bases.append(clean(row.get('oncogenicity_classification')))
+            # Drug matching is deliberately downstream of the reportable-risk gate.
+            items=mark_tumor_context(db.snv(row),args.cancer_type) if high_risk else []
+            row['high_risk']='true' if high_risk else 'false'; row['high_risk_basis']='|'.join(bases)
+            row['cancer_evidence_sources']='|'.join(sorted({x['source'] for x in items})); row['cancer_evidence']=evidence_text(items); row['cancer_actionable']='true' if high_risk and any(x.get('actionable') for x in items) else 'false'; row['cancer_type_match']='true' if any(x.get('tumor_type_match')=='true' for x in items) else ('false' if items and args.cancer_type else 'unknown')
+            writers['all'].writerow(row); counts['all']+=1
+            if high_risk: writers['reportable'].writerow(row); counts['reportable_high_risk']+=1
+            if row.get('cancer_actionable')=='true':writers['actionable'].writerow(row);counts['actionable']+=1
+            label=clean(row.get('oncogenicity_classification'))
+            if label in ('Oncogenic','Likely Oncogenic'):writers['oncogenic'].writerow(row);counts['oncogenic']+=1
+            if label:onco_counts[label]=onco_counts.get(label,0)+1
+            ref_label=clean(row.get('oncovi_2026_classification'))
+            if ref_label:oncovi_counts[ref_label]=oncovi_counts.get(ref_label,0)+1
+            vals=[]
+            for key in af_fields:
+                for token in re.split('[,&]',str(row.get(key,''))):
+                    try: vals.append(float(token))
+                    except ValueError: pass
+            if vals and max(vals)>=float(args.population_af_max):writers['possible'].writerow(row);counts['possible']+=1
+    hereditary,insilico=secondary_categories(category_rows,args.acmg_genes)
+    for name,rows in [('hereditary_high_risk',hereditary),('in_silico_candidates',insilico)]:
+        fields=list(rows[0]) if rows else ['variant','gene','hgvsc','hgvsp','consequence','evidence','tumor_only_status']
+        write_rows(f'{name}.tsv',fields,rows)
+    json.dump({'all_variants':counts['all'],'vep_transcript_annotations':counts['all'],'reportable_high_risk':counts['reportable_high_risk'],'actionable_high_risk':counts['actionable'],'oncogenic_or_likely_oncogenic':counts['oncogenic'],'possible_germline':counts['possible'],'hereditary_high_risk':len(hereditary),'in_silico_candidates':len(insilico),'reporting_gate':'non_synonymous AND (ClinVar P/LP OR oncogenicity O/LO); drug matching occurs after this gate','oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)
@@ -207,7 +265,7 @@ def structural(args):
 
 def main():
     p=argparse.ArgumentParser(); sub=p.add_subparsers(dest='mode',required=True)
-    a=sub.add_parser('snv'); a.add_argument('--input',required=True); a.add_argument('--sample',required=True); a.add_argument('--output-prefix',required=True); a.add_argument('--population-af-max',default=.01); a.add_argument('--cancer-db',required=True); a.add_argument('--cancer-type',default='')
+    a=sub.add_parser('snv'); a.add_argument('--input',required=True); a.add_argument('--sample',required=True); a.add_argument('--output-prefix',required=True); a.add_argument('--population-af-max',default=.01); a.add_argument('--cancer-db',required=True); a.add_argument('--cancer-type',default=''); a.add_argument('--acmg-genes',required=True)
     b=sub.add_parser('structural'); b.add_argument('--input',required=True); b.add_argument('--sample',required=True); b.add_argument('--kind',choices=['sv','cnv'],required=True); b.add_argument('--output-prefix',required=True); b.add_argument('--cancer-db',required=True); b.add_argument('--annotsv-annotations',required=True); b.add_argument('--cancer-type',default='')
     args=p.parse_args(); snv(args) if args.mode=='snv' else structural(args)
 if __name__=='__main__': main()

@@ -13,7 +13,9 @@ import json, sys
 sample, snv, *structural = sys.argv[1:]
 result={'sample_id':sample,'analysis_type':'WGS Somatic Tumor-Only','genome_build':'GRCh38','status':'complete','snv':json.load(open(snv)),'structural':{}}
 for path in structural:
-    data=json.load(open(path)); result['structural'][data['kind']]=data
+    data=json.load(open(path))
+    if data.get('kind') not in (None, 'none'):
+        result['structural'][data['kind']]=data
 open('pipeline_complete.json','w').write(json.dumps(result,indent=2)+'\\n')
 PY
     """

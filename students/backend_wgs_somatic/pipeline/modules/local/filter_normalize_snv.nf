@@ -25,7 +25,8 @@ process FILTER_NORMALIZE_SNV {
     elif grep -q '^##FORMAT=<ID=VAF,' <<<"\$header"; then
       expr="\$expr && FMT/VAF[0]>=${params.vaf_min}"
     fi
-    bcftools norm -f '${reference}' -m -any -Ou '${vcf}' | \
+    bcftools view --targets '${params.vep_contigs}' -Ou '${vcf}' | \
+      bcftools norm -f '${reference}' -m -any -Ou | \
       bcftools view -i "\$expr" -Oz -o '${meta.id}.somatic.filtered.vcf.gz'
     tabix -f -p vcf '${meta.id}.somatic.filtered.vcf.gz'
     retained=\$(bcftools index -n '${meta.id}.somatic.filtered.vcf.gz')
