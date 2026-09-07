@@ -32,8 +32,8 @@ def launch(job_id: str, metadata: dict) -> int:
         writer.writerow({
             "sample_id": metadata["subject"]["subject_id"],
             "snv_vcf": inputs / metadata["files"]["snv"],
-            "sv_vcf": inputs / metadata["files"]["sv"],
-            "cnv_vcf": inputs / metadata["files"]["cnv"],
+            "sv_vcf": inputs / metadata["files"]["sv"] if metadata["files"].get("sv") else "",
+            "cnv_vcf": inputs / metadata["files"]["cnv"] if metadata["files"].get("cnv") else "",
             "gene_list": gene_file,
             "sex": metadata["subject"].get("gender", "unknown"),
         })
@@ -54,6 +54,9 @@ def launch(job_id: str, metadata: dict) -> int:
         "--population", POPULATION_MAP.get(metadata["settings"]["population"], "eas"),
         "--population_af_max", str(metadata["settings"]["maf_cutoff"]),
         "--pass_only", str(metadata["settings"]["pass_only"]).lower(),
+        "--skip_structural", str(not (metadata["files"].get("sv") and metadata["files"].get("cnv"))).lower(),
+        "--clinpgx_variant_annotations", os.environ.get("WGS_CLINPGX_VARIANT_ANNOTATIONS", ""),
+        "--clinpgx_release", os.environ.get("WGS_CLINPGX_RELEASE", "not-configured"),
         "--acmg_genes", str(pipeline / "assets" / "acmg_sf_gene_disease.tsv"),
         "--acmg_rules", str(pipeline / "assets" / "acmg_sf_v3.3_rules.tsv"),
         "-ansi-log", "false",

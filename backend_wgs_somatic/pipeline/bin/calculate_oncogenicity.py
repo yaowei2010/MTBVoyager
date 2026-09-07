@@ -2,6 +2,7 @@
 """Deterministic ClinGen/CGC/VICC oncogenicity scoring for GRCh38 SNV/indel calls."""
 import argparse, copy, csv, gzip, json, re
 from collections import defaultdict
+from itertools import groupby
 from pathlib import Path
 
 POINTS={'OVS1':8,'OS1':4,'OS2':4,'OS3':4,'OM1':2,'OM2':2,'OM3':2,'OM4':2,
@@ -38,6 +39,16 @@ def collapse(rows):
     def rank(row):
         return (clean(row.get('PICK'))=='1',bool(clean(row.get('MANE_SELECT'))),clean(row.get('CANONICAL'))=='YES',bool(clean(row.get('SYMBOL'))),bool(clean(row.get('HGVSp'))))
     return [max(group,key=rank) for group in grouped.values()]
+
+def iter_collapsed(rows):
+    """Collapse adjacent VEP transcript rows without retaining the whole WGS file."""
+    def key(item):
+        index,row=item
+        return clean(row.get('#Uploaded_variation',row.get('Uploaded_variation'))) or f'row:{index}'
+    def rank(row):
+        return (clean(row.get('PICK'))=='1',bool(clean(row.get('MANE_SELECT'))),clean(row.get('CANONICAL'))=='YES',bool(clean(row.get('SYMBOL'))),bool(clean(row.get('HGVSp'))))
+    for _,group in groupby(enumerate(rows),key=key):
+        yield max((row for _,row in group),key=rank)
 
 def one_letter_change(row):
     aa=clean(row.get('Amino_acids')); pos=clean(row.get('Protein_position')).split('-')[0]
@@ -222,19 +233,19 @@ def evaluate_reference(row,res,strict_evidence):
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--input',required=True);p.add_argument('--output',required=True);p.add_argument('--summary',required=True);p.add_argument('--resources',required=True);p.add_argument('--tumor-type',default='');a=p.parse_args()
     opener=gzip.open if a.input.endswith(('.gz','.bgz')) else open
-    with opener(a.input,'rt',encoding='utf-8',errors='replace') as h:
-        reader=csv.DictReader((x for x in h if not x.startswith('##')),delimiter='\t'); fields=reader.fieldnames or []; rows=collapse(list(reader))
     res=Resources(a.resources); counts=defaultdict(int); reference_counts=defaultdict(int); review=0
     extra=['oncogenicity_score','oncogenicity_classification','oncogenicity_criteria','oncogenicity_review_required','oncogenicity_evidence','oncogenicity_profile','oncovi_resource_commit','oncovi_2026_score','oncovi_2026_classification','oncovi_2026_criteria','oncovi_2026_evidence','oncovi_2026_profile','oncovi_2026_validation_status','oncogenicity_profile_difference']
-    for row in rows:
-        score,label,evidence,dual=evaluate(row,res,a.tumor_type); met=[x['code'] for x in evidence if x['status']=='met']; unassessed=[x['code'] for x in evidence if x['status']=='not_assessable']
-        ref_score,ref_label,ref_evidence=evaluate_reference(row,res,evidence); ref_met=[x['code'] for x in ref_evidence if x['status']=='met']
-        strict_status={x['code']:x['status'] for x in evidence}; ref_status={x['code']:x['status'] for x in ref_evidence}; differences=[x for x in POINTS if strict_status[x]!=ref_status[x]]
-        required=dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
-        row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'oncogenicity_profile_difference':'|'.join(differences)})
-        counts[label]+=1; reference_counts[ref_label]+=1; review+=required
     outopen=gzip.open if a.output.endswith('.gz') else open
-    with outopen(a.output,'wt',encoding='utf-8',newline='') as h:
-        w=csv.DictWriter(h,fieldnames=fields+extra,delimiter='\t',extrasaction='ignore');w.writeheader();w.writerows(rows)
-    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'variants':len(rows),'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
+    variants=0
+    with opener(a.input,'rt',encoding='utf-8',errors='replace') as source, outopen(a.output,'wt',encoding='utf-8',newline='') as output:
+        reader=csv.DictReader((x for x in source if not x.startswith('##')),delimiter='\t'); fields=reader.fieldnames or []
+        writer=csv.DictWriter(output,fieldnames=fields+extra,delimiter='\t',extrasaction='ignore'); writer.writeheader()
+        for row in iter_collapsed(reader):
+            score,label,evidence,dual=evaluate(row,res,a.tumor_type); met=[x['code'] for x in evidence if x['status']=='met']; unassessed=[x['code'] for x in evidence if x['status']=='not_assessable']
+            ref_score,ref_label,ref_evidence=evaluate_reference(row,res,evidence); ref_met=[x['code'] for x in ref_evidence if x['status']=='met']
+            strict_status={x['code']:x['status'] for x in evidence}; ref_status={x['code']:x['status'] for x in ref_evidence}; differences=[x for x in POINTS if strict_status[x]!=ref_status[x]]
+            required=dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
+            row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'oncogenicity_profile_difference':'|'.join(differences)})
+            writer.writerow(row); variants+=1; counts[label]+=1; reference_counts[ref_label]+=1; review+=required
+    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'variants':variants,'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
 if __name__=='__main__':main()

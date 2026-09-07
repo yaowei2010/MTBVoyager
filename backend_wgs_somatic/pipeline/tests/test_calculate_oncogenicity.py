@@ -108,3 +108,12 @@ def test_reference_op4_follows_upstream_either_dataset_rule():
     _,_,reference=oncogenicity.evaluate_reference(row,RESOURCES,strict)
     assert {item["code"]:item["status"] for item in strict}["OP4"] == "not_met"
     assert {item["code"]:item["status"] for item in reference}["OP4"] == "met"
+
+
+def test_streaming_collapse_matches_in_memory_for_adjacent_vep_rows():
+    rows = [
+        {"#Uploaded_variation": "v1", "PICK": "-", "HGVSp": "wrong"},
+        {"#Uploaded_variation": "v1", "PICK": "1", "HGVSp": "picked"},
+        {"#Uploaded_variation": "v2", "PICK": "-", "MANE_SELECT": "NM_1"},
+    ]
+    assert list(oncogenicity.iter_collapsed(iter(rows))) == oncogenicity.collapse(rows)

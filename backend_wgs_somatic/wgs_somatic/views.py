@@ -1,4 +1,4 @@
-import json,os,re,shutil
+import base64,csv,json,os,re,shutil
 from datetime import datetime,timezone
 from pathlib import Path
 from django.http import JsonResponse
@@ -7,8 +7,10 @@ from hw1.models import existJobs
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
 from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity
+from .mtb_report import cached as cached_mtb_report, generate as generate_mtb_report, save_edits as save_mtb_report_edits
+from .variant_display import tumor_format_rows
 
-SUFFIXES={'snv':('.vcf.gz','.vcf.bgz'),'sv':('.vcf.gz','.vcf.bgz'),'cnv':('.vcf.gz','.vcf.bgz')}
+SUFFIXES={'snv':('.vcf.gz','.vcf.bgz'),'sv':('.vcf.gz','.vcf.bgz'),'cnv':('.vcf.gz','.vcf.bgz'),'callable':('.bed','.bed.gz','.zip')}
 def body(request):
     try:return json.loads(request.body or '{}')
     except json.JSONDecodeError:raise ValueError('Invalid JSON body')
@@ -34,8 +36,11 @@ def upload(request):
         upload_id=new_id('upload'); files={}
         for kind,suffixes in SUFFIXES.items():
             item=request.FILES.get(kind)
-            if not item or not item.name.lower().endswith(suffixes) or item.size<=0:raise ValueError(f'{kind.upper()} must be a non-empty .vcf.gz or .vcf.bgz')
-            name=f'{kind}.vcf.gz'; save_upload(item,directory/'uploads'/upload_id/name); files[kind]=name
+            if not item:
+                if kind=='snv':raise ValueError('SNV/Indel must be a non-empty .vcf.gz or .vcf.bgz')
+                continue
+            if not item.name.lower().endswith(suffixes) or item.size<=0:raise ValueError(f'{kind.upper()} has an unsupported or empty file')
+            name=f'{kind}{next(s for s in suffixes if item.name.lower().endswith(s))}'; save_upload(item,directory/'uploads'/upload_id/name); files[kind]=name
         metadata.update({'upload_id':upload_id,'files':files}); write_json(directory/'metadata.json',metadata); return JsonResponse({'upload_id':upload_id},status=201)
     except ValueError as exc:return error(exc)
 
@@ -68,18 +73,77 @@ def metadata_for(job):
 def job_detail(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
-    result=dict(metadata);result['log_available']=(directory/'nextflow.log').exists();return JsonResponse(result)
+    result=dict(metadata);result['log_available']=(directory/'nextflow.log').exists();result['available_sections']=['high_risk','snv_actionable','oncogenicity_all','hereditary_high_risk','in_silico_candidates']+[kind for kind in ('sv','cnv') if kind in metadata.get('files',{})];return JsonResponse(result)
+
 def results(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];section=request.GET.get('section','snv_actionable')
-    paths={'snv_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','oncogenicity_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','oncogenicity':directory/'results'/sample/'interpretation'/f'{sample}.snv.oncogenic.tsv','possible_germline':directory/'results'/sample/'interpretation'/f'{sample}.snv.possible_germline.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
+    paths={'snv_actionable':directory/'results'/sample/'interpretation'/f'{sample}.snv.actionable.tsv','high_risk':directory/'results'/sample/'interpretation'/f'{sample}.snv.reportable.tsv','oncogenicity_all':directory/'results'/sample/'interpretation'/f'{sample}.snv.all.tsv','hereditary_high_risk':directory/'results'/sample/'interpretation'/'hereditary_high_risk.tsv','in_silico_candidates':directory/'results'/sample/'interpretation'/'in_silico_candidates.tsv','sv':directory/'results'/sample/'sv'/f'{sample}.sv.all.tsv','cnv':directory/'results'/sample/'cnv'/f'{sample}.cnv.all.tsv'}
     if section not in paths:return error('Unsupported result section')
-    return JsonResponse({'status':metadata['status'],'results':tsv_rows(paths[section])})
+    if section in ('sv','cnv') and section not in metadata.get('files',{}):return error(f'{section.upper()} was not supplied for this analysis',404)
+    rows=tsv_rows(paths[section])
+    if section not in ('sv','cnv'):rows=tumor_format_rows(directory,sample,rows)
+    return JsonResponse({'status':metadata['status'],'results':rows})
 def summary(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];return JsonResponse(read_json(directory/'results'/sample/'pipeline_complete.json',{'status':metadata['status']}))
+
+def downstream(request,analysis_id):
+    directory,metadata=metadata_for(analysis_id)
+    if not metadata:return error('Analysis not found',404)
+    sample=metadata['subject']['subject_id']; root=directory/'results'/sample/'downstream'
+    def table(name,delimiter=',',limit=100):
+        path=root/name
+        if not path.is_file():return {'available':False,'rows':[]}
+        with path.open(errors='replace',newline='') as handle:
+            rows=[]
+            for row in csv.DictReader(handle,delimiter=delimiter):
+                rows.append(row)
+                if len(rows)>=limit:break
+        return {'available':True,'rows':rows,'file':name}
+    manifest=read_json(root/'summary.json',{})
+    tmb=read_json(root/f'{sample}.tmb_proxy.json',{})
+    descriptions={}
+    description_path=Path('/home/hpz8g5/project/MTB/database/VEP/20241126Mondodatabase/aetiology_map.tsv')
+    if description_path.is_file():
+        with description_path.open(errors='replace',newline='') as handle:
+            descriptions={row.get('signature',''):row.get('aetiology','') for row in csv.DictReader(handle,delimiter='\t')}
+    top=manifest.get('top_mutational_signatures',[]); total=sum(float(x.get('activity',0) or 0) for x in top)
+    signature_activities=[{**item,'proportion':(float(item.get('activity',0) or 0)/total if total else 0),'description':descriptions.get(item.get('signature',''),'')} for item in top]
+    def encoded(name):
+        path=root/name
+        return base64.b64encode(path.read_bytes()).decode('ascii') if path.is_file() else ''
+    return JsonResponse({
+        'status':'ready' if root.is_dir() else 'not_available',
+        'manifest':manifest,
+        'mutation_signature':table('mutation_signature.activities.tsv','\t'),
+        'signature_activities':signature_activities,
+        'signature_plot_pdf_base64':encoded('mutation_signature.sbs96.pdf'),
+        'signature_activity_pdf_base64':encoded('mutation_signature.activities.pdf'),
+        'signature_pie_pdf_base64':encoded('mutation_signature.pie.pdf'),
+        'cancer_prediction_pdf_base64':encoded('cancer_type_prediction.pdf'),
+        'tmb_estimate':tmb,
+        'tmb_variants':table(f'{sample}.tmb_proxy_variants.tsv','\t'),
+        'cancer_type_prediction':table('cancer_type_prediction.csv'),
+        'pathway':table('pathway.results.csv'),
+    })
+
+@csrf_exempt
+def mtb_report(request,analysis_id):
+    directory,metadata=metadata_for(analysis_id)
+    if not metadata:return error('Analysis not found',404)
+    if request.method=='GET':return JsonResponse(cached_mtb_report(directory,metadata))
+    if request.method=='PUT':
+        try:return JsonResponse(save_mtb_report_edits(directory,metadata,body(request).get('narrative')))
+        except ValueError as exc:return error(exc)
+        except Exception as exc:return error(f'Unable to save MTB draft edits: {exc}',500)
+    if request.method!='POST':return error('GET, POST, or PUT required',405)
+    if metadata.get('status')!='finished':return error('The analysis must finish before an MTB draft can be generated',409)
+    try:
+        refresh=bool(body(request).get('refresh',False));return JsonResponse(generate_mtb_report(directory,metadata,refresh=refresh))
+    except Exception as exc:return error(f'Unable to generate MTB draft: {exc}',500)
 
 @csrf_exempt
 def legacy_oncogenicity(request):

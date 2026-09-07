@@ -13,6 +13,8 @@ process PHARMCAT_STANDARD {
     mkdir -p pharmcat_${meta.id}
     cp '${vcf}' pharmcat_${meta.id}/${meta.id}.vcf.gz
     cd pharmcat_${meta.id}
-    pharmcat_pipeline '${meta.id}.vcf.gz'
+    pharmcat_pipeline '${meta.id}.vcf.gz' -bf '${meta.id}' \
+        -reporterHtml -reporterJson -reporterCallsOnlyTsv \
+        -cp ${task.cpus} -cm 16G
     """
 }
