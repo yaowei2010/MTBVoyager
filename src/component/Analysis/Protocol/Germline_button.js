@@ -3,6 +3,7 @@
 import React from 'react';
 import { Button, Stack, Box } from '@mui/material';
 import { config } from '../../../constant';
+import { Link } from 'react-router-dom';
 
 export default function GermlineButtons() {
   return (
@@ -51,7 +52,8 @@ export default function GermlineButtons() {
         <Button
           variant="contained"
           color="success"
-          href={`${config.rootPathPrefix}/Analysis/WGS_hg38_Germline`}
+          component={Link}
+          to={`${config.rootPathPrefix}/Analysis/WGS_Germline/Subject`}
           sx={{
             textTransform: 'none',
             width: '230px',

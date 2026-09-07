@@ -108,7 +108,7 @@ function Analysis_sample() {
     };
 
     return (
-        <Box sx={{ p: 4, bgcolor: '#WHITE', minHeight: '100vh', mb: '80px' }}>
+        <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', mb: 10, maxWidth: 1280, mx: 'auto' }}>
             <Typography
                 variant="h1"
                 component="h1"
@@ -116,7 +116,7 @@ function Analysis_sample() {
                 mb="40px"
                 gutterBottom
                 sx={{
-                    fontSize: '80px',
+                    fontSize: { xs: '42px', md: '64px' },
                     fontWeight: 'bold',
                     fontFamily: "'Roboto', sans-serif",
                     color: '#333',

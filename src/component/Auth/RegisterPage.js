@@ -3,8 +3,10 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import {
-  Box, Button, TextField, Typography, Paper, Snackbar, Alert
+  Box, Button, TextField, Typography, Paper, Snackbar, Alert, Chip, Divider, Stack
 } from '@mui/material';
+import BiotechRoundedIcon from '@mui/icons-material/BiotechRounded';
+import PersonAddAltRoundedIcon from '@mui/icons-material/PersonAddAltRounded';
 import { config } from '../../constant';
 
 function RegisterPage() {
@@ -31,9 +33,17 @@ function RegisterPage() {
   };
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f5f5f5">
-      <Paper elevation={6} sx={{ p: 4, width: 350 }}>
-        <Typography variant="h5" gutterBottom>註冊帳號</Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', p: 3, background: 'radial-gradient(circle at 15% 15%, rgba(32,178,170,.23), transparent 34%), linear-gradient(135deg, #071a33 0%, #0b3d68 54%, #0a716d 100%)' }}>
+      <Paper elevation={18} sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 460, border: '1px solid rgba(255,255,255,.65)', borderRadius: 4 }}>
+        <Stack spacing={1.25} alignItems="flex-start" sx={{ mb: 3 }}>
+          <Box sx={{ width: 52, height: 52, borderRadius: 2.5, display: 'grid', placeItems: 'center', color: 'white', background: 'linear-gradient(135deg, #0b67b2, #0d8f80)', boxShadow: '0 10px 24px rgba(11,103,178,.24)' }}>
+            <BiotechRoundedIcon fontSize="large" />
+          </Box>
+          <Chip label="CLINICAL GENOMICS PLATFORM" size="small" color="primary" variant="outlined" />
+          <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-.025em' }}>建立帳號</Typography>
+          <Typography color="text.secondary">註冊後即可使用整合式基因體分析工作流程。</Typography>
+        </Stack>
+        <Divider sx={{ mb: 2 }} />
         <TextField
           label="帳號"
           variant="outlined"
@@ -54,13 +64,15 @@ function RegisterPage() {
         <Button
           variant="contained"
           fullWidth
-          sx={{ mt: 2 }}
+          size="large"
+          startIcon={<PersonAddAltRoundedIcon />}
+          sx={{ mt: 2.5 }}
           onClick={handleRegister}
         >
           註冊
         </Button>
-        <Typography variant="body2" sx={{ mt: 2 }}>
-          已有帳號？<Link to={config.rootPathPrefix +"/login"}>前往登入</Link>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5, textAlign: 'center' }}>
+          已有帳號？ <Link to={config.rootPathPrefix +"/login"}>前往登入</Link>
         </Typography>
       </Paper>
 

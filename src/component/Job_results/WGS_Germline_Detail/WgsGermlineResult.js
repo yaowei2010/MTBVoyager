@@ -40,7 +40,7 @@ export default function WgsGermlineResult() {
   const { analysis_ID: analysisId } = useParams();
   const [section, setSection] = useState('snv');
   const [meta, setMeta] = useState(null);
-  const [data, setData] = useState({ snv: {}, sv: {}, pharmcat: [] });
+  const [data, setData] = useState({ snv: {}, sv: {}, pharmcat: { calls: [], no_calls: [], recommendations: [], variant_annotations: [] } });
   const [loading, setLoading] = useState({ meta: true, snv: {}, sv: {}, pharmcat: false });
   const [errors, setErrors] = useState({ snv: {}, sv: {}, pharmcat: '' });
 
@@ -63,9 +63,12 @@ export default function WgsGermlineResult() {
     };
     if (section === 'snv') snvTabs.forEach(({ value: category }) => { if (!data.snv[category] && !loading.snv[category]) loadCategory('snv', category); });
     if (section === 'sv') svTabs.forEach(({ value: category }) => { if (!data.sv[category] && !loading.sv[category]) loadCategory('sv', category); });
-    if (section === 'pharmcat' && !loading.pharmcat && data.pharmcat.length === 0 && !errors.pharmcat) {
+    if (section === 'pharmcat' && !loading.pharmcat && data.pharmcat.calls.length === 0 && !errors.pharmcat) {
       setLoading((old) => ({ ...old, pharmcat: true }));
-      axios.get(`${config.rootApiIP}/wgs-germline/jobs/${analysisId}/pharmcat`).then(({ data: response }) => active && setData((old) => ({ ...old, pharmcat: Array.isArray(response) ? response : response?.results || response?.rows || [] }))).catch((e) => active && setErrors((old) => ({ ...old, pharmcat: e.response?.data?.detail || 'Unable to load PharmCAT results.' }))).finally(() => active && setLoading((old) => ({ ...old, pharmcat: false })));
+      axios.get(`${config.rootApiIP}/wgs-germline/jobs/${analysisId}/pharmcat`).then(({ data: response }) => active && setData((old) => ({ ...old, pharmcat: {
+        calls: response?.calls || response?.results || [], no_calls: response?.no_calls || [], recommendations: response?.recommendations || [],
+        variant_annotations: response?.variant_annotations || [],
+      } }))).catch((e) => active && setErrors((old) => ({ ...old, pharmcat: e.response?.data?.detail || 'Unable to load PharmCAT results.' }))).finally(() => active && setLoading((old) => ({ ...old, pharmcat: false })));
     }
     return () => { active = false; };
     // Category state intentionally controls lazy loading.
@@ -83,7 +86,12 @@ export default function WgsGermlineResult() {
         {meta?.is_demo && <Alert severity="warning" variant="filled" sx={{ mb: 2, borderRadius: 2, fontWeight: 700 }}>{meta.demo_notice || 'Demo data only — not for clinical use.'}</Alert>}
         {loading.meta ? <CircularProgress size={24} /> : meta ? <Stack spacing={2}><Box sx={{ display: 'flex', gap: 1.25, flexWrap: 'wrap' }}><Chip label={`Analysis ${analysisId}`} sx={{ fontWeight: 700 }} /><Chip label={`Subject ${meta.subject_id || meta.subject || '-'}`} /><Chip label={meta.population || 'gnomAD_EAS'} color="success" variant="outlined" /><Chip label="GRCh38" color="primary" variant="outlined" /></Box>{(meta.phenotypes || []).length > 0 && <><Divider /><Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>{(meta.phenotypes || []).map((p) => <Chip key={p.mondo_id || p.id} color="primary" variant="outlined" label={`${p.mondo_id || p.id} ${p.label || ''}`} />)}</Box></>}</Stack> : <Alert severity="warning">Analysis metadata is not available.</Alert>}
       </Paper>
-      <Paper sx={{ borderRadius: 3, border: '1px solid #dce8f1', overflow: 'hidden', boxShadow: '0 14px 38px rgba(26,72,112,.08)' }}><Tabs value={section} onChange={(_, value) => setSection(value)} variant="fullWidth" sx={{ bgcolor: '#102f4f', '& .MuiTab-root': { minHeight: 62, color: 'rgba(255,255,255,.72)', textTransform: 'none', fontSize: 16, fontWeight: 750 }, '& .Mui-selected': { color: '#fff !important', bgcolor: 'rgba(37,160,184,.2)' }, '& .MuiTabs-indicator': { height: 4, bgcolor: '#38c6b2' } }}><Tab value="snv" label="SNV" /><Tab value="sv" label="SV" /><Tab value="cnv" label="CNV · Coming soon" disabled /><Tab value="pharmcat" label="PharmCat" /></Tabs><Box sx={{ p: { xs: 2, md: 3 } }}>{section === 'snv' && <NestedResults analysisId={analysisId} tabs={snvTabs} data={data.snv} loading={loading.snv} errors={errors.snv} />}{section === 'sv' && <NestedResults analysisId={analysisId} tabs={svTabs} data={data.sv} loading={loading.sv} errors={errors.sv} />}{section === 'pharmcat' && <WgsResultTable analysisId={analysisId} rows={data.pharmcat} loading={loading.pharmcat} error={errors.pharmcat} emptyMessage="No PharmCAT drug and star-allele relationships were reported." />}</Box></Paper>
+      <Paper sx={{ borderRadius: 3, border: '1px solid #dce8f1', overflow: 'hidden', boxShadow: '0 14px 38px rgba(26,72,112,.08)' }}><Tabs value={section} onChange={(_, value) => setSection(value)} variant="fullWidth" sx={{ bgcolor: '#102f4f', '& .MuiTab-root': { minHeight: 62, color: 'rgba(255,255,255,.72)', textTransform: 'none', fontSize: 16, fontWeight: 750 }, '& .Mui-selected': { color: '#fff !important', bgcolor: 'rgba(37,160,184,.2)' }, '& .MuiTabs-indicator': { height: 4, bgcolor: '#38c6b2' } }}><Tab value="snv" label="SNV" /><Tab value="sv" label="SV" /><Tab value="cnv" label="CNV · Coming soon" disabled /><Tab value="pharmcat" label="PharmCat" /></Tabs><Box sx={{ p: { xs: 2, md: 3 } }}>{section === 'snv' && <NestedResults analysisId={analysisId} tabs={snvTabs} data={data.snv} loading={loading.snv} errors={errors.snv} />}{section === 'sv' && <NestedResults analysisId={analysisId} tabs={svTabs} data={data.sv} loading={loading.sv} errors={errors.sv} />}{section === 'pharmcat' && <NestedResults analysisId={analysisId} tabs={[
+        { value: 'calls', label: 'Resolved PGx Calls', description: 'Only genes with a resolved PharmCAT diplotype are shown here.', severity: 'success' },
+        { value: 'no_calls', label: 'No call · Data insufficient', description: 'Kept separately for audit: required PGx positions were absent, so no reference genotype is inferred.', severity: 'warning' },
+        { value: 'recommendations', label: 'Drug Recommendations', description: 'Sample-matched PharmCAT recommendations from CPIC, DPWG and regulatory sources.', severity: 'info' },
+        { value: 'variant_annotations', label: 'ClinPGx Diplotype–Drug Evidence', description: 'Only exact two-allele/diplotype matches are shown. Single-allele and partial-overlap annotations are excluded.', severity: 'success' },
+      ]} data={data.pharmcat} loading={{ calls: loading.pharmcat, no_calls: loading.pharmcat, recommendations: loading.pharmcat, variant_annotations: loading.pharmcat }} errors={{ calls: errors.pharmcat, no_calls: errors.pharmcat, recommendations: errors.pharmcat, variant_annotations: errors.pharmcat }} />}</Box></Paper>
       </Box>
     </Box>
   );

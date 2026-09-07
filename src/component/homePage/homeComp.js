@@ -17,15 +17,17 @@ const Container = styled(Box)({
     justifyContent: 'center', 
     alignItems: 'center',
     gap: '40px',
-    width: '90%',
+    width: '100%',
+    maxWidth: '1280px',
+    margin: '0 auto',
     minHeight: '80vh',
-    padding: '20px',
+    padding: '40px 28px 80px',
 });
 
 const InfoBox = styled(Box)({
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '40px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '22px',
     width: '100%',
 });
 
@@ -34,12 +36,18 @@ const InfoItem = styled(Box)({
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
-    padding: '20px',
-    boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
-    borderRadius: '12px',
-    transition: 'transform 0.3s ease-in-out',
+    minHeight: '210px',
+    justifyContent: 'center',
+    padding: '28px 22px',
+    background: 'rgba(255,255,255,.94)',
+    border: '1px solid #dce7f0',
+    boxShadow: '0 10px 30px rgba(27,72,111,.08)',
+    borderRadius: '18px',
+    transition: 'transform .2s ease, box-shadow .2s ease, border-color .2s ease',
     '&:hover': {
-        transform: 'scale(1.05)',
+        transform: 'translateY(-5px)',
+        boxShadow: '0 18px 38px rgba(27,72,111,.13)',
+        borderColor: '#83b9df',
     }
 });
 
@@ -49,7 +57,8 @@ const RightSection = styled(Paper)(({ theme }) => ({
     textAlign: 'center',
     boxShadow: theme.shadows[3],
     borderRadius: '12px',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
+    border: '1px solid #dce7f0',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -58,8 +67,9 @@ const RightSection = styled(Paper)(({ theme }) => ({
 }));
 
 const IconStyle = {
-    fontSize: '80px',
-    color: '#1976d2'
+    fontSize: '58px',
+    color: '#0b67b2',
+    marginBottom: '12px'
 };
 
 function HomeComp() {

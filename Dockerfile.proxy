@@ -1,0 +1,3 @@
+FROM takeshi945/nckumtb:frontend-clinical-ui-20260721
+
+COPY nginx.conf /etc/nginx/conf.d/app.conf

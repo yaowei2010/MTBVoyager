@@ -78,7 +78,7 @@ function Analysis_subject() {
     };
 
     return (
-        <Box sx={{ p: '32px', bgcolor: '#WHITE', minHeight: '80vh', mb: "80px" }}>
+        <Box sx={{ p: { xs: 2, md: 4 }, minHeight: '100vh', mb: 10, maxWidth: 1280, mx: 'auto' }}>
             <Typography
                 variant="h1"
                 component="h1"
@@ -86,7 +86,7 @@ function Analysis_subject() {
                 mb="40px"
                 gutterBottom
                 sx={{
-                    fontSize: "80px", // 字體大小
+                    fontSize: { xs: "42px", md: "64px" },
                     fontWeight: "bold", // 字體粗細
                     fontFamily: "'Roboto', sans-serif", // 自定義字體系列
                     color: "#333", // 字體顏色

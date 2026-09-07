@@ -5,6 +5,8 @@ import { config } from '../../constant.js';
 import axios from 'axios';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AuthContext } from '../Auth/AuthContext.js';
+import { Box, Chip, Paper, Stack, Typography } from '@mui/material';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 // Theme for customizing TableCell styles
 const theme = createTheme({
@@ -107,44 +109,29 @@ function Job_results() {
 
   return (
     <ThemeProvider theme={theme}>
-      <div style={{ padding: '0.7rem' }}>
+      <Box sx={{ px: { xs: 2, md: 4 }, py: 4, maxWidth: 1500, mx: 'auto' }}>
         {/* Header Section */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '0.5rem',
-          }}
-        >
-          <h1
-            style={{
-              fontSize: '3.5rem',
-              fontWeight: 'bold',
-              margin: 0,
-            }}
-          >
-            Job Results
-          </h1>
+        <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
+          <Box><Chip label="ANALYSIS OPERATIONS" size="small" sx={{ mb: 1.5, bgcolor: '#e8f7f2', color: '#087f5b', fontWeight: 800, letterSpacing: '.06em' }} /><Typography variant="h3" sx={{ fontSize: { xs: 36, md: 50 }, fontWeight: 800 }}>Analysis jobs</Typography><Typography color="text.secondary">Monitor pipelines and review completed clinical interpretation results.</Typography></Box>
 
           <Button
             variant="contained"
+            startIcon={<AddCircleOutlineIcon />}
             style={{
               fontSize: '1.2rem',
               padding: '0.75rem 1.5rem',
-              marginRight: '55px',
             }}
             href={config.rootPathPrefix + '/Analysis/Protocol'}
           >
             Start new analysis
           </Button>
-        </div>
+        </Stack>
 
         {/* Job Table Section */}
-        <div style={{ marginRight: '3rem', marginBottom: '4rem' }}>
+        <Paper sx={{ p: { xs: 1, md: 2 }, borderRadius: 3, border: '1px solid #dce7f0', boxShadow: '0 12px 34px rgba(27,72,111,.08)', mb: 6 }}>
           {rows.length > 0 && <Job_table rows={rows} refreshRows={refreshRows} />}
-        </div>
-      </div>
+        </Paper>
+      </Box>
     </ThemeProvider>
   );
 }

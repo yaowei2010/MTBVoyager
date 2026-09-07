@@ -44,6 +44,9 @@ const openedMixin = (theme) => ({
     duration: theme.transitions.duration.enteringScreen,
   }),
   overflowX: 'hidden',
+  background: 'linear-gradient(180deg, #0e2e4d 0%, #123d61 62%, #0b5960 100%)',
+  color: '#fff',
+  borderRight: 0,
 });
 
 const closedMixin = (theme) => ({
@@ -53,6 +56,9 @@ const closedMixin = (theme) => ({
   }),
   overflowX: 'hidden',
   width: '80px', // 收起狀態的固定寬度
+  background: 'linear-gradient(180deg, #0e2e4d 0%, #123d61 62%, #0b5960 100%)',
+  color: '#fff',
+  borderRight: 0,
   // width: `calc(${theme.spacing(7)} + 1px)`,
   // [theme.breakpoints.up('sm')]: {
   //   width: `calc(${theme.spacing(10)} + 1px)`,
@@ -76,6 +82,8 @@ const AppBar = styled(MuiAppBar, {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
+  background: 'linear-gradient(90deg, #0e2e4d 0%, #124f70 100%)',
+  boxShadow: '0 4px 22px rgba(7,35,59,.18)',
   ...(open && {
     marginLeft: drawerWidth,
     width: `calc(100% - ${drawerWidth}px)`,
@@ -143,8 +151,8 @@ function Left_navigation() {
             >
               <MenuIcon />
             </IconButton>
-            <Typography variant="h6" noWrap component="div">
-              {/* Mini variant drawer */}
+            <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 800, letterSpacing: '.04em' }}>
+              NCKU Genomics
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: 'flex', gap: 1.5 }}>
@@ -156,9 +164,9 @@ function Left_navigation() {
                 }}
                 style={{
                   fontSize: '1rem',
-                  backgroundColor: '#fff',
-                  color: '#007bff',
-                  boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
+                  backgroundColor: 'rgba(255,255,255,.12)',
+                  color: '#fff',
+                  border: '1px solid rgba(255,255,255,.35)',
                 }}
               >
                 Sign out
@@ -189,8 +197,12 @@ function Left_navigation() {
                     minHeight: 48,
                     justifyContent: open ? 'initial' : 'center',
                     px: 2.5,
-                    bgcolor: location.pathname === item.link ? 'rgba(0, 0, 255, 0.2)' : 'inherit',
-                    borderRadius: '8px'
+                    mx: 1, my: .5,
+                    color: '#fff',
+                    bgcolor: location.pathname === item.link ? 'rgba(72,201,190,.24)' : 'transparent',
+                    border: location.pathname === item.link ? '1px solid rgba(110,231,218,.28)' : '1px solid transparent',
+                    borderRadius: '10px',
+                    '&:hover': { bgcolor: 'rgba(255,255,255,.10)' }
                   }}
                 >
                   <ListItemIcon
@@ -200,6 +212,7 @@ function Left_navigation() {
                       justifyContent: 'center',
                       '& .MuiSvgIcon-root': {
                         fontSize: open ? '36px' : '36px', // 收起狀態為18px，展開為24px
+                        color: location.pathname === item.link ? '#63dfd0' : '#d7e8f3',
                       },
                     }}
                   >
@@ -234,8 +247,9 @@ function Left_navigation() {
                     minHeight: 48,
                     justifyContent: open ? 'initial' : 'center',
                     px: 2.5,
-                    bgcolor: location.pathname === item.link ? 'rgba(0, 0, 255, 0.1)' : 'inherit',
-                    borderRadius: '8px'
+                    mx: 1, my: .5, color: '#fff',
+                    bgcolor: location.pathname === item.link ? 'rgba(72,201,190,.24)' : 'transparent',
+                    borderRadius: '10px', '&:hover': { bgcolor: 'rgba(255,255,255,.10)' }
                   }}
                 >
                   <ListItemIcon

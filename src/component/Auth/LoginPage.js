@@ -3,9 +3,8 @@ import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
-import {
-  Box, Button, TextField, Typography, Paper, Snackbar, Alert
-} from '@mui/material';
+import { Box, Button, Chip, Divider, TextField, Typography, Paper, Snackbar, Alert } from '@mui/material';
+import BiotechOutlinedIcon from '@mui/icons-material/BiotechOutlined';
 import { config } from '../../constant';
 
 function LoginPage() {
@@ -48,9 +47,13 @@ function LoginPage() {
   };
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" height="100vh" bgcolor="#f5f5f5">
-      <Paper elevation={6} sx={{ p: 4, width: 350 }}>
-        <Typography variant="h5" gutterBottom>登入系統</Typography>
+    <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh" sx={{ p: 2, background: 'radial-gradient(circle at 15% 15%,rgba(34,178,167,.22),transparent 28rem),linear-gradient(135deg,#0c2945 0%,#124d70 58%,#08766f 100%)' }}>
+      <Paper elevation={0} sx={{ p: { xs: 3, sm: 5 }, width: '100%', maxWidth: 440, borderRadius: 4, border: '1px solid rgba(255,255,255,.45)', boxShadow: '0 28px 70px rgba(2,20,38,.32)' }}>
+        <Box sx={{ width: 58, height: 58, display: 'grid', placeItems: 'center', borderRadius: 3, bgcolor: '#e7f4ff', color: '#0b67b2', mb: 3 }}><BiotechOutlinedIcon fontSize="large" /></Box>
+        <Chip label="CLINICAL GENOMICS" size="small" sx={{ mb: 1.5, bgcolor: '#e8f7f2', color: '#087f5b', fontWeight: 800, letterSpacing: '.06em' }} />
+        <Typography variant="h4" sx={{ fontWeight: 800 }}>Welcome back</Typography>
+        <Typography color="text.secondary" sx={{ mt: 1, mb: 3 }}>Sign in to the germline and somatic interpretation workspace.</Typography>
+        <Divider sx={{ mb: 2 }} />
 
         {/* ✅ Enter 送出 */}
         <Box component="form" onSubmit={handleSubmit}>
@@ -76,13 +79,13 @@ function LoginPage() {
             type="submit"          // ✅ 讓按鈕也走 form submit
             variant="contained"
             fullWidth
-            sx={{ mt: 2 }}
+            sx={{ mt: 2, height: 50, fontSize: 16 }}
           >
             登入
           </Button>
         </Box>
 
-        <Typography variant="body2" sx={{ mt: 2 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5, textAlign: 'center' }}>
           還沒有帳號？<Link to={config.rootPathPrefix + "/register"}>前往註冊</Link>
         </Typography>
       </Paper>

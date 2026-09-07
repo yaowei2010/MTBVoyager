@@ -9,9 +9,9 @@ import WgsAnalysisHeader from './WgsAnalysisHeader';
 import { cardSx, contentSx, pageSx, primaryButtonSx, secondaryButtonSx, sectionTitleSx } from './wgsUi';
 
 const inputs = [
-  { key: 'snv', label: 'SNV hard-filtered VCF', suffix: '.hard-filtered.vcf.gz' },
-  { key: 'sv', label: 'Structural Variant VCF', suffix: '.sv.vcf.gz' },
-  { key: 'cnv', label: 'Copy Number Variant VCF', suffix: '.cnv.vcf.gz' },
+  { key: 'snv', label: 'SNV hard-filtered VCF', suffix: '.hard-filtered.vcf.gz', required: true },
+  { key: 'sv', label: 'Structural Variant VCF (optional)', suffix: '.sv.vcf.gz' },
+  { key: 'cnv', label: 'Copy Number Variant VCF (optional)', suffix: '.cnv.vcf.gz' },
 ];
 
 function FileField({ spec, file, onChange }) {
@@ -21,7 +21,7 @@ function FileField({ spec, file, onChange }) {
     <Paper sx={{ ...cardSx, transition: 'transform .18s ease, border-color .18s ease', '&:hover': { transform: 'translateY(-2px)', borderColor: '#79b8e8' } }}>
       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 2 }}>
         <Box sx={{ width: 42, height: 42, display: 'grid', placeItems: 'center', borderRadius: 2, bgcolor: file && valid ? '#e8f7f2' : '#edf5fc', color: file && valid ? '#087f5b' : '#1769aa' }}><UploadFileIcon /></Box>
-        <Box><Typography variant="h6" sx={sectionTitleSx}>{spec.label}</Typography><Typography variant="body2" color="text.secondary">Required filename: *{spec.suffix}</Typography></Box>
+        <Box><Typography variant="h6" sx={sectionTitleSx}>{spec.label}</Typography><Typography variant="body2" color="text.secondary">Expected filename: *{spec.suffix}</Typography></Box>
         {file && valid && <Chip label="Ready" size="small" color="success" sx={{ ml: 'auto !important', fontWeight: 700 }} />}
       </Stack>
       <input hidden ref={ref} type="file" accept=".vcf.gz,.gz" onChange={(e) => onChange(e.target.files?.[0] || null)} />
@@ -40,13 +40,13 @@ export default function WgsGermlineSample() {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
-  const isValid = inputs.every(({ key, suffix }) => files[key] && files[key].name.toLowerCase().endsWith(suffix) && files[key].size > 0);
+  const isValid = inputs.every(({ key, suffix, required }) => !files[key] ? !required : files[key].name.toLowerCase().endsWith(suffix) && files[key].size > 0);
 
   const upload = async () => {
-    if (!isValid) return setError('All three VCF inputs are required and must match the expected filenames.');
+    if (!isValid) return setError('SNV VCF is required; every supplied file must match the expected filename.');
     const draft = JSON.parse(sessionStorage.getItem('wgsGermlineDraft') || '{}');
     const body = new FormData();
-    body.append('snv', files.snv); body.append('sv', files.sv); body.append('cnv', files.cnv);
+    inputs.forEach(({ key }) => { if (files[key]) body.append(key, files[key]); });
     if (draft.draft_id) body.append('draft_id', draft.draft_id);
     setUploading(true); setError('');
     try {
@@ -54,7 +54,7 @@ export default function WgsGermlineSample() {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (e) => setProgress(e.total ? Math.round((e.loaded * 100) / e.total) : 0),
       });
-      sessionStorage.setItem('wgsGermlineDraft', JSON.stringify({ ...draft, upload_id: data?.upload_id || data?.id, files: Object.fromEntries(inputs.map(({ key }) => [key, files[key].name])) }));
+      sessionStorage.setItem('wgsGermlineDraft', JSON.stringify({ ...draft, upload_id: data?.upload_id || data?.id, files: Object.fromEntries(inputs.filter(({ key }) => files[key]).map(({ key }) => [key, files[key].name])) }));
       navigate(`${config.rootPathPrefix}/Analysis/WGS_Germline/Settings`);
     } catch (e) { setError(e.response?.data?.detail || 'Unable to upload WGS input files.'); }
     finally { setUploading(false); }

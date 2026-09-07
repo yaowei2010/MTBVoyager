@@ -24,7 +24,7 @@ function PrivateRoute() {
   return (
     <>
       <Left_navigation />
-      <div style={{ marginTop: "-10px", paddingLeft: "150px" }}>
+      <div className="clinical-app-content" style={{ marginTop: "-10px", paddingLeft: "150px" }}>
         <Outlet />
       </div>
     </>

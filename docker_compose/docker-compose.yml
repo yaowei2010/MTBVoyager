@@ -87,13 +87,19 @@ services:
       WGS_VEP_FORK_PER_SHARD: "${WGS_VEP_FORK_PER_SHARD:-6}"
       WGS_CANCER_DB: "${DATA_ROOT}/VEP/20241126Mondodatabase"
       WGS_ANNOTSV_ANNOTATIONS: "${DATA_ROOT}/annotsv/database/Annotations_Human"
+      WGS_CLINPGX_VARIANT_ANNOTATIONS: "${DATA_ROOT}/clinpgx/2026-08-18/var_drug_ann.tsv"
+      WGS_CLINPGX_RELEASE: "2026-08-05"
       WGS_ONCOVI_RESOURCES: "${DATA_ROOT}/oncovi/99fa5801163bb6bd32d97e916ca2249bb9429d81/resources"
+      WGS_GENCODE_GTF: "${WGS_REFERENCE_ROOT}/gencode.v47.annotation.gtf.gz"
       MONDO_TERMS_TSV: "${DATA_ROOT}/mondo/mondo_terms.tsv"
       MONDO_GENE_ASSOCIATIONS_TSV: "${DATA_ROOT}/mondo/mondo_gene_associations.tsv"
       MONDO_RELEASE_FILE: "${DATA_ROOT}/mondo/release.json"
       LITERATURE_RAG_DB: "${DATA_ROOT}/literature_rag/literature.sqlite3"
       LITERATURE_LLM_URL: "http://literature_llm:8080/v1/chat/completions"
       LITERATURE_LLM_MODEL: "${LITERATURE_LLM_MODEL:-local-medical-instruct}"
+      MTB_REPORT_LLM_URL: "http://mtb_report_llm:11434/api/chat"
+      MTB_REPORT_LLM_MODEL: "gemma4:e4b"
+      MTB_REPORT_LLM_TIMEOUT: "1800"
       NCBI_EMAIL: "${NCBI_EMAIL:-}"
     volumes:
       - ${DATA_ROOT}/VEP:/VEP
@@ -119,6 +125,17 @@ services:
       - ${LITERATURE_MODEL_ROOT:-./models}:/models:ro
     restart: unless-stopped
 
+  mtb_report_llm:
+    image: ollama/ollama:latest
+    container_name: mtb_report_llm
+    environment:
+      OLLAMA_KEEP_ALIVE: "30m"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_LOAD_TIMEOUT: "20m"
+    volumes:
+      - ${DATA_ROOT}/ollama:/root/.ollama
+    restart: unless-stopped
+
   wgs_tools:
     profiles: ["build-only"]
     image: ncku-wgs-python:20260721
@@ -133,7 +150,7 @@ services:
     pull_policy: never
     build:
       context: ..
-      dockerfile: Dockerfile.runtime
+      dockerfile: Dockerfile
     container_name: frontend
     depends_on:
       - backend
