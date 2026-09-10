@@ -30,6 +30,7 @@ import Potential_Treatment_Bar from './Potential_Treatment_Bar.js'
 import Pathway from './Pathway_viewer.js'
 import Cancer_Type_Prediction from './Cancer_Type_Prediction.js'
 import WgsResultTable from '../WGS_Germline_Detail/WgsResultTable.js'
+import LegacyMtbDraftReport from './LegacyMtbDraftReport.js'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#C0C0C0',
@@ -523,6 +524,7 @@ function Job_results_detail_somatic() {
                     <Tab label="Potential Treatment from Guideline" value="5" />
                     <Tab label="Cancer Type Prediction" value="6" />
                     <Tab label="Pathway Viewer" value="7" />
+                    <Tab label="MTB Draft Report" value="8" />
                   </TabList>
                 </Box>
 
@@ -665,6 +667,9 @@ function Job_results_detail_somatic() {
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Pathway />
                   </Box>
+                </TabPanel>
+                <TabPanel value="8">
+                  <LegacyMtbDraftReport analysisId={newJobID} />
                 </TabPanel>
               </TabContext>
             </Box>
