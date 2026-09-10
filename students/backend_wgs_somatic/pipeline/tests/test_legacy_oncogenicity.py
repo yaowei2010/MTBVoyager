@@ -1,11 +1,10 @@
 import csv
-import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER = ROOT.parent / "wgs_somatic" / "legacy_oncogenicity.py"
-SPEC = importlib.util.spec_from_file_location("legacy_oncogenicity", HELPER)
-legacy = importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(legacy)
+sys.path.insert(0, str(ROOT.parent))
+from wgs_somatic import legacy_oncogenicity as legacy
 
 
 def test_adapter_uses_only_available_legacy_fields():

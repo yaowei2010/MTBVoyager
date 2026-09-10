@@ -94,25 +94,29 @@ def _model_summary(data):
         retry={**body,'messages':body['messages']+[{'role':'assistant','content':'先前輸出未符合繁體中文要求。'},{'role':'user','content':f'請重新產生。所有敘述與限制項目必須包含繁體中文字，不得輸出完整英文句子。錯誤：{first_error}'}]}
         result=_chat(endpoint,retry,timeout,data)
     fallback=_fallback(data)
+    corrected=[]
     for key in REPORT_FIELDS[:-1]:
         if '請提供' in str(result.get(key,'')) or '未提供任何資料' in str(result.get(key,'')):
-            result[key]=fallback[key]
+            result[key]=fallback[key];corrected.append(key)
     genes=[str(row.get('gene','')).strip() for row in data.get('high_risk_variants',[]) if str(row.get('gene','')).strip()]
     if genes and not any(gene in str(result.get('molecular_summary','')) for gene in genes):
         result['molecular_summary']=f"高風險基因包括 {', '.join(dict.fromkeys(genes[:5]))}。"+str(result.get('molecular_summary',''))
     limitations=result.get('limitations',fallback['limitations'])
     if not isinstance(limitations,list): limitations=fallback['limitations']
-    return {**{key:str(result.get(key) or fallback[key])[:1000] for key in REPORT_FIELDS[:-1]},'limitations':[str(x)[:300] for x in limitations[:5]]}
+    return {**{key:str(result.get(key) or fallback[key])[:1000] for key in REPORT_FIELDS[:-1]},'limitations':[str(x)[:300] for x in limitations[:5]],'_template_corrected_fields':corrected}
 
 def generate(directory,metadata,refresh=False):
     sample=metadata['subject']['subject_id']; target=directory/'results'/sample/'downstream'/'mtb_draft_report.json'
     if target.is_file() and not refresh:
         existing=read_json(target,{})
-        if existing.get('status')=='gemma_generated': return existing
+        if existing.get('status') in ('gemma_generated','gemma_corrected'): return existing
     data=_payload(directory,metadata); narrative=_fallback(data); status='template_only'; warning=''
-    try: narrative=_model_summary(data); status='gemma_generated'
+    try:
+        narrative=_model_summary(data); corrected=narrative.pop('_template_corrected_fields',[])
+        status='gemma_corrected' if corrected else 'gemma_generated'
+        if corrected:warning='Gemma output required deterministic correction for: '+', '.join(corrected)
     except Exception as exc: warning=f'Gemma summary unavailable; deterministic template used: {exc}'[:500]
-    report={'status':status,'draft':True,'generated_at':datetime.now(timezone.utc).isoformat(),'model':os.environ.get('MTB_REPORT_LLM_MODEL','gemma4:e4b') if status=='gemma_generated' else None,'warning':warning,'data':data,'narrative':narrative,'disclaimer':'MTB preliminary draft. Requires review and approval by qualified clinical professionals before use.'}
+    report={'status':status,'draft':True,'generated_at':datetime.now(timezone.utc).isoformat(),'model':os.environ.get('MTB_REPORT_LLM_MODEL','gemma4:e4b') if status in ('gemma_generated','gemma_corrected') else None,'warning':warning,'data':data,'narrative':narrative,'disclaimer':'MTB preliminary draft. Requires review and approval by qualified clinical professionals before use.'}
     write_json(target,report); return report
 
 def cached(directory,metadata):
