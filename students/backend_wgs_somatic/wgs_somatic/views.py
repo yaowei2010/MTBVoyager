@@ -7,7 +7,7 @@ from hw1.models import existJobs
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
 from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity, is_high_risk as is_legacy_high_risk
-from .legacy_mtb_report import generate as generate_legacy_mtb_report
+from .legacy_mtb_report import cached_assisted as cached_legacy_mtb_report, generate_assisted as generate_legacy_mtb_report, save_assisted_edits as save_legacy_mtb_report_edits
 from .mtb_report import cached as cached_mtb_report, generate as generate_mtb_report, save_edits as save_mtb_report_edits
 from .variant_display import tumor_format_rows
 
@@ -167,11 +167,16 @@ def legacy_oncogenicity(request):
     except ValueError as exc:return error(exc)
     except Exception as exc:return error(f'Unable to calculate legacy oncogenicity: {exc}',500)
 
+@csrf_exempt
 def legacy_mtb_report(request,analysis_id):
-    if request.method!='GET':return error('GET required',405)
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',analysis_id):return error('Invalid legacy job identifier')
     directory=Path(os.environ.get('LEGACY_PATIENT_ROOT','/miRTI/media/patient'))/analysis_id
     if not directory.is_dir():return error('Legacy tumor-only result not found',404)
-    try:return JsonResponse(generate_legacy_mtb_report(directory))
+    try:
+        if request.method=='GET':return JsonResponse(cached_legacy_mtb_report(directory))
+        if request.method=='PUT':return JsonResponse(save_legacy_mtb_report_edits(directory,body(request).get('narrative')))
+        if request.method=='POST':return JsonResponse(generate_legacy_mtb_report(directory,refresh=bool(body(request).get('refresh',False))))
+        return error('GET, POST, or PUT required',405)
+    except ValueError as exc:return error(exc)
     except FileNotFoundError as exc:return error(exc,404)
     except Exception as exc:return error(f'Unable to generate legacy MTB draft: {exc}',500)
