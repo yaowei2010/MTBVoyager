@@ -8,6 +8,7 @@ import re
 from collections import Counter
 from functools import lru_cache
 from pathlib import Path
+from .legacy_quality import passes as passes_quality, settings as quality_settings
 
 LEGACY_PROFILE = "legacy_hg19_gene_protein_to_oncovi_v0.1"
 EXTRA_FIELDS = [
@@ -116,11 +117,11 @@ def resources():
     return engine().Resources(root)
 
 
-def annotate(input_csv, output_tsv, summary_json):
+def annotate(input_csv, output_tsv, summary_json, thresholds=None):
     module, res = engine(), resources()
     with Path(input_csv).open(encoding="utf-8", errors="replace", newline="") as handle:
         reader = csv.DictReader(handle); fields = [field for field in (reader.fieldnames or []) if field]
-        rows = [row for row in reader if is_non_synonymous(row)]
+        rows = [row for row in reader if is_non_synonymous(row) and (thresholds is None or passes_quality(row, thresholds))]
     counts, reference_counts, output = Counter(), Counter(), []
     for original in rows:
         source = adapt_legacy_row(original)
@@ -156,6 +157,7 @@ def annotate(input_csv, output_tsv, summary_json):
     os.replace(tmp, output_tsv)
     summary = {"profile": LEGACY_PROFILE, "coordinate_build": "GRCh37/hg19", "variants": len(output),
                "classification_counts": dict(counts), "oncovi_2026_classification_counts": dict(reference_counts),
-               "review_required": len(output), "limitations": output[0]["oncogenicity_limitations"] if output else ""}
+               "review_required": len(output), "quality_filter": thresholds,
+               "limitations": output[0]["oncogenicity_limitations"] if output else ""}
     tmp = summary_json.with_suffix(summary_json.suffix + ".tmp"); tmp.write_text(json.dumps(summary, indent=2) + "\n"); os.replace(tmp, summary_json)
     return output, summary

@@ -7,6 +7,7 @@ from hw1.models import existJobs
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
 from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity, is_high_risk as is_legacy_high_risk
+from .legacy_quality import settings as legacy_quality_settings
 from .legacy_mtb_report import cached_assisted as cached_legacy_mtb_report, generate_assisted as generate_legacy_mtb_report, save_assisted_edits as save_legacy_mtb_report_edits
 from .mtb_report import cached as cached_mtb_report, generate as generate_mtb_report, save_edits as save_mtb_report_edits
 from .variant_display import tumor_format_rows
@@ -157,12 +158,13 @@ def legacy_oncogenicity(request):
         source=merged[0] if merged else directory/'somatic_result.csv'
         if not source.is_file():return error('Legacy somatic result not found',404)
         output=directory/'legacy_candidates.oncogenicity.tsv';summary_path=directory/'legacy_candidates.oncogenicity.summary.json'
-        if not output.exists() or output.stat().st_mtime < source.stat().st_mtime:
-            rows,summary_data=annotate_legacy_oncogenicity(source,output,summary_path)
+        cached_summary=read_json(summary_path,{})
+        if not output.exists() or output.stat().st_mtime < source.stat().st_mtime or not isinstance(cached_summary.get('quality_filter'),dict):
+            rows,summary_data=annotate_legacy_oncogenicity(source,output,summary_path,legacy_quality_settings(directory))
         else:
             rows=tsv_rows(output);summary_data=read_json(summary_path,{})
         high_risk=[row for row in rows if is_legacy_high_risk(row)]
-        summary_data={**summary_data,'high_risk':len(high_risk),'reporting_gate':'non-synonymous AND (ClinVar P/LP OR oncogenicity O/LO)','quality_filter':'unchanged legacy pipeline output'}
+        summary_data={**summary_data,'high_risk':len(high_risk),'reporting_gate':'quality gate AND non-synonymous AND (ClinVar P/LP OR oncogenicity O/LO)','quality_filter':legacy_quality_settings(directory)}
         return JsonResponse({'status':'success','data':high_risk,'summary':summary_data})
     except ValueError as exc:return error(exc)
     except Exception as exc:return error(f'Unable to calculate legacy oncogenicity: {exc}',500)

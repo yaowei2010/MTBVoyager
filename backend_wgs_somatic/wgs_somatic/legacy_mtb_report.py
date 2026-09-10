@@ -7,11 +7,19 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .legacy_oncogenicity import annotate, is_high_risk
+from .legacy_quality import number as _number, passes as passes_quality, settings as quality_settings
 from .mtb_report import REPORT_FIELDS, _fallback, _model_summary
 from .storage import read_json, write_json
 
 TSO500_PANEL_MB = 1.94
 TMB_POPULATION_AF_MAX = 0.001
+REQUIRED_RESULT_FILES = {
+    "actionable": "somatic_result.csv", "hereditary": "heredity.csv",
+    "germline_prediction": "heridty1.csv", "cosmic": "COSMIC.csv",
+    "prediction": "suspect.csv", "multiple_snp_cosmic": "drug_combinations_cosmic.csv",
+    "multiple_snp_civic": "mutiSNP_analysis_civic.csv",
+    "potential_treatment": "potential_treatment_df.csv",
+}
 
 
 def _rows(path, limit=None, delimiter=","):
@@ -22,23 +30,23 @@ def _rows(path, limit=None, delimiter=","):
     return rows[:limit] if limit else rows
 
 
-def _number(value):
-    try:
-        return float(str(value).strip())
-    except (TypeError, ValueError):
-        return None
-
-
 def _coding(row):
     value = str(row.get("Consequence") or row.get("ExonicFunc.refGene") or "").casefold()
-    excluded = ("intron", "intergenic", "upstream", "downstream", "utr", "non_coding")
-    return bool(value) and not any(term in value for term in excluded)
+    accepted = ("synonymous", "missense", "frameshift", "stop_gained", "stopgain", "stop_lost", "start_lost", "splice", "inframe", "protein_altering", "nonsynonymous")
+    return any(term in value for term in accepted)
 
 
-def estimate_tso500_tmb(rows):
+def _snv_or_indel(row):
+    ref, alt = str(row.get("Ref") or ""), str(row.get("Alt") or "")
+    return bool(ref and alt) and not (len(ref) > 1 and len(alt) > 1)
+
+
+def estimate_tso500_tmb(rows, thresholds=None):
+    thresholds = thresholds or {"min_dp": 0, "min_vaf": 0, "population_af_max": 1}
     selected = {}
     for row in rows:
-        if not _coding(row):
+        tmb_thresholds = {**thresholds, "population_af_max": TMB_POPULATION_AF_MAX}
+        if not _coding(row) or not _snv_or_indel(row) or not passes_quality(row, tmb_thresholds):
             continue
         population = [_number(row.get(key)) for key in ("AF", "AF_popmax", "AF_eas")]
         population = [value for value in population if value is not None]
@@ -56,7 +64,7 @@ def estimate_tso500_tmb(rows):
         "tmb_numerator_variants": count,
         "tmb_proxy_mut_per_mb": round(count / TSO500_PANEL_MB, 2),
         "population_af_max": TMB_POPULATION_AF_MAX,
-        "method": "Unique coding SNVs/indels in the existing quality-filtered legacy output, including synonymous and non-synonymous variants, after population-frequency germline-proxy exclusion; divided by the published 1.94 Mb TSO500 panel size.",
+        "method": "Unique recognized coding SNVs/indels passing the sample DP/VAF gate, including synonymous and non-synonymous variants, after population-frequency germline-proxy exclusion; divided by the published 1.94 Mb TSO500 panel size.",
         "limitations": [
             "No sample-specific callable/capture BED was supplied; 1.94 Mb is the published total TSO500 panel size, not measured callable territory.",
             "Tumor-only analysis cannot completely remove private germline variants.",
@@ -87,33 +95,29 @@ def generate(directory):
     all_rows = _rows(source)
     oncogenicity_path = directory / "legacy_candidates.oncogenicity.tsv"
     oncogenicity_summary = directory / "legacy_candidates.oncogenicity.summary.json"
-    if not oncogenicity_path.exists() or oncogenicity_path.stat().st_mtime < source.stat().st_mtime:
-        annotated, onco_summary = annotate(source, oncogenicity_path, oncogenicity_summary)
+    thresholds = quality_settings(directory)
+    cached_summary = json.loads(oncogenicity_summary.read_text()) if oncogenicity_summary.is_file() else {}
+    if not oncogenicity_path.exists() or oncogenicity_path.stat().st_mtime < source.stat().st_mtime or not isinstance(cached_summary.get("quality_filter"), dict):
+        annotated, onco_summary = annotate(source, oncogenicity_path, oncogenicity_summary, thresholds)
     else:
         annotated = _rows(oncogenicity_path, delimiter="\t")
         onco_summary = json.loads(oncogenicity_summary.read_text()) if oncogenicity_summary.is_file() else {}
     high_risk = [row for row in annotated if is_high_risk(row)]
-    files = {
-        "actionable": "somatic_result.csv", "hereditary": "heredity.csv",
-        "germline_prediction": "heridty1.csv", "cosmic": "COSMIC.csv",
-        "prediction": "suspect.csv", "multiple_snp_cosmic": "drug_combinations_cosmic.csv",
-        "multiple_snp_civic": "mutiSNP_analysis_civic.csv",
-        "potential_treatment": "potential_treatment_df.csv",
-    }
-    sections = {name: {"available": (directory / filename).is_file(), "count": len(_rows(directory / filename))} for name, filename in files.items()}
+    sections = {name: {"available": (directory / filename).is_file(), "count": len(_rows(directory / filename)) if (directory / filename).is_file() else None} for name, filename in REQUIRED_RESULT_FILES.items()}
     sections.update({
         "mutation_signature": {"available": bool(_signature(directory)), "count": len(_signature(directory))},
         "fusion_gene": {"available": any(directory.glob("fusion_gene*/*")), "count": None},
         "cancer_type_prediction": {"available": any(directory.glob("*cancer*prediction*.csv")), "count": None},
         "pathway": {"available": any(directory.glob("*pathway*")), "count": None},
     })
-    tmb = estimate_tso500_tmb(all_rows)
+    missing = [filename for filename in REQUIRED_RESULT_FILES.values() if not (directory / filename).is_file()]
+    tmb = estimate_tso500_tmb(all_rows, thresholds)
     genes = sorted({str(row.get("SYMBOL") or row.get("Gene.refGene") or row.get("Gene") or "").strip() for row in high_risk} - {""})
     return {
-        "status": "draft", "generated_at": datetime.now(timezone.utc).isoformat(),
+        "status": "incomplete" if missing else "draft", "generated_at": datetime.now(timezone.utc).isoformat(),
         "analysis_id": directory.name, "genome_build": "GRCh37/hg19",
-        "reporting_gate": "non-synonymous AND (ClinVar P/LP OR oncogenicity O/LO)",
-        "quality_filter": "unchanged legacy tumor-only pipeline settings",
+        "reporting_gate": "sample quality gate AND non-synonymous AND (ClinVar P/LP OR oncogenicity O/LO)",
+        "quality_filter": thresholds, "missing_result_files": missing,
         "summary": {
             "high_risk_count": len(high_risk), "high_risk_genes": genes,
             "oncogenicity_candidates": onco_summary.get("variants", len(annotated)),
@@ -135,6 +139,7 @@ def _clean_variant(row):
         coding_match = re.search(r":(c\.[^:,]+)", first)
         protein = protein_match.group(1) if protein_match else ""
         coding = coding_match.group(1) if coding_match else ""
+    annotations = " | ".join(str(row.get(key) or "").strip() for key in ("oncoKB_annotation", "CGI_annotation", "CIVIC_annotation") if str(row.get(key) or "").strip() not in ("", "."))
     return {
         "gene": str(row.get("SYMBOL") or row.get("Gene.refGene") or row.get("Gene") or "").strip(),
         "hgvsp": protein,
@@ -147,25 +152,40 @@ def _clean_variant(row):
         "variant": ":".join(str(row.get(key) or "").strip() for key in ("Chr", "Start", "Ref", "Alt")),
         "vaf": str(row.get("VAF") or "").strip(),
         "depth": str(row.get("DP") or "").strip(),
+        "drug": annotations[:2000],
+        "source": "legacy treatment databases" if annotations else "",
     }
 
 
 def _ai_payload(directory):
     base = generate(directory)
+    try:
+        metadata = json.loads((directory / "summary.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        metadata = {}
     signatures = base.get("mutational_signatures", [])
     total = sum(_number(item.get("activity")) or 0 for item in signatures)
     signatures = [{**item, "proportion": ((_number(item.get("activity")) or 0) / total if total else 0)} for item in signatures]
+    actionable = [_clean_variant(row) for row in _rows(directory / "actionable.csv", limit=100)]
+    diagnosis = str(metadata.get("diagnosis") or "").strip()
+    matched, other = [], []
+    for row in actionable:
+        evidence = row.get("drug", "").casefold()
+        (matched if diagnosis and diagnosis.casefold() in evidence else other).append(row)
     return {
         "sample_id": directory.name,
         "analysis_id": directory.name,
         "protocol": "Illumina TSO500-style legacy tumor-only",
         "genome_build": "GRCh37/hg19",
-        "cancer_type": "",
+        "cancer_type": diagnosis,
         "clinical_history": "",
         "high_risk_variants": [_clean_variant(row) for row in base.get("high_risk", [])],
-        "actionable_matched": [],
-        "actionable_other_cancers": [],
-        "hereditary_high_risk": [],
+        "actionable_matched": matched,
+        "actionable_other_cancers": other,
+        "hereditary_high_risk": [_clean_variant(row) for row in _rows(directory / "heredity.csv", limit=50)],
+        "cosmic_candidates": [_clean_variant(row) for row in _rows(directory / "COSMIC.csv", limit=50)],
+        "prediction_candidates": [_clean_variant(row) for row in _rows(directory / "suspect.csv", limit=50)],
+        "potential_treatment_candidates": [_clean_variant(row) for row in _rows(directory / "potential_treatment_df.csv", limit=50)],
         "estimated_tmb": base.get("tmb_estimate", {}),
         "top_mutational_signatures": signatures,
         "analysis_inventory": base.get("sections", {}),
@@ -187,7 +207,7 @@ def generate_assisted(directory, refresh=False):
     target = _target(directory)
     if target.is_file() and not refresh:
         existing = read_json(target, {})
-        if existing.get("status") == "gemma_generated":
+        if existing.get("status") in ("gemma_generated", "gemma_corrected"):
             existing["data"] = _ai_payload(directory)
             return existing
     data = _ai_payload(directory)
@@ -196,13 +216,16 @@ def generate_assisted(directory, refresh=False):
     warning = ""
     try:
         narrative = _model_summary(data)
-        status = "gemma_generated"
+        corrected = narrative.pop("_template_corrected_fields", [])
+        status = "gemma_corrected" if corrected else "gemma_generated"
+        if corrected:
+            warning = "Gemma output required deterministic correction for: " + ", ".join(corrected)
     except Exception as exc:
         warning = f"Gemma summary unavailable; deterministic Traditional Chinese template used: {exc}"[:500]
     report = {
         "status": status, "draft": True,
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "model": os.environ.get("MTB_REPORT_LLM_MODEL", "gemma4:e4b") if status == "gemma_generated" else None,
+        "model": os.environ.get("MTB_REPORT_LLM_MODEL", "gemma4:e4b") if status in ("gemma_generated", "gemma_corrected") else None,
         "warning": warning, "data": data, "narrative": narrative,
         "disclaimer": "MTB 初步草稿，所有內容均須由合格臨床專業人員審閱及核准後方可使用。",
     }
