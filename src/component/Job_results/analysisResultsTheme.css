@@ -1,0 +1,126 @@
+.analysis-result-page {
+  min-height: 100vh;
+  max-width: 1600px;
+  margin: 0 auto !important;
+  padding: 32px !important;
+  background: #f5f8fb;
+  color: #102a43;
+}
+
+.analysis-result-page > div:first-of-type {
+  display: flex !important;
+  align-items: center;
+  gap: 24px;
+  margin-top: 0 !important;
+  margin-bottom: 24px;
+}
+
+.analysis-result-page > div:first-of-type > h1 {
+  flex: 0 0 auto;
+  margin: 0 !important;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 850;
+  letter-spacing: -0.035em;
+  color: #102a43;
+}
+
+.analysis-result-page .analysis-result-meta {
+  flex: 1 1 640px;
+  width: auto !important;
+  max-width: 900px;
+  margin: 0 !important;
+  padding: 18px 22px !important;
+  border: 1px solid #dbe6ee !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  box-shadow: 0 10px 30px rgba(26, 72, 112, 0.07) !important;
+}
+
+.analysis-result-page .analysis-result-actions {
+  margin-left: auto !important;
+  align-items: stretch;
+}
+
+.analysis-result-page .analysis-result-actions .MuiButton-root {
+  min-height: 44px;
+  border-radius: 9px;
+  font-weight: 750;
+  text-transform: none;
+}
+
+.analysis-result-page .analysis-result-panel {
+  margin-top: 0 !important;
+  margin-bottom: 80px !important;
+  padding: 0 !important;
+  overflow: hidden;
+  border: 1px solid #dbe6ee;
+  border-radius: 12px;
+  box-shadow: 0 14px 38px rgba(26, 72, 112, 0.08) !important;
+}
+
+.analysis-result-page .analysis-result-panel > .MuiBox-root > .MuiBox-root:first-child {
+  border-bottom: 1px solid #284763;
+  background: #102f4f;
+}
+
+.analysis-result-page .analysis-result-panel > .MuiBox-root > .MuiBox-root:first-child .MuiTab-root {
+  min-height: 62px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.95rem;
+  font-weight: 750;
+  text-transform: none;
+}
+
+.analysis-result-page .analysis-result-panel > .MuiBox-root > .MuiBox-root:first-child .MuiTab-root.Mui-selected {
+  color: #fff;
+  background: rgba(37, 160, 184, 0.2);
+}
+
+.analysis-result-page .analysis-result-panel > .MuiBox-root > .MuiBox-root:first-child .MuiTabs-indicator {
+  height: 4px;
+  background: #38c6b2;
+}
+
+.analysis-result-page .analysis-result-panel .MuiTabPanel-root {
+  padding: 24px;
+}
+
+.analysis-result-page .analysis-result-panel .MuiTabPanel-root .MuiTabs-root {
+  border-radius: 9px 9px 0 0;
+  background: #edf5fb;
+}
+
+.analysis-result-page .analysis-result-panel .MuiTabPanel-root .MuiTab-root {
+  min-height: 48px;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.analysis-result-page .analysis-result-panel .MuiDataGrid-root,
+.analysis-result-page .analysis-result-panel .MuiTableContainer-root {
+  border-color: #dbe6ee;
+  border-radius: 9px;
+}
+
+@media (max-width: 1100px) {
+  .analysis-result-page > div:first-of-type {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .analysis-result-page .analysis-result-actions {
+    width: 100%;
+    margin-left: 0 !important;
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 600px) {
+  .analysis-result-page {
+    padding: 16px !important;
+  }
+
+  .analysis-result-page .analysis-result-panel .MuiTabPanel-root {
+    padding: 16px;
+  }
+}

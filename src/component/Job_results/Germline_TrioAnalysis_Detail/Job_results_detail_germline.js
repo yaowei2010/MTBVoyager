@@ -491,7 +491,7 @@ function Job_results_detail() {
 
   // --------------------- Render ---------------------
   return (
-    <div style={{ marginRight: '80px' }}>
+    <div className="analysis-result-page" style={{ marginRight: '80px' }}>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
           <CircularProgress />
@@ -500,7 +500,7 @@ function Job_results_detail() {
         <>
           <div style={{ display: 'flex', marginTop: '15px' }}>
             <h1 style={{ display: 'flex', marginTop: '15px' }}>Results</h1>
-            <Box
+            <Box className="analysis-result-meta"
                 sx={{
                   marginTop: '5px',
                   marginLeft: '40px',
@@ -531,7 +531,7 @@ function Job_results_detail() {
                   </Grid>
                 </Grid>
               </Box>
-            <Stack spacing={2} direction="row" style={{ marginLeft: '20px' }}>
+            <Stack className="analysis-result-actions" spacing={2} direction="row" style={{ marginLeft: '20px' }}>
               <Button variant="contained" onClick={handleSaveToReport} sx={{ width: '110px' }}>
                 Preview Summary
               </Button>
@@ -539,7 +539,7 @@ function Job_results_detail() {
             </Stack>
           </div>
 
-          <Paper elevation={3} style={{ padding: '20px', marginTop: '40px', marginBottom: '80px' }}>
+          <Paper className="analysis-result-panel" elevation={3} style={{ padding: '20px', marginTop: '40px', marginBottom: '80px' }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
               <TabContext value={value}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>

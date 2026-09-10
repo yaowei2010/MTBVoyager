@@ -449,7 +449,7 @@ function Job_results_detail_somatic() {
   }, []);
 
   return (
-    <div style={{ marginRight: '80px' }}>
+    <div className="analysis-result-page" style={{ marginRight: '80px' }}>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
           <CircularProgress />
@@ -458,7 +458,7 @@ function Job_results_detail_somatic() {
         <>
           <div style={{ display: "flex", marginTop: '15px' }}>
             <h1 style={{ display: "flex", marginTop: '15px' }}>Results</h1>
-            <Box
+            <Box className="analysis-result-meta"
               sx={{
                 marginTop: '5px',
                 marginLeft: '40px',
@@ -489,7 +489,7 @@ function Job_results_detail_somatic() {
                 </Grid>
               </Grid>
             </Box>
-            <Stack spacing={2} direction="row" style={{ marginLeft: '20px' }}>
+            <Stack className="analysis-result-actions" spacing={2} direction="row" style={{ marginLeft: '20px' }}>
               <Button
                 variant="contained"
                 onClick={handleSaveToReport}
@@ -511,7 +511,7 @@ function Job_results_detail_somatic() {
             </Stack>
           </div>
 
-          <Paper elevation={3} style={{ padding: '20px', marginTop: '40px', marginBottom: '80px' }}>
+          <Paper className="analysis-result-panel" elevation={3} style={{ padding: '20px', marginTop: '40px', marginBottom: '80px' }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
               <TabContext value={valueOUT}>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -542,7 +542,7 @@ function Job_results_detail_somatic() {
                         <Tab label="Germline Prediction" value="3" />
                         <Tab label="Somatic" value="4" />
                         <Tab label="prediction" value="5" />
-                        <Tab label="Oncogenicity" value="6" />
+                        <Tab label="High Risk / Oncogenicity" value="6" />
                       </TabList>
                     </Box>
                     <TabPanel value="1">
@@ -587,8 +587,8 @@ function Job_results_detail_somatic() {
                     </TabPanel>
                     <TabPanel value="6">
                       <Alert severity="warning" sx={{ mb: 2 }}>
-                        Legacy Tumor-Only uses GRCh37/hg19 gene/protein annotations. Missing GRCh38 VEP and review-level evidence is not inferred, so every record requires manual review.
-                        {oncogenicitySummary ? ` Profile: ${oncogenicitySummary.profile}; variants: ${oncogenicitySummary.variants}.` : ''}
+                        Legacy Tumor-Only uses GRCh37/hg19 gene/protein annotations without liftover. High risk follows the WGS core gate: non-synonymous AND (ClinVar P/LP OR oncogenicity O/LO). Every record requires manual review.
+                        {oncogenicitySummary ? ` Profile: ${oncogenicitySummary.profile}; candidates: ${oncogenicitySummary.variants}; high risk: ${oncogenicitySummary.high_risk ?? 0}.` : ''}
                       </Alert>
                       <WgsResultTable
                         rows={OncogenicityData}

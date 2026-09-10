@@ -47,7 +47,9 @@ function Job_results() {
       });
 
       const JobData = JSON.parse(response.data.jobs);
-      const fieldsArray = JobData.map((job) => job.fields);
+      const fieldsArray = JobData
+        .map((job) => job.fields)
+        .filter((fields) => String(fields.status || '').trim().toLowerCase() !== 'expired');
 
       const newRows = fieldsArray.map((fields) =>
         createData(
@@ -86,7 +88,9 @@ function Job_results() {
       });
 
       const JobData = JSON.parse(response.data.finished_jobs || response.data.jobs);
-      const fieldsArray = JobData.map((job) => job.fields);
+      const fieldsArray = JobData
+        .map((job) => job.fields)
+        .filter((fields) => String(fields.status || '').trim().toLowerCase() !== 'expired');
 
       const newRows = fieldsArray.map((fields) =>
         createData(

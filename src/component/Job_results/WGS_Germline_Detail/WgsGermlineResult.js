@@ -76,7 +76,7 @@ export default function WgsGermlineResult() {
   }, [section, analysisId]);
 
   return (
-    <Box sx={{ minHeight: '100vh', px: { xs: 2, md: 4 }, py: 4, mr: { md: 8 }, mb: 10, background: 'linear-gradient(180deg,#f5faff 0%,#fff 45%)' }}>
+    <Box className="analysis-result-page" sx={{ minHeight: '100vh', px: { xs: 2, md: 4 }, py: 4, mr: { md: 8 }, mb: 10, background: 'linear-gradient(180deg,#f5faff 0%,#fff 45%)' }}>
       <Box sx={{ maxWidth: 1500, mx: 'auto' }}>
       <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ md: 'center' }} spacing={2}>
         <Box><Chip label="GERMLINE INTERPRETATION" size="small" sx={{ mb: 1.5, bgcolor: '#e8f7f2', color: '#087f5b', fontWeight: 800, letterSpacing: '.06em' }} /><Typography variant="h3" sx={{ fontSize: { xs: 34, md: 48 }, fontWeight: 800, letterSpacing: '-.035em', color: '#102a43' }}>WGS clinical findings</Typography><Typography color="text.secondary" sx={{ mt: 1 }}>Phenotype-aware SNV, SV and pharmacogenomic interpretation</Typography></Box>

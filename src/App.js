@@ -31,6 +31,7 @@ import WgsSomaticSubject from './component/Analysis/WGS_Somatic/WgsSomaticSubjec
 import WgsSomaticSample from './component/Analysis/WGS_Somatic/WgsSomaticSample.js';
 import WgsSomaticSettings from './component/Analysis/WGS_Somatic/WgsSomaticSettings.js';
 import WgsSomaticResult from './component/Job_results/WGS_Somatic_Detail/WgsSomaticResult.js';
+import './component/Job_results/analysisResultsTheme.css';
 import VUS from './component/VUS/vus.js';
 
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
