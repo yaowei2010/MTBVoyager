@@ -12,10 +12,30 @@ def test_adapter_uses_only_available_legacy_fields():
     row = legacy.adapt_legacy_row({"Gene": "KRAS", "Amino acid change": "G12D",
         "MAF": "{'gnomAD': 0.0}", "Prediction": "{'CADD': 25.3}",
         "Pathogenicity": "{'CLNSIG': 'Pathogenic'}"})
-    assert row == {"SYMBOL": "KRAS", "Consequence": "missense_variant", "HGVSp": "p.G12D",
+    assert {key: row[key] for key in ("SYMBOL", "Consequence", "HGVSp", "CLIN_SIG", "Amino_acids", "Protein_position", "gnomADe_AF", "CADD_phred")} == {
+        "SYMBOL": "KRAS", "Consequence": "missense_variant", "HGVSp": "p.G12D",
         "CLIN_SIG": "Pathogenic", "Amino_acids": "G/D", "Protein_position": "12",
         "gnomADe_AF": 0.0, "CADD_phred": 25.3}
     assert "ClinVar_review_status" not in row
+
+
+def test_adapter_accepts_complete_legacy_merge_rows():
+    row = legacy.adapt_legacy_row({"SYMBOL": "BRAF", "Consequence": "missense_variant",
+        "Amino_acids": "V/E", "Protein_position": "600", "HGVSp": "ENSP:p.V600E",
+        "CLNSIG": "Pathogenic", "AF": "0.0001", "CADD_phred": "31"})
+    assert row["SYMBOL"] == "BRAF"
+    assert row["Consequence"] == "missense_variant"
+    assert row["Amino_acids"] == "V/E"
+    assert row["Protein_position"] == "600"
+    assert row["CLIN_SIG"] == "Pathogenic"
+    assert row["gnomADe_AF"] == "0.0001"
+
+
+def test_high_risk_matches_wgs_core_gate():
+    assert legacy.is_high_risk({"Consequence": "missense_variant", "CLNSIG": "Likely_pathogenic"})
+    assert legacy.is_high_risk({"Consequence": "frameshift_variant", "oncogenicity_classification": "Oncogenic"})
+    assert not legacy.is_high_risk({"Consequence": "synonymous_variant", "CLNSIG": "Pathogenic"})
+    assert not legacy.is_high_risk({"Consequence": "missense_variant", "CLNSIG": "Conflicting_classifications_of_pathogenicity"})
 
 
 def test_annotation_is_persisted_and_marks_hg19_limitations(tmp_path, monkeypatch):
