@@ -60,6 +60,7 @@ export default function LegacyMtbDraftReport({ analysisId }) {
       <Chip color="warning" label="草稿－需專業審閱" />
     </Stack>
     {report.warning && <Alert severity="warning" sx={{ mb: 2 }}>{report.warning}</Alert>}
+    {base.status === 'incomplete' && <Alert severity="error" sx={{ mb: 2 }}>分析結果不完整；缺少：{(base.missing_result_files || []).join(', ')}。缺失項目顯示為 unavailable，不解讀為零筆結果。</Alert>}
     <Alert severity="warning" sx={{ mb: 3}}>既有品質設定維持不變。高風險條件：{base.reporting_gate}。未進行 liftover。</Alert>
     <Grid container spacing={2} sx={{ mb: 3 }}>
       <Grid item xs={12} md={4}><Metric label="高風險變異" value={base.summary?.high_risk_count} color="#d32f2f" /></Grid>
@@ -67,7 +68,7 @@ export default function LegacyMtbDraftReport({ analysisId }) {
       <Grid item xs={12} md={4}><Metric label="Estimated TMB proxy" value={`${Number(tmb.tmb_proxy_mut_per_mb || 0).toFixed(2)} mut/Mb`} color="#ed6c02" /></Grid>
     </Grid>
     <Paper variant="outlined" sx={{ p: 2.5, mb: 3 }}>
-      <Typography variant="caption" color="text.secondary">AI-assisted narrative：{report.model || 'deterministic template'}{report.edited_at ? ` · Edited ${report.edited_at}` : ''}</Typography>
+      <Typography variant="caption" color="text.secondary">AI-assisted narrative：{report.status === 'gemma_corrected' ? `${report.model}（部分欄位經規則模板校正）` : (report.model || 'deterministic template')}{report.edited_at ? ` · Edited ${report.edited_at}` : ''}</Typography>
       <Divider sx={{ my: 1.5 }} />
       {narrativeFields.map(([key, label]) => <Box key={key} sx={{ mt: 2 }}><Typography variant="h6" fontWeight={850}>{label}</Typography>{editing ? <TextField fullWidth multiline minRows={2} value={draft[key] || ''} onChange={event => edit(key, event.target.value)} sx={{ mt: 1 }} /> : <Typography sx={{ whiteSpace: 'pre-wrap' }}>{draft[key] || '—'}</Typography>}</Box>)}
       <Box sx={{ mt: 2 }}><Typography variant="h6" fontWeight={850}>限制</Typography>{editing ? <TextField fullWidth multiline minRows={4} value={(draft.limitations || []).join('\n')} onChange={event => edit('limitations', event.target.value.split('\n'))} helperText="每行一項" /> : <ul>{(draft.limitations || []).map((item, index) => <li key={index}><Typography>{item}</Typography></li>)}</ul>}</Box>
