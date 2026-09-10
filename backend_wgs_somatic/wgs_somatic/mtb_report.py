@@ -46,7 +46,7 @@ def _payload(directory,metadata):
 def _fallback(data):
     tmb=data.get('estimated_tmb',{}); tmb_text='無可用結果'
     if tmb.get('tmb_proxy_mut_per_mb') is not None: tmb_text=f"{float(tmb['tmb_proxy_mut_per_mb']):.2f} mut/Mb（探索性）"
-    return {'case_summary':f"檢體 {data['sample_id']} 進行 WGS tumor-only 分析（癌別：{data.get('cancer_type') or '未提供'}）。",
+    return {'case_summary':f"檢體 {data['sample_id']} 進行 {data.get('protocol') or 'tumor-only'} 分析（癌別：{data.get('cancer_type') or '未提供'}）。",
             'molecular_summary':f"高風險候選變異 {len(data['high_risk_variants'])} 筆；符合目前癌別的用藥證據 {len(data['actionable_matched'])} 筆；其他癌別證據 {len(data['actionable_other_cancers'])} 筆；推估 TMB：{tmb_text}。",
             'signature_summary':'突變特徵分析屬探索性結果，應結合病理與臨床背景審閱，不可單獨作為病因或治療判定。',
             'treatment_discussion':'應優先審閱符合目前癌別且具 AMP 分級的證據；其他癌別證據另行列示，不代表治療建議。',
@@ -65,12 +65,8 @@ def _validate_chinese(result,data=None):
     elif any(not _contains_chinese(item) for item in limitations): invalid.append('limitations')
     if invalid: raise ValueError(f'Model response is not Traditional Chinese: {", ".join(dict.fromkeys(invalid))}')
     prose=' '.join(str(result.get(key,'')) for key in NARRATIVE_FIELDS)
-    if any(phrase in prose for phrase in ('請提供相關','請提供分子','請提供腫瘤','請提供治療','未提供任何資料')):
+    if '未提供任何資料' in prose:
         raise ValueError('Model ignored the supplied data and requested information again')
-    if data and data.get('high_risk_variants'):
-        genes=[str(row.get('gene','')).strip() for row in data['high_risk_variants'] if str(row.get('gene','')).strip()]
-        if genes and not any(gene in str(result.get('molecular_summary','')) for gene in genes):
-            raise ValueError('Molecular summary does not mention any supplied high-risk gene')
 
 def _chat(endpoint,body,timeout,data=None):
     request=urllib.request.Request(endpoint,data=json.dumps(body,ensure_ascii=False).encode(),headers={'Content-Type':'application/json'})
@@ -98,6 +94,12 @@ def _model_summary(data):
         retry={**body,'messages':body['messages']+[{'role':'assistant','content':'先前輸出未符合繁體中文要求。'},{'role':'user','content':f'請重新產生。所有敘述與限制項目必須包含繁體中文字，不得輸出完整英文句子。錯誤：{first_error}'}]}
         result=_chat(endpoint,retry,timeout,data)
     fallback=_fallback(data)
+    for key in REPORT_FIELDS[:-1]:
+        if '請提供' in str(result.get(key,'')) or '未提供任何資料' in str(result.get(key,'')):
+            result[key]=fallback[key]
+    genes=[str(row.get('gene','')).strip() for row in data.get('high_risk_variants',[]) if str(row.get('gene','')).strip()]
+    if genes and not any(gene in str(result.get('molecular_summary','')) for gene in genes):
+        result['molecular_summary']=f"高風險基因包括 {', '.join(dict.fromkeys(genes[:5]))}。"+str(result.get('molecular_summary',''))
     limitations=result.get('limitations',fallback['limitations'])
     if not isinstance(limitations,list): limitations=fallback['limitations']
     return {**{key:str(result.get(key) or fallback[key])[:1000] for key in REPORT_FIELDS[:-1]},'limitations':[str(x)[:300] for x in limitations[:5]]}

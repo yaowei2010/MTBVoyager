@@ -1,11 +1,14 @@
 """Deterministic MTB draft data for legacy GRCh37/hg19 tumor-only jobs."""
 import csv
 import json
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 
 from .legacy_oncogenicity import annotate, is_high_risk
+from .mtb_report import REPORT_FIELDS, _fallback, _model_summary
+from .storage import read_json, write_json
 
 TSO500_PANEL_MB = 1.94
 TMB_POPULATION_AF_MAX = 0.001
@@ -120,3 +123,110 @@ def generate(directory):
         "mutational_signatures": _signature(directory), "sections": sections,
         "disclaimer": "Draft for molecular tumor board review. Legacy hg19 tumor-only findings, actionability, TMB proxy, and downstream analyses require professional review and appropriate confirmatory testing.",
     }
+
+
+def _clean_variant(row):
+    aa_change = str(row.get("AAChange.refGene") or "")
+    protein = ""
+    coding = ""
+    if aa_change:
+        first = aa_change.split(",", 1)[0]
+        protein_match = re.search(r":(p\.[^:,]+)", first)
+        coding_match = re.search(r":(c\.[^:,]+)", first)
+        protein = protein_match.group(1) if protein_match else ""
+        coding = coding_match.group(1) if coding_match else ""
+    return {
+        "gene": str(row.get("SYMBOL") or row.get("Gene.refGene") or row.get("Gene") or "").strip(),
+        "hgvsp": protein,
+        "hgvsc": coding,
+        "consequence": str(row.get("Consequence") or row.get("ExonicFunc.refGene") or "").strip(),
+        "clinvar": str(row.get("ClinVar_CLNSIG") or row.get("CLNSIG") or "").strip(),
+        "oncogenicity": str(row.get("oncogenicity_classification") or "").strip(),
+        "oncogenicity_score": str(row.get("oncogenicity_score") or "").strip(),
+        "oncogenicity_criteria": str(row.get("oncogenicity_criteria") or "").strip(),
+        "variant": ":".join(str(row.get(key) or "").strip() for key in ("Chr", "Start", "Ref", "Alt")),
+        "vaf": str(row.get("VAF") or "").strip(),
+        "depth": str(row.get("DP") or "").strip(),
+    }
+
+
+def _ai_payload(directory):
+    base = generate(directory)
+    signatures = base.get("mutational_signatures", [])
+    total = sum(_number(item.get("activity")) or 0 for item in signatures)
+    signatures = [{**item, "proportion": ((_number(item.get("activity")) or 0) / total if total else 0)} for item in signatures]
+    return {
+        "sample_id": directory.name,
+        "analysis_id": directory.name,
+        "protocol": "Illumina TSO500-style legacy tumor-only",
+        "genome_build": "GRCh37/hg19",
+        "cancer_type": "",
+        "clinical_history": "",
+        "high_risk_variants": [_clean_variant(row) for row in base.get("high_risk", [])],
+        "actionable_matched": [],
+        "actionable_other_cancers": [],
+        "hereditary_high_risk": [],
+        "estimated_tmb": base.get("tmb_estimate", {}),
+        "top_mutational_signatures": signatures,
+        "analysis_inventory": base.get("sections", {}),
+        "base_report": base,
+    }
+
+
+def _target(directory):
+    return directory / "legacy_mtb_draft_report.json"
+
+
+def cached_assisted(directory):
+    report = read_json(_target(directory), {"status": "not_generated", "draft": True})
+    report["data"] = _ai_payload(directory)
+    return report
+
+
+def generate_assisted(directory, refresh=False):
+    target = _target(directory)
+    if target.is_file() and not refresh:
+        existing = read_json(target, {})
+        if existing.get("status") == "gemma_generated":
+            existing["data"] = _ai_payload(directory)
+            return existing
+    data = _ai_payload(directory)
+    narrative = _fallback(data)
+    status = "template_only"
+    warning = ""
+    try:
+        narrative = _model_summary(data)
+        status = "gemma_generated"
+    except Exception as exc:
+        warning = f"Gemma summary unavailable; deterministic Traditional Chinese template used: {exc}"[:500]
+    report = {
+        "status": status, "draft": True,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "model": os.environ.get("MTB_REPORT_LLM_MODEL", "gemma4:e4b") if status == "gemma_generated" else None,
+        "warning": warning, "data": data, "narrative": narrative,
+        "disclaimer": "MTB 初步草稿，所有內容均須由合格臨床專業人員審閱及核准後方可使用。",
+    }
+    write_json(target, report)
+    return report
+
+
+def save_assisted_edits(directory, narrative):
+    report = read_json(_target(directory), {})
+    if not report or report.get("status") == "not_generated":
+        raise ValueError("Generate the MTB draft before editing it")
+    if not isinstance(narrative, dict):
+        raise ValueError("Narrative must be an object")
+    cleaned = {}
+    for key in REPORT_FIELDS[:-1]:
+        value = str(narrative.get(key, "")).strip()
+        if len(value) > 4000:
+            raise ValueError(f"{key} is too long")
+        cleaned[key] = value
+    limitations = narrative.get("limitations", [])
+    if not isinstance(limitations, list) or len(limitations) > 20:
+        raise ValueError("Limitations must contain at most 20 items")
+    cleaned["limitations"] = [str(item).strip()[:1000] for item in limitations if str(item).strip()]
+    report.update({"status": "manually_edited", "narrative": cleaned, "edited_at": datetime.now(timezone.utc).isoformat()})
+    write_json(_target(directory), report)
+    report["data"] = _ai_payload(directory)
+    return report
