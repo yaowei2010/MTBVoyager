@@ -56,13 +56,13 @@ services:
     restart: "no"
 
   backend:
-    image: takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33
+    image: mtb-backend:wgs-fastvep-20261001
     pull_policy: never
     build:
-      context: ../../backend_wgs
-      dockerfile: Dockerfile
+      context: ${MTB_SOURCE_ROOT:-../deployment/wgs-fastvep}/backend_wgs
+      dockerfile: Dockerfile.fastvep
       additional_contexts:
-        wgs_somatic: ../../backend_wgs_somatic
+        wgs_somatic: ${MTB_SOURCE_ROOT:-../deployment/wgs-fastvep}/backend_wgs_somatic
     container_name: backend
     working_dir: /miRTI
     command: ["bash", "-lc", "python manage.py runserver 0.0.0.0:8217"]
@@ -80,6 +80,15 @@ services:
       WGS_DATA_ROOT: "${DATA_ROOT}/wgs_germline"
       WGS_SOMATIC_DATA_ROOT: "${DATA_ROOT}/wgs_somatic"
       WGS_REFERENCE_FASTA: "${WGS_REFERENCE_ROOT}/hg38.fa"
+      WGS_ANNOTATION_ENGINE: "${WGS_ANNOTATION_ENGINE:-fastvep}"
+      WGS_FASTVEP_IMAGE: "${WGS_FASTVEP_IMAGE:-mtb-wgs-fastvep:0.1.0}"
+      WGS_FASTVEP_REFERENCE_ROOT: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}"
+      WGS_FASTVEP_GFF3: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}/Homo_sapiens.GRCh38.112.gff3"
+      WGS_FASTVEP_TRANSCRIPT_CACHE: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}/grch38_ensembl112.mtb.cache"
+      WGS_FASTVEP_TRANSCRIPT_METADATA: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}/vep112.transcript_metadata.complete.jsonl"
+      WGS_FASTVEP_MAX_PARALLEL: "${WGS_FASTVEP_MAX_PARALLEL:-2}"
+      WGS_FASTVEP_CPUS: "${WGS_FASTVEP_CPUS:-8}"
+      WGS_FASTVEP_MEMORY: "${WGS_FASTVEP_MEMORY:-20 GB}"
       WGS_VEP_CACHE: "${DATA_ROOT}/VEP/database"
       WGS_VEP_PLUGIN_DATA: "${DATA_ROOT}/VEP/database/Plugins"
       WGS_VEP_PLUGIN_ARGS: "${WGS_VEP_PLUGIN_ARGS}"
@@ -110,6 +119,7 @@ services:
       - ${DATA_ROOT}/tmp:${DATA_ROOT}/tmp
       - ${DATA_ROOT}:${DATA_ROOT}
       - ${WGS_REFERENCE_ROOT}:${WGS_REFERENCE_ROOT}:ro
+      - ${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}:${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}:ro
       - ${DATA_ROOT}/backend/db.sqlite3:/miRTI/db.sqlite3
     # 如果你要從宿主機直接打到 Django，打開這行
     # ports:
@@ -141,9 +151,16 @@ services:
     image: ncku-wgs-python:20260721
     pull_policy: never
     build:
-      context: ../../backend_wgs
+      context: ${MTB_SOURCE_ROOT:-../deployment/wgs-fastvep}/backend_wgs
       dockerfile: Dockerfile.tools
     command: ["python", "--version"]
+
+  wgs-fastvep-tools:
+    profiles: ["tools"]
+    image: mtb-wgs-fastvep:0.1.0
+    build:
+      context: ${MTB_SOURCE_ROOT:-../deployment/wgs-fastvep}/wgs_annotation
+    command: ["fastvep", "--version"]
 
   frontend:
     image: takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33
