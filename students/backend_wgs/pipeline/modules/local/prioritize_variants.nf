@@ -4,6 +4,8 @@ process PRIORITIZE_VARIANTS {
 
     input:
     tuple val(meta), path(vep_tsv), path(gene_list)
+    path acmg_genes
+    path acmg_rules
 
     output:
     path "${meta.id}.all_candidates.tsv", emit: all
@@ -23,8 +25,8 @@ process PRIORITIZE_VARIANTS {
         --population '${params.population}' \
         --population-af-max ${params.population_af_max} \
         --predictor-min ${params.predictor_min} \
-        --acmg-genes '${params.acmg_genes}' \
-        --acmg-rules '${params.acmg_rules}' \
+        --acmg-genes '${acmg_genes}' \
+        --acmg-rules '${acmg_rules}' \
         ${gene_list ? "--gene-list '${gene_list}'" : ''}
     """
 }

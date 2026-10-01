@@ -1,6 +1,7 @@
 include { VALIDATE_INPUTS; VALIDATE_OPTIONAL_STRUCTURAL } from '../modules/local/validate_inputs'
 include { FILTER_NORMALIZE_SNV } from '../modules/local/filter_normalize_snv'
 include { SPLIT_VCF_BY_CONTIG } from '../modules/local/split_vcf_by_contig'
+include { FASTVEP_ANNOTATE_SHARD } from '../modules/local/fastvep_annotate'
 include { VEP_ANNOTATE_SHARD } from '../modules/local/vep_annotate'
 include { MERGE_VEP_SHARDS } from '../modules/local/merge_vep_shards'
 include { TEST_ANNOTATION } from '../modules/local/test_annotation'
@@ -11,6 +12,7 @@ include { FINALIZE_SOMATIC } from '../modules/local/finalize_somatic'
 include { ESTIMATE_TMB } from '../modules/local/estimate_tmb'
 
 workflow WGS_SOMATIC_TUMOR_ONLY {
+    if (!(params.annotation_engine in ['vep', 'fastvep'])) error 'annotation_engine must be vep or fastvep'
     if (!params.input) error 'Missing --input samplesheet.csv'
     if (!params.reference) error 'Missing --reference GRCh38 FASTA'
     if (!params.cancer_db) error 'Missing --cancer_db directory'
@@ -52,14 +54,27 @@ workflow WGS_SOMATIC_TUMOR_ONLY {
         def shards = params.vep_contigs.split(',').collect { it.trim() }.findAll { it } + ['other']
         shard_ch = FILTER_NORMALIZE_SNV.out.vcf.flatMap { meta, vcf -> shards.collect { tuple(meta, it, vcf) } }
         SPLIT_VCF_BY_CONTIG(shard_ch)
-        VEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, cache_ch, plugin_ch)
-        grouped_ch = VEP_ANNOTATE_SHARD.out.tsv.groupTuple(by: 0)
+        if (params.annotation_engine == 'fastvep') {
+            if (!params.fastvep_gff3 || !params.fastvep_transcript_cache || !params.fastvep_transcript_metadata)
+                error 'fastVEP requires GFF3, complete transcript cache and baseline transcript metadata'
+            gff3_ch = Channel.value(file(params.fastvep_gff3, checkIfExists: true))
+            transcript_cache_ch = Channel.value(file(params.fastvep_transcript_cache, checkIfExists: true))
+            transcript_metadata_ch = Channel.value(file(params.fastvep_transcript_metadata, checkIfExists: true))
+            FASTVEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, reference_fai_ch,
+                gff3_ch, transcript_cache_ch, transcript_metadata_ch, cache_ch, plugin_ch)
+            annotation_shards_ch = FASTVEP_ANNOTATE_SHARD.out.tsv
+        } else {
+            VEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, cache_ch, plugin_ch)
+            annotation_shards_ch = VEP_ANNOTATE_SHARD.out.tsv
+        }
+        grouped_ch = annotation_shards_ch.groupTuple(by: 0)
         MERGE_VEP_SHARDS(grouped_ch)
         annotation_ch = MERGE_VEP_SHARDS.out.tsv
     }
 
     CALCULATE_ONCOGENICITY(annotation_ch, oncovi_resources_ch)
-    SUMMARIZE_SNV(CALCULATE_ONCOGENICITY.out.tsv, cancer_db_ch)
+    acmg_genes_ch = Channel.value(file("${projectDir}/assets/acmg_sf_cancer_genes.txt", checkIfExists: true))
+    SUMMARIZE_SNV(CALCULATE_ONCOGENICITY.out.tsv, cancer_db_ch, acmg_genes_ch)
     if (params.gencode_gtf) {
         tmb_inputs = callable_ch.join(SUMMARIZE_SNV.out.all,by:0).map { meta, callable, variants -> tuple(meta,callable,variants) }
         ESTIMATE_TMB(tmb_inputs,Channel.value(file(params.gencode_gtf,checkIfExists:true)))

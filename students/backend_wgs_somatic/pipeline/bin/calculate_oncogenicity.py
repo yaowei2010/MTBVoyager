@@ -236,16 +236,23 @@ def main():
     res=Resources(a.resources); counts=defaultdict(int); reference_counts=defaultdict(int); review=0
     extra=['oncogenicity_score','oncogenicity_classification','oncogenicity_criteria','oncogenicity_review_required','oncogenicity_evidence','oncogenicity_profile','oncovi_resource_commit','oncovi_2026_score','oncovi_2026_classification','oncovi_2026_criteria','oncovi_2026_evidence','oncovi_2026_profile','oncovi_2026_validation_status','oncogenicity_profile_difference']
     outopen=gzip.open if a.output.endswith('.gz') else open
-    variants=0
+    variants=0; annotation_engines=set()
     with opener(a.input,'rt',encoding='utf-8',errors='replace') as source, outopen(a.output,'wt',encoding='utf-8',newline='') as output:
         reader=csv.DictReader((x for x in source if not x.startswith('##')),delimiter='\t'); fields=reader.fieldnames or []
         writer=csv.DictWriter(output,fieldnames=fields+extra,delimiter='\t',extrasaction='ignore'); writer.writeheader()
         for row in iter_collapsed(reader):
+            engine=clean(row.get('ANNOTATION_ENGINE')) or 'vep'
+            annotation_engines.add(engine)
+            validation_status=REFERENCE_VALIDATION if engine=='vep' else 'pending_fastvep_annotation_benchmark;baseline_scoring_rules_unchanged'
             score,label,evidence,dual=evaluate(row,res,a.tumor_type); met=[x['code'] for x in evidence if x['status']=='met']; unassessed=[x['code'] for x in evidence if x['status']=='not_assessable']
             ref_score,ref_label,ref_evidence=evaluate_reference(row,res,evidence); ref_met=[x['code'] for x in ref_evidence if x['status']=='met']
             strict_status={x['code']:x['status'] for x in evidence}; ref_status={x['code']:x['status'] for x in ref_evidence}; differences=[x for x in POINTS if strict_status[x]!=ref_status[x]]
-            required=dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
-            row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'oncogenicity_profile_difference':'|'.join(differences)})
+            if engine=='fastvep':
+                for item in evidence+ref_evidence:
+                    if isinstance(item.get('source'),str): item['source']=item['source'].replace('VEP','fastVEP/MTB adapter')
+            required=engine=='fastvep' or dual or bool(unassessed) or any(x['status']=='met' for x in evidence if x['code'].startswith('SB')) and any(x['status']=='met' for x in evidence if x['code'].startswith('O'))
+            row.update({'oncogenicity_score':score,'oncogenicity_classification':label,'oncogenicity_criteria':'|'.join(met),'oncogenicity_review_required':'true' if required else 'false','oncogenicity_evidence':json.dumps(evidence,ensure_ascii=False,separators=(',',':')),'oncogenicity_profile':PROFILE,'oncovi_resource_commit':COMMIT,'oncovi_2026_score':ref_score,'oncovi_2026_classification':ref_label,'oncovi_2026_criteria':'|'.join(ref_met),'oncovi_2026_evidence':json.dumps(ref_evidence,ensure_ascii=False,separators=(',',':')),'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':validation_status,'oncogenicity_profile_difference':'|'.join(differences)})
             writer.writerow(row); variants+=1; counts[label]+=1; reference_counts[ref_label]+=1; review+=required
-    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':REFERENCE_VALIDATION,'variants':variants,'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
+    summary_validation=REFERENCE_VALIDATION if annotation_engines <= {'vep'} else 'pending_fastvep_annotation_benchmark;baseline_scoring_rules_unchanged'
+    Path(a.summary).write_text(json.dumps({'profile':PROFILE,'guideline':'ClinGen/CGC/VICC 2022','oncovi_2026_commit':COMMIT,'oncovi_2026_profile':REFERENCE_PROFILE,'oncovi_2026_validation_status':summary_validation,'annotation_engines':sorted(annotation_engines),'variants':variants,'classification_counts':dict(counts),'oncovi_2026_classification_counts':dict(reference_counts),'review_required':review,'scope':'SNV and small indel; not general CNV/SV/fusion'},indent=2)+'\n')
 if __name__=='__main__':main()

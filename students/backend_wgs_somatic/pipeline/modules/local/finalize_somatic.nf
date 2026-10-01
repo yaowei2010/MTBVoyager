@@ -11,7 +11,7 @@ process FINALIZE_SOMATIC {
     python - '${meta.id}' '${snv_summary}' ${structural_summaries.collect { "'${it}'" }.join(' ')} <<'PY'
 import json, sys
 sample, snv, *structural = sys.argv[1:]
-result={'sample_id':sample,'analysis_type':'WGS Somatic Tumor-Only','genome_build':'GRCh38','status':'complete','snv':json.load(open(snv)),'structural':{}}
+result={'sample_id':sample,'analysis_type':'WGS Somatic Tumor-Only','genome_build':'GRCh38','status':'complete','annotation_engine':'${params.skip_vep.toString().toBoolean() ? 'test-fixture' : params.annotation_engine}','pipeline_version':'0.6.0-fastvep','snv':json.load(open(snv)),'structural':{}}
 for path in structural:
     data=json.load(open(path))
     if data.get('kind') not in (None, 'none'):

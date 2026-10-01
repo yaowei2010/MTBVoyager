@@ -1,3 +1,4 @@
+from .annotation import annotation_arguments
 import csv
 import os
 import subprocess
@@ -61,6 +62,7 @@ def launch(job_id: str, metadata: dict) -> int:
         "--acmg_rules", str(pipeline / "assets" / "acmg_sf_v3.3_rules.tsv"),
         "-ansi-log", "false",
     ]
+    cmd.extend(annotation_arguments())
     log = (directory / "nextflow.log").open("ab", buffering=0)
     process = subprocess.Popen(cmd, cwd=pipeline, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
     subprocess.Popen(

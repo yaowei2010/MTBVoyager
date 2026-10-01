@@ -25,15 +25,30 @@ def main():
     args = parser.parse_args()
     ordered = sorted(args.shards, key=lambda path: RANK.get(shard_name(path, args.sample), 999))
     header_written = False
+    schema = None
+    names = [shard_name(path, args.sample) for path in ordered]
+    if len(set(names)) != len(names):
+        raise ValueError("Duplicate annotation shards")
     with gzip.open(args.output, "wt") as output:
         for path in ordered:
-            with gzip.open(path, "rt", errors="replace") as source:
+            with gzip.open(path, "rt", errors="strict") as source:
+                shard_schema = None
                 for line in source:
+                    if line.startswith("#Uploaded_variation"):
+                        shard_schema = line.rstrip("\n").split("\t")
+                        if schema is None:
+                            schema = shard_schema
+                        elif schema != shard_schema:
+                            raise ValueError(f"Annotation shard columns differ: {path}")
                     if line.startswith("#"):
                         if not header_written:
                             output.write(line)
                     else:
+                        if shard_schema is None or len(line.rstrip("\n").split("\t")) != len(schema):
+                            raise ValueError(f"Malformed annotation shard: {path}")
                         output.write(line)
+                if shard_schema is None:
+                    raise ValueError(f"Annotation shard header is absent: {path}")
             header_written = True
 
 

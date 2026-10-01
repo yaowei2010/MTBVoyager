@@ -1,6 +1,7 @@
 include { VALIDATE_VCF } from '../modules/local/validate_vcf'
 include { NORMALIZE_VCF } from '../modules/local/normalize_vcf'
 include { SPLIT_VCF_BY_CONTIG } from '../modules/local/split_vcf_by_contig'
+include { FASTVEP_ANNOTATE_SHARD } from '../modules/local/fastvep_annotate'
 include { VEP_ANNOTATE_SHARD } from '../modules/local/vep_annotate'
 include { MERGE_VEP_SHARDS } from '../modules/local/merge_vep_shards'
 include { PRIORITIZE_VARIANTS } from '../modules/local/prioritize_variants'
@@ -12,6 +13,7 @@ include { FINALIZE } from '../modules/local/finalize'
 include { TEST_PRIORITIZE } from '../modules/local/test_prioritize'
 
 workflow GERMLINE_SNV {
+    if (!(params.annotation_engine in ['vep', 'fastvep'])) error 'annotation_engine must be vep or fastvep'
     if (!params.input) error "Missing --input samplesheet.csv"
     def skipVep = params.skip_vep.toString().toBoolean()
     def skipPharmcat = params.skip_pharmcat.toString().toBoolean()
@@ -69,13 +71,27 @@ workflow GERMLINE_SNV {
             shards.collect { shard -> tuple(meta, shard, vcf) }
         }
         SPLIT_VCF_BY_CONTIG(vep_shard_input_ch)
-        VEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, cache_ch, plugin_data_ch)
-        vep_grouped_ch = VEP_ANNOTATE_SHARD.out.tsv.groupTuple(by: 0)
+        if (params.annotation_engine == 'fastvep') {
+            if (!params.fastvep_gff3 || !params.fastvep_transcript_cache || !params.fastvep_transcript_metadata)
+                error 'fastVEP requires GFF3, complete transcript cache and baseline transcript metadata'
+            gff3_ch = Channel.value(file(params.fastvep_gff3, checkIfExists: true))
+            transcript_cache_ch = Channel.value(file(params.fastvep_transcript_cache, checkIfExists: true))
+            transcript_metadata_ch = Channel.value(file(params.fastvep_transcript_metadata, checkIfExists: true))
+            FASTVEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, reference_fai_ch,
+                gff3_ch, transcript_cache_ch, transcript_metadata_ch, cache_ch, plugin_data_ch)
+            annotation_shards_ch = FASTVEP_ANNOTATE_SHARD.out.tsv
+        } else {
+            VEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, cache_ch, plugin_data_ch)
+            annotation_shards_ch = VEP_ANNOTATE_SHARD.out.tsv
+        }
+        vep_grouped_ch = annotation_shards_ch.groupTuple(by: 0)
         vep_merge_input_ch = vep_grouped_ch
             .join(vep_gene_ch)
             .map { meta, shardNames, shardTsvs, geneList -> tuple(meta, shardNames, shardTsvs, geneList) }
         MERGE_VEP_SHARDS(vep_merge_input_ch)
-        PRIORITIZE_VARIANTS(MERGE_VEP_SHARDS.out.tsv)
+        acmg_genes_ch = Channel.value(file(params.acmg_genes, checkIfExists: true))
+        acmg_rules_ch = Channel.value(file(params.acmg_rules, checkIfExists: true))
+        PRIORITIZE_VARIANTS(MERGE_VEP_SHARDS.out.tsv, acmg_genes_ch, acmg_rules_ch)
         snv_summary_ch = PRIORITIZE_VARIANTS.out.summary
     }
 

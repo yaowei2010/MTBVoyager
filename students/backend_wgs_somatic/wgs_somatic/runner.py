@@ -1,3 +1,4 @@
+from .annotation import annotation_arguments
 import csv, os, subprocess, sys
 from .storage import install_pipeline, job_dir
 
@@ -21,6 +22,7 @@ def launch(job_id,metadata):
     if gtf: cmd.extend(['--gencode_gtf',gtf])
     cancer_type=str(settings.get('cancer_type','')).strip()
     if cancer_type: cmd.extend(['--cancer_type',cancer_type])
+    cmd.extend(annotation_arguments())
     log=(directory/'nextflow.log').open('ab',buffering=0)
     process=subprocess.Popen(cmd,cwd=pipeline,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
     subprocess.Popen([sys.executable,'-m','wgs_somatic.monitor',job_id,str(process.pid)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
