@@ -1,0 +1,87 @@
+{
+  "created_utc": "2026-10-01T08:47:54.402996+00:00",
+  "mtb_commit": "d16872e28ec434ad35ffe9fe048cbc316ed3149d",
+  "frontend_commit": "e68e88c5f28a0f4fb3251209aa0ae7a725dc427c",
+  "containers": [
+    {
+      "name": "/backend",
+      "image_tag": "takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33",
+      "image_id": "sha256:3c0e3faa070bf011f10903ecb735946edc9ca3abb8e5804b310f799d4beaf761",
+      "wgs_environment": {
+        "WGS_VEP_CACHE": "/home/hpz8g5/project/MTB/database/VEP/database",
+        "WGS_REFERENCE_FASTA": "/home/hpz8g5/project/WGS/reference/hg38.fa",
+        "WGS_CLINPGX_VARIANT_ANNOTATIONS": "/home/hpz8g5/project/MTB/database/clinpgx/2026-08-18/var_drug_ann.tsv",
+        "WGS_VEP_PLUGIN_DATA": "/home/hpz8g5/project/MTB/database/VEP/database/Plugins",
+        "WGS_VEP_MAX_PARALLEL": "5",
+        "WGS_DATA_ROOT": "/home/hpz8g5/project/MTB/database/wgs_germline",
+        "WGS_ANNOTSV_ANNOTATIONS": "/home/hpz8g5/project/MTB/database/annotsv/database/Annotations_Human",
+        "WGS_SOMATIC_DATA_ROOT": "/home/hpz8g5/project/MTB/database/wgs_somatic",
+        "WGS_ONCOVI_RESOURCES": "/home/hpz8g5/project/MTB/database/oncovi/99fa5801163bb6bd32d97e916ca2249bb9429d81/resources",
+        "WGS_CANCER_DB": "/home/hpz8g5/project/MTB/database/VEP/20241126Mondodatabase",
+        "WGS_CLINPGX_RELEASE": "2026-08-05",
+        "WGS_GENCODE_GTF": "/home/hpz8g5/project/WGS/reference/gencode.v47.annotation.gtf.gz",
+        "WGS_VEP_PLUGIN_ARGS": "dbNSFP,Plugins/dbNSFP5.3.1a_grch38.gz,REVEL_score,CADD_phred,ClinPred_score,phyloP100way_vertebrate_rankscore,phastCons100way_vertebrate_rankscore;AlphaMissense,file=Plugins/AlphaMissense_hg38.tsv.gz;PrimateAI,Plugins/PrimateAI_scores_v0.2_GRCh38_sorted.tsv.bgz;SpliceAI,snv=Plugins/spliceai_scores.raw.snv.hg38.vcf.gz,indel=Plugins/spliceai_scores.raw.indel.hg38.vcf.gz,cutoff=0.5,split_output=1",
+        "WGS_VEP_FORK_PER_SHARD": "6",
+        "WGS_PIPELINE_SOURCE": "/opt/wgs-germline-pipeline",
+        "WGS_SOMATIC_PIPELINE_SOURCE": "/opt/wgs-somatic-pipeline"
+      },
+      "mounts": [
+        {
+          "source": "/home/hpz8g5/project/MTB/database/tmp",
+          "destination": "/home/hpz8g5/project/MTB/database/tmp",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/WGS/reference",
+          "destination": "/home/hpz8g5/project/WGS/reference",
+          "read_write": false
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database/annovar/annovar",
+          "destination": "/annovar",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database/media",
+          "destination": "/miRTI/media",
+          "read_write": true
+        },
+        {
+          "source": "/var/run/docker.sock",
+          "destination": "/var/run/docker.sock",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database",
+          "destination": "/home/hpz8g5/project/MTB/database",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database/backend/db.sqlite3",
+          "destination": "/miRTI/db.sqlite3",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database/VEP",
+          "destination": "/VEP",
+          "read_write": true
+        },
+        {
+          "source": "/home/hpz8g5/project/MTB/database/annotsv",
+          "destination": "/annotsv",
+          "read_write": true
+        }
+      ]
+    },
+    {
+      "name": "/frontend",
+      "image_tag": "takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33",
+      "image_id": "sha256:bbe03bc80b358f5e0865a4004aad1b10e6ed23285cd9b770708efaf204538652"
+    },
+    {
+      "name": "/gateway",
+      "image_tag": "takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33",
+      "image_id": "sha256:bbe03bc80b358f5e0865a4004aad1b10e6ed23285cd9b770708efaf204538652"
+    }
+  ]
+}

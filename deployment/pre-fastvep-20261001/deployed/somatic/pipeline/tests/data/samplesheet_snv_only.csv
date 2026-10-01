@@ -1,0 +1,2 @@
+sample_id,snv_vcf,sv_vcf,cnv_vcf
+TEST,tests/data/snv.vcf.gz,,

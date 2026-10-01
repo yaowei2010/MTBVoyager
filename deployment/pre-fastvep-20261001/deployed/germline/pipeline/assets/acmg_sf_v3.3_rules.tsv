@@ -1,0 +1,85 @@
+gene	disease	inheritance	variant_rule	source
+ABCD1	X-linked adrenoleukodystrophy	XL	HEMI_HOM_OR_TWO_HET	PMID:40568962
+ACTA2	Familial thoracic aortic aneurysm	AD	ALL_P_LP	PMID:40568962
+ACTC1	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+ACVRL1	Hereditary hemorrhagic telangiectasia	AD	ALL_P_LP	PMID:40568962
+APC	Familial adenomatous polyposis	AD	ALL_P_LP	PMID:40568962
+APOB	Familial hypercholesterolemia	AD	ALL_P_LP	PMID:40568962
+ATP7B	Wilson disease	AR	TWO_P_LP	PMID:40568962
+BAG3	Dilated cardiomyopathy; Myofibrillar myopathy	AD	ALL_P_LP	PMID:40568962
+BMPR1A	Juvenile polyposis syndrome	AD	ALL_P_LP	PMID:40568962
+BRCA1	Hereditary breast and ovarian cancer	AD	ALL_P_LP	PMID:40568962
+BRCA2	Hereditary breast and ovarian cancer	AD	ALL_P_LP	PMID:40568962
+BTD	Biotinidase deficiency	AR	TWO_P_LP	PMID:40568962
+CACNA1S	Malignant hyperthermia	AD	ALL_P_LP	PMID:40568962
+CALM1	Long-QT syndrome type 14; Catecholaminergic polymorphic ventricular tachycardia	AD	ALL_P_LP	PMID:40568962
+CALM2	Long-QT syndrome type 15; Catecholaminergic polymorphic ventricular tachycardia	AD	ALL_P_LP	PMID:40568962
+CALM3	Long-QT syndrome type 16; Catecholaminergic polymorphic ventricular tachycardia	AD	ALL_P_LP	PMID:40568962
+CASQ2	Catecholaminergic polymorphic ventricular tachycardia	AR	TWO_P_LP	PMID:40568962
+COL3A1	Ehlers-Danlos syndrome, vascular type	AD	ALL_P_LP	PMID:40568962
+CYP27A1	Cerebrotendinous xanthomatosis	AR	TWO_P_LP	PMID:40568962
+DES	Dilated cardiomyopathy; Myofibrillar myopathy	AD	ALL_P_LP	PMID:40568962
+DSC2	Arrhythmogenic right ventricular cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+DSG2	Arrhythmogenic right ventricular cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+DSP	Arrhythmogenic right ventricular cardiomyopathy; Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+ENG	Hereditary hemorrhagic telangiectasia	AD	ALL_P_LP	PMID:40568962
+FBN1	Marfan syndrome	AD	ALL_P_LP	PMID:40568962
+FLNC	Dilated cardiomyopathy; Hypertrophic cardiomyopathy; Myofibrillar myopathy	AD	ALL_P_LP	PMID:40568962
+GAA	Pompe disease	AR	TWO_P_LP	PMID:40568962
+GLA	Fabry disease	XL	ALL_HEMI_HET_HOM_P_LP	PMID:40568962
+HFE	Hereditary hemochromatosis	AR	C282Y_HOM_ONLY	PMID:40568962
+HNF1A	Maturity-Onset of Diabetes of the Young	AD	ALL_P_LP	PMID:40568962
+KCNH2	Long-QT syndrome type 2	AD	ALL_P_LP	PMID:40568962
+KCNQ1	Long-QT syndrome type 1	AD	ALL_P_LP	PMID:40568962
+LDLR	Familial hypercholesterolemia	AD	ALL_P_LP	PMID:40568962
+LMNA	Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+MAX	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+MEN1	Multiple endocrine neoplasia type 1	AD	ALL_P_LP	PMID:40568962
+MLH1	Lynch syndrome	AD	ALL_P_LP	PMID:40568962
+MSH2	Lynch syndrome	AD	ALL_P_LP	PMID:40568962
+MSH6	Lynch syndrome	AD	ALL_P_LP	PMID:40568962
+MUTYH	MUTYH-associated polyposis	AR	TWO_P_LP	PMID:40568962
+MYBPC3	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+MYH11	Familial thoracic aortic aneurysm	AD	ALL_P_LP	PMID:40568962
+MYH7	Hypertrophic cardiomyopathy; Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+MYL2	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+MYL3	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+NF2	NF2-related schwannomatosis	AD	ALL_P_LP	PMID:40568962
+OTC	Ornithine transcarbamylase deficiency	XL	ALL_HEMI_HET_HOM_P_LP	PMID:40568962
+PALB2	Hereditary breast cancer	AD	ALL_P_LP	PMID:40568962
+PCSK9	Familial hypercholesterolemia	AD	ALL_P_LP	PMID:40568962
+PKP2	Arrhythmogenic right ventricular cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+PLN	Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+PMS2	Lynch syndrome	AD	ALL_P_LP	PMID:40568962
+PRKAG2	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+PTEN	PTEN hamartoma tumor syndrome	AD	ALL_P_LP	PMID:40568962
+RB1	Retinoblastoma	AD	ALL_P_LP	PMID:40568962
+RBM20	Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+RET	Familial medullary thyroid cancer; Multiple endocrine neoplasia type 2A; Multiple endocrine neoplasia type 2B	AD	ALL_P_LP	PMID:40568962
+RPE65	RPE65-related retinopathy	AR	TWO_P_LP	PMID:40568962
+RYR1	Malignant hyperthermia	AD	ALL_P_LP	PMID:40568962
+RYR2	Catecholaminergic polymorphic ventricular tachycardia	AD	ALL_P_LP	PMID:40568962
+SCN5A	Long QT syndrome type 3; Brugada syndrome; Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+SDHAF2	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+SDHB	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+SDHC	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+SDHD	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+SMAD3	Loeys-Dietz syndrome	AD	ALL_P_LP	PMID:40568962
+SMAD4	Juvenile polyposis syndrome; Hereditary hemorrhagic telangiectasia	AD	ALL_P_LP	PMID:40568962
+STK11	Peutz-Jeghers syndrome	AD	ALL_P_LP	PMID:40568962
+TGFBR1	Loeys-Dietz syndrome	AD	ALL_P_LP	PMID:40568962
+TGFBR2	Loeys-Dietz syndrome	AD	ALL_P_LP	PMID:40568962
+TMEM127	Hereditary paraganglioma-pheochromocytoma syndrome	AD	ALL_P_LP	PMID:40568962
+TMEM43	Arrhythmogenic right ventricular cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+TNNC1	Dilated cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+TNNI3	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+TNNT2	Dilated cardiomyopathy; Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+TP53	Li-Fraumeni syndrome	AD	ALL_P_LP	PMID:40568962
+TPM1	Hypertrophic cardiomyopathy	AD	ALL_P_LP	PMID:40568962
+TRDN	Catecholaminergic polymorphic ventricular tachycardia; Long QT syndrome	AR	TWO_P_LP	PMID:40568962
+TSC1	Tuberous sclerosis complex	AD	ALL_P_LP	PMID:40568962
+TSC2	Tuberous sclerosis complex	AD	ALL_P_LP	PMID:40568962
+TTN	Dilated cardiomyopathy	AD	TRUNCATING_P_LP_ONLY	PMID:40568962
+TTR	Hereditary transthyretin-related amyloidosis	AD	ALL_P_LP	PMID:40568962
+VHL	Von Hippel-Lindau syndrome	AD	ALL_P_LP	PMID:40568962
+WT1	WT1-related Wilms tumor	AD	ALL_P_LP	PMID:40568962
