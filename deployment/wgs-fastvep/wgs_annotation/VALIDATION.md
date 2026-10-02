@@ -43,3 +43,13 @@ matches. No full-WGS speed improvement or clinical concordance is claimed.
 
 Rollback: `WGS_ANNOTATION_ENGINE=vep` or baseline tag `pre-fastvep-20261001`.
 See README.md for build and reference preparation instructions.
+
+## Real-data reader correction (2026-10-02)
+
+The dbNSFP source contains UTF-8 text in additional columns. Adapter 0.1.1
+sets UTF-8 explicitly for tabix readers, avoiding the pysam ASCII default.
+The synthetic source now includes non-ASCII text. Fourteen adapter/comparison
+tests and 25 targeted downstream regression tests passed. Somatic summary
+provenance retains the pending fastVEP benchmark status. These checks do not
+establish clinical concordance for the new engine. Patient comparisons and
+raw output remain in local directories outside Git.

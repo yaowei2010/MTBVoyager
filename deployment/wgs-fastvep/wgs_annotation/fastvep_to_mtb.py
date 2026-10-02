@@ -18,7 +18,7 @@ from pathlib import Path
 import ijson
 import pysam
 
-ADAPTER_VERSION = "0.1.0"
+ADAPTER_VERSION = "0.1.1"
 FASTVEP_COMMIT = "ac2e2b64a9c4c27163a3df16e0a559113af19625"
 DB_FIELDS = ["REVEL_score", "CADD_phred", "ClinPred_score",
              "phyloP100way_vertebrate_rankscore", "phastCons100way_vertebrate_rankscore"]
@@ -136,7 +136,7 @@ class IndexedTable:
         self.path = Path(path)
         if not self.path.is_file() or not any(Path(str(path) + ext).is_file() for ext in (".tbi", ".csi")):
             raise ValueError(f"Missing indexed annotation source: {self.path.name}")
-        self.handle = pysam.TabixFile(str(path))
+        self.handle = pysam.TabixFile(str(path), encoding="utf-8")
         headers = [h.lstrip("#").split("\t") for h in self.handle.header]
         self.header = next((h for h in headers if set(required) <= set(h)), None)
         if self.header is None:
@@ -172,7 +172,7 @@ class SpliceTable:
         self.path = Path(path)
         if not self.path.is_file() or not Path(str(path) + ".tbi").is_file():
             raise ValueError(f"Missing indexed annotation source: {self.path.name}")
-        self.handle = pysam.TabixFile(str(path))
+        self.handle = pysam.TabixFile(str(path), encoding="utf-8")
         if not any("ID=SpliceAI," in h for h in self.handle.header):
             raise ValueError("SpliceAI INFO header is absent")
         self.block = None

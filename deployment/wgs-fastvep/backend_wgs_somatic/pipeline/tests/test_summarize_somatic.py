@@ -2,7 +2,10 @@ import argparse
 import csv
 import gzip
 import importlib.util
+import json
 from pathlib import Path
+
+import pytest
 
 
 SCRIPT = Path(__file__).parents[1] / "bin" / "summarize_somatic.py"
@@ -63,7 +66,8 @@ def test_mixed_consequence_is_retained_when_one_term_is_non_synonymous():
     assert module.reportable_high_risk(row)
 
 
-def test_drug_matching_runs_only_for_reportable_high_risk(monkeypatch, tmp_path):
+@pytest.mark.parametrize('engine', ['vep', 'fastvep'])
+def test_drug_matching_runs_only_for_reportable_high_risk(monkeypatch, tmp_path, engine):
     class FakeEvidence:
         calls = []
 
@@ -76,12 +80,13 @@ def test_drug_matching_runs_only_for_reportable_high_risk(monkeypatch, tmp_path)
         def manifest(self): return {"matching": "test"}
 
     monkeypatch.setattr(module, "CancerEvidence", FakeEvidence)
+    monkeypatch.chdir(tmp_path)
     source = tmp_path / "variants.tsv"
     source.write_text(
-        "#Uploaded_variation\tConsequence\tCLIN_SIG\toncogenicity_classification\n"
-        "chr1_1_A/T\tmissense_variant\tPathogenic\tVUS\n"
-        "chr1_2_A/T\tmissense_variant\t\tVUS\n"
-        "chr1_3_A/T\tsynonymous_variant\tPathogenic\tOncogenic\n"
+        "#Uploaded_variation\tConsequence\tCLIN_SIG\toncogenicity_classification\tANNOTATION_ENGINE\n"
+        f"chr1_1_A/T\tmissense_variant\tPathogenic\tVUS\t{engine}\n"
+        f"chr1_2_A/T\tmissense_variant\t\tVUS\t{engine}\n"
+        f"chr1_3_A/T\tsynonymous_variant\tPathogenic\tOncogenic\t{engine}\n"
     )
     genes = tmp_path / "genes.txt"
     genes.write_text("TP53\n")
@@ -97,3 +102,7 @@ def test_drug_matching_runs_only_for_reportable_high_risk(monkeypatch, tmp_path)
     assert FakeEvidence.calls == ["chr1_1_A/T"]
     assert [row["#Uploaded_variation"] for row in reportable] == ["chr1_1_A/T"]
     assert [row["#Uploaded_variation"] for row in actionable] == ["chr1_1_A/T"]
+    summary = json.loads(Path(f'{prefix}.snv.summary.json').read_text())
+    assert summary['annotation_engines'] == [engine]
+    assert summary['oncovi_2026_validation_status'].startswith(
+        'pending_fastvep_' if engine == 'fastvep' else 'classification_benchmark_93_of_93')

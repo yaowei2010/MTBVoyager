@@ -203,7 +203,7 @@ def snv(args):
     evidence=['CLIN_SIG','ClinVar_CLNSIG','CIVIC','CIVIC_annotation','OncoKB','oncoKB_annotation','CGI_annotation','COSMIC','Existing_variation','cancer_actionable']
     af_fields=['gnomADe_AF','gnomADg_AF','gnomAD_AF','AF']
     counts={'all':0,'reportable_high_risk':0,'actionable':0,'oncogenic':0,'possible':0}; onco_counts={}; oncovi_counts={}
-    category_rows=[]
+    category_rows=[]; annotation_engines=set()
     with opener(args.input) as source, ExitStack() as stack:
         reader=csv.DictReader((line for line in source if not line.startswith('##')),delimiter='\t')
         fields=list(reader.fieldnames or [])+['high_risk','high_risk_basis','cancer_evidence_sources','cancer_actionable','cancer_type_match','cancer_evidence']
@@ -212,6 +212,7 @@ def snv(args):
         for writer in writers.values():writer.writeheader()
         for row in reader:
             category_rows.append(dict(row))
+            annotation_engines.add(clean(row.get('ANNOTATION_ENGINE')) or 'vep')
             high_risk=reportable_high_risk(row); bases=[]
             if high_risk and clinvar_pathogenic(row): bases.append('ClinVar Pathogenic/Likely pathogenic')
             if high_risk and oncogenic_high_risk(row): bases.append(clean(row.get('oncogenicity_classification')))
@@ -237,7 +238,7 @@ def snv(args):
     for name,rows in [('hereditary_high_risk',hereditary),('in_silico_candidates',insilico)]:
         fields=list(rows[0]) if rows else ['variant','gene','hgvsc','hgvsp','consequence','evidence','tumor_only_status']
         write_rows(f'{name}.tsv',fields,rows)
-    json.dump({'all_variants':counts['all'],'vep_transcript_annotations':counts['all'],'reportable_high_risk':counts['reportable_high_risk'],'actionable_high_risk':counts['actionable'],'oncogenic_or_likely_oncogenic':counts['oncogenic'],'possible_germline':counts['possible'],'hereditary_high_risk':len(hereditary),'in_silico_candidates':len(insilico),'reporting_gate':'non_synonymous AND (ClinVar P/LP OR oncogenicity O/LO); drug matching occurs after this gate','oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':'classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804','cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
+    json.dump({'all_variants':counts['all'],'vep_transcript_annotations':counts['all'],'reportable_high_risk':counts['reportable_high_risk'],'actionable_high_risk':counts['actionable'],'oncogenic_or_likely_oncogenic':counts['oncogenic'],'possible_germline':counts['possible'],'hereditary_high_risk':len(hereditary),'in_silico_candidates':len(insilico),'reporting_gate':'non_synonymous AND (ClinVar P/LP OR oncogenicity O/LO); drug matching occurs after this gate','oncogenicity_classification_counts':onco_counts,'oncogenicity_profile':'strict_sop_2022_with_oncovi_2026_resources','oncovi_2026_classification_counts':oncovi_counts,'oncovi_2026_profile':'oncovi_2026_reference_99fa580','oncovi_2026_validation_status':('pending_fastvep_annotation_benchmark;baseline_scoring_rules_unchanged' if 'fastvep' in annotation_engines else 'classification_benchmark_93_of_93;score_exact_86_of_93;criteria_exact_85_of_93;vep112_20260804'),'annotation_engines':sorted(annotation_engines),'cancer_databases':db.manifest(),'somatic_status_note':'Tumor-only; somatic origin is not confirmed.'},open(f'{args.output_prefix}.snv.summary.json','w'),indent=2)
 
 def structural(args):
     db=CancerEvidence(args.cancer_db)

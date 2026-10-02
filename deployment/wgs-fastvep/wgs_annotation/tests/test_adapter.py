@@ -29,8 +29,8 @@ def fixture(root):
     plugins.mkdir()
     table(plugins, "dbNSFP5.3.1a_grch38.gz",
           ["chr", "pos(1-based)", "ref", "alt", "aaref", "aaalt"] + adapter.DB_FIELDS +
-          ["Ensembl_transcriptid", "SIFT_score", "SIFT_pred", "Polyphen2_HDIV_score", "Polyphen2_HDIV_pred"],
-          [["1", 5, "A", "G", "K", "R", .8, 25, .9, .8, .7, "SYNTH_T1", .01, "D", .99, "D"]])
+          ["Ensembl_transcriptid", "SIFT_score", "SIFT_pred", "Polyphen2_HDIV_score", "Polyphen2_HDIV_pred", "annotation_note"],
+          [["1", 5, "A", "G", "K", "R", .8, 25, .9, .8, .7, "SYNTH_T1", .01, "D", .99, "D", "非 ASCII：café"]])
     table(plugins, "AlphaMissense_hg38.tsv.gz",
           ["CHROM", "POS", "REF", "ALT", "protein_variant", "am_pathogenicity", "am_class"],
           [["chr1", 5, "A", "G", "K2R", .9, "likely_pathogenic"]])
