@@ -1,7 +1,7 @@
 {
-  "mtb_source_commit": "6f01c44b493ec47b33518770c0a6f016eb1c2c37",
+  "mtb_source_commit": "7a10c740464a60b24b3c8347f8a368ffea88e6de",
   "baseline_backend_image": "takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33",
-  "annotation_image": "mtb-wgs-fastvep:0.1.1",
+  "annotation_image": "mtb-wgs-fastvep:0.1.2",
   "backend_dockerfile": "backend_wgs/Dockerfile.fastvep",
   "excluded": "legacy tissue overlays, historical Dockerfile, databases, job data and secrets",
   "packaging_note": "Trailing blank lines normalized in six text files; code behavior unchanged."

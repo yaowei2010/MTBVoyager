@@ -53,3 +53,18 @@ tests and 25 targeted downstream regression tests passed. Somatic summary
 provenance retains the pending fastVEP benchmark status. These checks do not
 establish clinical concordance for the new engine. Patient comparisons and
 raw output remain in local directories outside Git.
+
+Adapter 0.1.2 reads the cache's `chr_synonyms.txt` as a bidirectional alias graph,
+including assembly accession names for non-primary contigs. Known non-primary
+contigs absent from the cache retain their input variants and are explicitly
+marked `variation_cache_unavailable_contig` in `ANNOTATION_DATA_STATUS`; summary
+`variation_cache_unavailable_contigs` counts affected variants by contig. Missing
+primary chromosomes, unknown contig names, and missing blocks still fail.
+This behavior does not imply that missing ClinVar/gnomAD annotations were recovered.
+
+The real-sample chr10 failures were caused by a truncated existing SpliceAI raw
+indel BGZF file, not by a fastVEP consequence error. Do not suppress this read error
+or substitute empty scores. Replacement sources must preserve raw GRCh38 scores,
+pass their published checksums, and match readable original regions before use.
+The comparison repair uses a separate chr10 data overlay; production databases
+are not overwritten. The original indel frequency normalization limitation remains.

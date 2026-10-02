@@ -81,7 +81,7 @@ services:
       WGS_SOMATIC_DATA_ROOT: "${DATA_ROOT}/wgs_somatic"
       WGS_REFERENCE_FASTA: "${WGS_REFERENCE_ROOT}/hg38.fa"
       WGS_ANNOTATION_ENGINE: "${WGS_ANNOTATION_ENGINE:-fastvep}"
-      WGS_FASTVEP_IMAGE: "${WGS_FASTVEP_IMAGE:-mtb-wgs-fastvep:0.1.1}"
+      WGS_FASTVEP_IMAGE: "${WGS_FASTVEP_IMAGE:-mtb-wgs-fastvep:0.1.2}"
       WGS_FASTVEP_REFERENCE_ROOT: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}"
       WGS_FASTVEP_GFF3: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}/Homo_sapiens.GRCh38.112.gff3"
       WGS_FASTVEP_TRANSCRIPT_CACHE: "${FASTVEP_REFERENCE_ROOT:-/home/hpz8g5/tools/fastVEP/data/reference}/grch38_ensembl112.mtb.cache"
@@ -157,7 +157,7 @@ services:
 
   wgs-fastvep-tools:
     profiles: ["tools"]
-    image: mtb-wgs-fastvep:0.1.1
+    image: mtb-wgs-fastvep:0.1.2
     build:
       context: ${MTB_SOURCE_ROOT:-../deployment/wgs-fastvep}/wgs_annotation
     command: ["fastvep", "--version"]

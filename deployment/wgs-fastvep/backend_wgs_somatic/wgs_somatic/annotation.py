@@ -10,7 +10,7 @@ def annotation_arguments():
     if engine == "fastvep":
         reference = os.environ.get("WGS_FASTVEP_REFERENCE_ROOT", "/home/hpz8g5/tools/fastVEP/data/reference")
         for parameter, env, default in (
-            ("fastvep_image", "WGS_FASTVEP_IMAGE", "mtb-wgs-fastvep:0.1.1"),
+            ("fastvep_image", "WGS_FASTVEP_IMAGE", "mtb-wgs-fastvep:0.1.2"),
             ("fastvep_gff3", "WGS_FASTVEP_GFF3", reference + "/Homo_sapiens.GRCh38.112.gff3"),
             ("fastvep_transcript_cache", "WGS_FASTVEP_TRANSCRIPT_CACHE", reference + "/grch38_ensembl112.mtb.cache"),
             ("fastvep_transcript_metadata", "WGS_FASTVEP_TRANSCRIPT_METADATA", reference + "/vep112.transcript_metadata.complete.jsonl"),
