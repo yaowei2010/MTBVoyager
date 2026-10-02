@@ -108,6 +108,28 @@ class AdapterTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "no chromosome"):
                 source.at({"chrom": "unknown", "pos": 5, "ref": "A", "alt": "G"})
 
+    def test_known_scaffold_without_cache_retains_variant_and_reports_gap(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args, obj = fixture(root)
+            chrom = "chr2_KI270715v1_random"
+            cache = Path(args.variation_cache)
+            (cache / "chr_synonyms.txt").write_text("KI270715.1\t" + chrom + "\n")
+            vcf = Path(args.vcf)
+            vcf.write_text(vcf.read_text().replace("chr1", chrom))
+            obj["seq_region_name"] = chrom
+            Path(args.input_json).write_text(json.dumps([obj]))
+            adapter.run(args)
+            with gzip.open(args.output, "rt") as handle:
+                rows = list(csv.DictReader((line for line in handle if not line.startswith("##")), delimiter="\t"))
+            self.assertEqual(len(rows), 1)
+            self.assertEqual(rows[0]["ANNOTATION_DATA_STATUS"], "variation_cache_unavailable_contig")
+            self.assertEqual(rows[0]["CLIN_SIG"], "-")
+            self.assertEqual(rows[0]["gnomADg_AF"], "-")
+            summary = json.loads(Path(args.summary).read_text())
+            self.assertEqual(summary["counts"]["variants"], 1)
+            self.assertEqual(summary["variation_cache_unavailable_contigs"], {chrom: 1})
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)

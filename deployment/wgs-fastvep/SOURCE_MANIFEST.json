@@ -1,5 +1,5 @@
 {
-  "mtb_source_commit": "7a10c740464a60b24b3c8347f8a368ffea88e6de",
+  "mtb_source_commit": "81761709c756e567dcbe7f16a4f6e25876272d26",
   "baseline_backend_image": "takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33",
   "annotation_image": "mtb-wgs-fastvep:0.1.2",
   "backend_dockerfile": "backend_wgs/Dockerfile.fastvep",
