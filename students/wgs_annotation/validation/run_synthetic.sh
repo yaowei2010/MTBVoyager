@@ -4,7 +4,7 @@ set -euo pipefail
 annotation_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 students_root="$(dirname "$annotation_root")"
 run_dir="${RUN_DIR:-/tmp/mtb-fastvep-validation-$(date -u +%Y%m%dT%H%M%S)}"
-annotation_image="${ANNOTATION_IMAGE:-mtb-wgs-fastvep:0.1.1}"
+annotation_image="${ANNOTATION_IMAGE:-mtb-wgs-fastvep:0.1.2}"
 launcher_image="${LAUNCHER_IMAGE:-takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33}"
 mkdir -p "$run_dir"
 run_dir="$(cd "$run_dir" && pwd)"

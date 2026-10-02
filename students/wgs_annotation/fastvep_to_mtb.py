@@ -18,7 +18,7 @@ from pathlib import Path
 import ijson
 import pysam
 
-ADAPTER_VERSION = "0.1.1"
+ADAPTER_VERSION = "0.1.2"
 FASTVEP_COMMIT = "ac2e2b64a9c4c27163a3df16e0a559113af19625"
 DB_FIELDS = ["REVEL_score", "CADD_phred", "ClinPred_score",
              "phyloP100way_vertebrate_rankscore", "phastCons100way_vertebrate_rankscore"]
@@ -219,14 +219,38 @@ class VariationCache:
         if not required <= set(self.columns):
             raise ValueError("Variation cache lacks required ClinVar/gnomAD columns")
         self.columns_index = {name: i for i, name in enumerate(self.columns)}
+        self.unavailable_contigs = Counter()
+        self.chromosome_aliases = defaultdict(set)
+        synonyms = self.path / "chr_synonyms.txt"
+        if synonyms.is_file():
+            for line in synonyms.read_text().splitlines():
+                names = line.split()
+                if len(names) == 2 and not line.startswith("#"):
+                    a, b = names
+                    self.chromosome_aliases[a].add(b)
+                    self.chromosome_aliases[b].add(a)
         self.info = info
         self.block = None
         self.records = {}
 
     def at(self, v):
         pos, ref, alt = minimal(v["pos"], v["ref"], v["alt"])
-        chrom = next((c for c in aliases(v["chrom"]) if (self.path / c).is_dir()), None)
+        candidates = list(aliases(v["chrom"]))
+        visited = set(candidates)
+        for candidate in candidates:
+            for synonym in sorted(self.chromosome_aliases.get(candidate, ())):
+                if synonym not in visited:
+                    visited.add(synonym)
+                    candidates.append(synonym)
+        chrom = next((c for c in candidates if (self.path / c).is_dir()), None)
         if chrom is None:
+            # Known assembly scaffolds can legitimately be absent from this cache.
+            # Primary chromosomes and unknown identifiers remain fatal errors.
+            primary = {str(i) for i in range(1, 23)} | {"X", "Y", "MT"}
+            if chrom_key(v["chrom"]) not in primary and any(
+                    c in self.chromosome_aliases for c in candidates):
+                self.unavailable_contigs[v["chrom"]] += 1
+                return []
             raise ValueError(f"Variation cache has no chromosome {v['chrom']}")
         # Include an insertion's adjacent base and a deletion's span at block boundaries.
         results = []
@@ -456,7 +480,8 @@ def convert_record(obj, v, sources):
                     "Consequence": ",".join(tc["consequence_terms"]), "IMPACT": tc["impact"],
                     "GT": v["gt"], "ZYG": zygosity(v["gt"]), "IND": v["sample"],
                     "REF": v["ref"], "ALT": v["alt"], "ANNOTATION_ENGINE": "fastvep",
-                    "ANNOTATION_VERSION": "0.3.0-" + FASTVEP_COMMIT[:7], "ANNOTATION_DATA_STATUS": "sources_loaded"})
+                    "ANNOTATION_VERSION": "0.3.0-" + FASTVEP_COMMIT[:7], "ANNOTATION_DATA_STATUS": ("variation_cache_unavailable_contig"
+                        if v["chrom"] in sources.variation.unavailable_contigs else "sources_loaded")})
         mapping = {"gene_symbol": "SYMBOL", "biotype": "BIOTYPE", "hgvsc": "HGVSc", "hgvsp": "HGVSp",
                    "hgvsg": "HGVSg", "amino_acids": "Amino_acids", "codons": "Codons", "exon": "EXON",
                    "intron": "INTRON", "distance": "DISTANCE", "strand": "STRAND"}
@@ -502,6 +527,7 @@ def run(args):
                "status": "complete", "counts": dict(counts), "nonmissing_rows": dict(nonmissing),
                "transcript_metadata_sources": dict(metadata_sources),
                "sources": sources.sources, "variation_cache_releases": sources.variation.info,
+               "variation_cache_unavailable_contigs": dict(sources.variation.unavailable_contigs),
                "transcript_metadata_sha256": hashlib.sha256(Path(args.transcript_metadata).read_bytes()).hexdigest(),
                "sift_polyphen_source": "dbNSFP transcript-matched; differs from VEP transcript-cache predictors",
                "pick_tie_breaker": "transcript_id (deterministic; exact VEP ties require validation)"}

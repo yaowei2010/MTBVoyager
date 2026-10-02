@@ -87,6 +87,27 @@ def fixture(root):
 
 
 class AdapterTests(unittest.TestCase):
+    def test_cache_contig_synonyms(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args, _ = fixture(root)
+            cache = Path(args.variation_cache)
+            (cache / "1").rename(cache / "KI270706.1")
+            (cache / "chr_synonyms.txt").write_text(
+                "KI270706.1\tNT_187361.1\nNT_187361.1\tchr1_KI270706v1_random\n")
+            source = adapter.VariationCache(cache)
+            result = source.annotate({"chrom": "chr1_KI270706v1_random", "pos": 5, "ref": "A", "alt": "G"})
+            self.assertEqual(result["CLIN_SIG"], "pathogenic")
+            self.assertEqual(float(result["gnomADg_AF"]), 0.002)
+            (cache / "chr_synonyms.txt").write_text("KI270715.1\tchr2_KI270715v1_random\n")
+            missing = adapter.VariationCache(cache)
+            self.assertEqual(missing.at({"chrom": "chr2_KI270715v1_random", "pos": 5, "ref": "A", "alt": "G"}), [])
+            self.assertEqual(missing.unavailable_contigs["chr2_KI270715v1_random"], 1)
+            with self.assertRaisesRegex(ValueError, "no chromosome"):
+                missing.at({"chrom": "chr1", "pos": 5, "ref": "A", "alt": "G"})
+            with self.assertRaisesRegex(ValueError, "no chromosome"):
+                source.at({"chrom": "unknown", "pos": 5, "ref": "A", "alt": "G"})
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
