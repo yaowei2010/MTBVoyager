@@ -34,7 +34,7 @@ The pinned standalone image `mtb-fastvep:0.3.0-ac2e2b6` must already exist local
 (build instructions are in `/home/hpz8g5/tools/fastVEP/README.md`). From MTB:
 
 ```bash
-docker build -t mtb-wgs-fastvep:0.1.0 students/wgs_annotation
+docker build -t mtb-wgs-fastvep:0.1.1 students/wgs_annotation
 bash students/wgs_annotation/prepare_reference.sh
 ```
 
@@ -56,7 +56,7 @@ from a different source checkout.
 Environment variables:
 
 - `WGS_ANNOTATION_ENGINE`: `fastvep` or `vep`.
-- `WGS_FASTVEP_IMAGE`: annotation image, default `mtb-wgs-fastvep:0.1.0`.
+- `WGS_FASTVEP_IMAGE`: annotation image, default `mtb-wgs-fastvep:0.1.1`.
 - `FASTVEP_REFERENCE_ROOT`: host reference directory for Compose.
 - `WGS_FASTVEP_GFF3`, `WGS_FASTVEP_TRANSCRIPT_CACHE`,
   `WGS_FASTVEP_TRANSCRIPT_METADATA`: optional per-file runner overrides.
@@ -76,7 +76,7 @@ their existing workflows.
 
 ```bash
 docker run --rm --network none \
-  -v "$PWD/students/wgs_annotation:/src:ro" mtb-wgs-fastvep:0.1.0 \
+  -v "$PWD/students/wgs_annotation:/src:ro" mtb-wgs-fastvep:0.1.1 \
   python -m unittest discover -s /src/tests -v
 bash students/wgs_annotation/validation/run_synthetic.sh
 ```
