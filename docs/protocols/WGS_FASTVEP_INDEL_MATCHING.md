@@ -95,7 +95,8 @@ OncoVI。比較 refresh audit 中 AF 的 gained/lost/different，確認是否減
 
 此重跑保留既有 SpliceAI/plugin 註解，沒有以空值替換讀取錯誤。前次只修復 chr10
 SpliceAI indel overlay；原 SpliceAI indel 檔案其他缺少的 contig coverage 並未全部補齊。
-此資料缺口與 regulatory/motif 覆蓋、transcript/HGVS 差異仍是正式切換前的驗證項目。
+SpliceAI 資料缺口依下方使用者決定保留為缺值，不以補齊資料作為切換前提；
+regulatory/motif 覆蓋、transcript/HGVS 差異仍需驗證。
 
 完成標記、日誌及摘要報告需一起檢查；有 FAILED 標記時不可當作驗證通過。
 正式切換前需確認候選清單、分級、reportable/actionable 和面板匯出結果。
@@ -135,3 +136,11 @@ https://grch37.ensembl.org/info/docs/tools/vep/script/vep_plugins.html
 預計算資料涵蓋基因內 SNV、1 bp insertion 和 1–4 bp deletion，不能保證所有長 INDEL
 都有分數。未收錄不等於零分。fastVEP 可以查詢現有 VEP 用的 VCF，不需要執行 VEP
 plugin 或另外訓練模型。此輪 INDEL AF 驗證保留先前 plugin 分數，沒有改動其來源。
+
+## 2026-10-06 使用者決定：暫不補齊缺少的 SpliceAI 資料
+
+沿用既有已成功讀取的 SpliceAI 註解，缺少的資料暫不下載或另行產生；
+缺少分數維持缺值，不改成 0，也不據此判定沒有剪接影響。
+上述完整資料取得流程保留供日後使用，目前不執行。
+資料未收錄與損壞檔案的讀取錯誤需區分；此決定不允許將讀取錯誤偽裝成成功。
+本輪 INDEL AF 修正及真實樣本比對持續執行，不新增 SpliceAI 資料完整覆蓋要求。
