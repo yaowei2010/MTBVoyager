@@ -4,6 +4,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -36,10 +37,16 @@ def main():
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--image', default='mtb-wgs-fastvep:0.1.3')
     parser.add_argument('--jobs', type=int, default=8)
+    parser.add_argument("--primary-only", action="store_true")
+    parser.add_argument("--wait-for-index", action="store_true")
+    parser.add_argument("--index-build-container", default="mtb-fastvep-variation-index")
     args = parser.parse_args()
     baseline, root = Path(args.baseline_run), Path(args.output_dir)
     source = Path(__file__).resolve().parent
     manifest = json.loads((baseline/'inputs.json').read_text())
+    if args.primary_only:
+        for item in manifest:
+            item['shards'] = [s for s in item['shards'] if s['shard'] != 'other']
     root.mkdir(parents=True, exist_ok=True)
     (root/'inputs.json').write_text(json.dumps(manifest, indent=2)+'\n')
     tasks = []
@@ -82,10 +89,34 @@ def main():
                                stdout=handle,stderr=subprocess.STDOUT,check=True)
         print('Refreshed and compared',name,flush=True)
 
+    pending = tasks[:]
+    running = {}
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        for future in as_completed([pool.submit(execute,t) for t in tasks]):
-            future.result()
-    (root/'ANNOTATION_COMPLETE.json').write_text(json.dumps({'successful':len(tasks),'failed':0,'cache_refresh':True})+'\n')
+        while pending or running:
+            for future in list(running):
+                if future.done():
+                    future.result()
+                    del running[future]
+            for task in pending[:]:
+                if len(running) >= args.jobs:
+                    break
+                chrom = task[1]['shard'].removeprefix('chr')
+                chrom = 'MT' if chrom == 'M' else chrom
+                ready = chrom == 'other' or (Path(args.variation_index)/(chrom+'.sqlite')).is_file()
+                if not ready and args.wait_for_index:
+                    continue
+                if not ready:
+                    raise RuntimeError('Missing normalized variation index: '+chrom)
+                pending.remove(task)
+                running[pool.submit(execute,task)] = task
+            if pending and args.wait_for_index:
+                build = subprocess.run(['docker','inspect',args.index_build_container],
+                                       stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                if build.returncode and not running:
+                    raise RuntimeError('Index build stopped with missing required indexes')
+            if pending or running:
+                time.sleep(10)
+    (root/'ANNOTATION_COMPLETE.json').write_text(json.dumps({'successful':len(tasks),'failed':0,'cache_refresh':True,'scope':'primary_only' if args.primary_only else 'all_shards'})+'\n')
 
 
 if __name__ == '__main__':

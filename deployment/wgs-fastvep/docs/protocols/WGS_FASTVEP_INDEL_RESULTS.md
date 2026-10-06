@@ -9,3 +9,6 @@
 
 執行紀錄：`/home/hpz8g5/project/MTB-fastvep-indel-validation-20261006`。
 最終結果會記錄於此文件；尚未有正式平台切換結論。
+
+本輪驗收範圍調整為 chr1–22/X/Y/M，共 50 分段；other 保留但不列為此次阻擋項目。
+已開始利用完成的 chr10/11/12 索引對兩個樣本進行 cache refresh。
