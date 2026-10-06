@@ -10,6 +10,7 @@ process FASTVEP_ANNOTATE_SHARD {
     path transcript_cache
     path transcript_metadata
     path cache
+    path variation_index
     path plugin_data
 
     output:
@@ -32,6 +33,7 @@ process FASTVEP_ANNOTATE_SHARD {
         --summary '${meta.id}.${shard}.annotation.summary.json' \
         --plugin-data '${plugin_data}' \
         --variation-cache '${cache}/homo_sapiens/112_GRCh38' \
+        --reference '${reference}' --variation-index '${variation_index}' \
         --transcript-metadata '${transcript_metadata}'
     python -c "from pathlib import Path; Path('annotations.json').unlink()"
     """

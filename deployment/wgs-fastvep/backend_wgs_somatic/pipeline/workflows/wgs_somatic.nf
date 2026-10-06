@@ -55,13 +55,14 @@ workflow WGS_SOMATIC_TUMOR_ONLY {
         shard_ch = FILTER_NORMALIZE_SNV.out.vcf.flatMap { meta, vcf -> shards.collect { tuple(meta, it, vcf) } }
         SPLIT_VCF_BY_CONTIG(shard_ch)
         if (params.annotation_engine == 'fastvep') {
-            if (!params.fastvep_gff3 || !params.fastvep_transcript_cache || !params.fastvep_transcript_metadata)
-                error 'fastVEP requires GFF3, complete transcript cache and baseline transcript metadata'
+            if (!params.fastvep_gff3 || !params.fastvep_transcript_cache || !params.fastvep_transcript_metadata || !params.fastvep_variation_index)
+                error 'fastVEP requires GFF3, complete transcript cache, baseline transcript metadata and normalized variation index'
             gff3_ch = Channel.value(file(params.fastvep_gff3, checkIfExists: true))
             transcript_cache_ch = Channel.value(file(params.fastvep_transcript_cache, checkIfExists: true))
             transcript_metadata_ch = Channel.value(file(params.fastvep_transcript_metadata, checkIfExists: true))
+            variation_index_ch = Channel.value(file(params.fastvep_variation_index, checkIfExists: true, type: 'dir'))
             FASTVEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, reference_fai_ch,
-                gff3_ch, transcript_cache_ch, transcript_metadata_ch, cache_ch, plugin_ch)
+                gff3_ch, transcript_cache_ch, transcript_metadata_ch, cache_ch, variation_index_ch, plugin_ch)
             annotation_shards_ch = FASTVEP_ANNOTATE_SHARD.out.tsv
         } else {
             VEP_ANNOTATE_SHARD(SPLIT_VCF_BY_CONTIG.out.vcf, reference_ch, cache_ch, plugin_ch)

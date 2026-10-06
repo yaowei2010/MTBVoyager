@@ -34,9 +34,12 @@ The pinned standalone image `mtb-fastvep:0.3.0-ac2e2b6` must already exist local
 (build instructions are in `/home/hpz8g5/tools/fastVEP/README.md`). From MTB:
 
 ```bash
-docker build -t mtb-wgs-fastvep:0.1.2 students/wgs_annotation
+docker build -t mtb-wgs-fastvep:0.1.3 students/wgs_annotation
 bash students/wgs_annotation/prepare_reference.sh
 ```
+
+Before running workflows, also build the normalized variation index using the
+[INDEL matching protocol](../docs/protocols/WGS_FASTVEP_INDEL_MATCHING.md).
 
 The preparation script uses the website's reference FASTA, Ensembl 112 GFF3 and
 the current cache. It writes only new fastVEP reference artifacts, including a
@@ -56,10 +59,11 @@ from a different source checkout.
 Environment variables:
 
 - `WGS_ANNOTATION_ENGINE`: `fastvep` or `vep`.
-- `WGS_FASTVEP_IMAGE`: annotation image, default `mtb-wgs-fastvep:0.1.2`.
+- `WGS_FASTVEP_IMAGE`: annotation image, default `mtb-wgs-fastvep:0.1.3`.
 - `FASTVEP_REFERENCE_ROOT`: host reference directory for Compose.
 - `WGS_FASTVEP_GFF3`, `WGS_FASTVEP_TRANSCRIPT_CACHE`,
   `WGS_FASTVEP_TRANSCRIPT_METADATA`: optional per-file runner overrides.
+- `WGS_FASTVEP_VARIATION_INDEX`: required normalized variation index directory.
 - `WGS_FASTVEP_MAX_PARALLEL`, `WGS_FASTVEP_CPUS`, `WGS_FASTVEP_MEMORY`: default
   two shards, eight CPUs and 20 GB per shard. These are initial allocations,
   not full-WGS performance tuning results.
@@ -76,7 +80,7 @@ their existing workflows.
 
 ```bash
 docker run --rm --network none \
-  -v "$PWD/students/wgs_annotation:/src:ro" mtb-wgs-fastvep:0.1.2 \
+  -v "$PWD/students/wgs_annotation:/src:ro" mtb-wgs-fastvep:0.1.3 \
   python -m unittest discover -s /src/tests -v
 bash students/wgs_annotation/validation/run_synthetic.sh
 ```
@@ -112,3 +116,12 @@ be run with the MONDO fixtures mounted at the expected repository path.
 Use `WGS_ANNOTATION_ENGINE=vep` to return to the old consequence caller in this
 branch. The complete pre-migration GitHub baseline is tagged
 `pre-fastvep-20261001`. Do not recreate the live backend while jobs are active.
+
+
+Adapter 0.1.3 requires a reference-normalized variation index and the same FASTA
+used to build it. Build once with `build_variation_index.py`; pass
+`--reference` and `--variation-index` to the adapter, or
+`--fastvep_variation_index` to Nextflow. Backend configuration uses
+`WGS_FASTVEP_VARIATION_INDEX`. See
+[INDEL matching protocol](../docs/protocols/WGS_FASTVEP_INDEL_MATCHING.md)
+for construction, verification, real-sample reruns and migration gates.
