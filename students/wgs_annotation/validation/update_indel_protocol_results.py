@@ -14,7 +14,7 @@ def main():
     root = Path(args.run_dir)
     report = json.loads((root/'reports/comparison_summary.json').read_text())
     lines = ['# INDEL 修正驗證結果', '', '更新：2026-10-06。', '',
-             '19 項單元/比對測試及兩條完整 synthetic Nextflow 流程通過。',
+             '20 項單元/比對測試及兩條完整 synthetic Nextflow 流程通過。',
              '公開 cache 案例 rs1481478962：gnomADg_AF 從缺失補回 0.0662（6.62%）。', '',
              '本輪只重算 cache 欄位；consequence、transcript、HGVS、plugin 和 genotype 保留。',
              '以下為匿名彙總；病例級輸出不納入 Git。', '']

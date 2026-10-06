@@ -72,7 +72,7 @@ docker run --rm --network none \
 bash students/wgs_annotation/validation/run_synthetic.sh
 ```
 
-目前 19 項 adapter/comparison 測試通過，包含多 ALT、REF/ALT 共同前後綴、
+目前 20 項 adapter/comparison 測試通過，包含多 ALT、REF/ALT 共同前後綴、
 反向序列、零頻率與缺失的區別、跨 1 Mb 區塊/長重複序列、過期索引與保留變異。
 兩條完整 Nextflow 測試通過：`/tmp/mtb-fastvep-validation-20261006T023515`。
 
@@ -99,3 +99,10 @@ SpliceAI indel overlay；原 SpliceAI indel 檔案其他缺少的 contig coverag
 
 完成標記、日誌及摘要報告需一起檢查；有 FAILED 標記時不可當作驗證通過。
 正式切換前需確認候選清單、分級、reportable/actionable 和面板匯出結果。
+
+
+## 2026-10-06 程式檢查補充
+
+已修正 padded input 縮短後為 SNV 時漏查一般 SNV cache 的邊界情況，新增測試通過。
+重跑工具會檢查 summary 的完成狀態、adapter/索引來源，以及比對報告的來源和時間，
+不再只因檔案存在就跳過工作。真實資料索引/新比對完成前仍不可作正式切換依據。

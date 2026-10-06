@@ -291,7 +291,7 @@ class VariationCache:
             query_block = (v['pos'] - 1) // 1000000 * 1000000 + 1
             if query_block not in self.index_blocks[chrom]:
                 raise ValueError(f'Missing variation cache block: {chrom}/{query_block}-{query_block + 999999}_var.gz')
-            if len(v['ref']) != 1 or len(v['alt']) != 1:
+            if len(key[1]) != 1 or len(key[2]) != 1 or key[1] == '-' or key[2] == '-':
                 return indexed
         # Include an insertion's adjacent base and a deletion's span at block boundaries.
         results = []
