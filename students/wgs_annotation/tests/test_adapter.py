@@ -3,6 +3,7 @@ import gzip
 import importlib.util
 import json
 import tempfile
+import sys
 import unittest
 from argparse import Namespace
 from pathlib import Path
@@ -10,6 +11,9 @@ from pathlib import Path
 import pysam
 
 SCRIPT = Path(__file__).resolve().parents[1] / "fastvep_to_mtb.py"
+sys.path.insert(0, str(SCRIPT.parent))
+from variation_index import build_chromosome, Normalizer, synonyms
+
 spec = importlib.util.spec_from_file_location("adapter", SCRIPT)
 adapter = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(adapter)
@@ -129,6 +133,63 @@ class AdapterTests(unittest.TestCase):
             summary = json.loads(Path(args.summary).read_text())
             self.assertEqual(summary["counts"]["variants"], 1)
             self.assertEqual(summary["variation_cache_unavailable_contigs"], {chrom: 1})
+
+    def test_normalized_indels_keep_original_allele_specific_frequency(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args, _ = fixture(root)
+            cache = Path(args.variation_cache)
+            reference = root / 'repeat.fa'
+            reference.write_text('>chr1\nCAAATGAAAAACGT\n')
+            pysam.faidx(str(reference))
+            columns = dict(line.split('\t', 1) for line in (cache / 'info.txt').read_text().splitlines())['variation_cols'].split(',')
+            records = [
+                dict(variation_name='rsDeletion', start='2', end='4', allele_string='AAA/AA/AAAA', strand='1',
+                     clin_sig_allele='AA:benign;AAAA:pathogenic', gnomADg='AA:0.1,AAAA:0.7', gnomADg_EAS='AA:0'),
+                dict(variation_name='rsPaddedSNV', start='4', end='6', allele_string='ATG/ACG', strand='1', gnomADg='ACG:0.2'),
+                dict(variation_name='rsReverse', start='13', end='13', allele_string='C/-', strand='-1', gnomADg='-:0.3'),
+            ]
+            with gzip.open(cache / '1/1-1000000_var.gz', 'wt') as out:
+                for record in records:
+                    out.write(' '.join(record.get(c, '') for c in columns) + '\n')
+            index = root / 'index'
+            build_chromosome(cache, reference, index, '1')
+            source = adapter.VariationCache(cache, reference, index)
+            delete = source.annotate(dict(chrom='chr1', pos=3, ref='AA', alt='A'))
+            insert = source.annotate(dict(chrom='chr1', pos=3, ref='A', alt='AA'))
+            self.assertEqual(delete['CLIN_SIG'], 'benign')
+            self.assertEqual(delete['gnomADg_AF'], '0.1')
+            self.assertEqual(delete['gnomADg_EAS_AF'], '0.0')
+            self.assertEqual(insert['CLIN_SIG'], 'pathogenic')
+            self.assertEqual(insert['gnomADg_AF'], '0.7')
+            self.assertNotIn('gnomADg_EAS_AF', insert)
+            self.assertEqual(source.annotate(dict(chrom='chr1', pos=5, ref='T', alt='C'))['gnomADg_AF'], '0.2')
+            self.assertEqual(source.annotate(dict(chrom='chr1', pos=12, ref='CG', alt='C'))['gnomADg_AF'], '0.3')
+            self.assertIsNone(source.annotate(dict(chrom='chr1', pos=14, ref='T', alt='TA')).get('gnomADg_AF'))
+            with self.assertRaisesRegex(ValueError, 'REF differs'):
+                source.annotate(dict(chrom='chr1', pos=1, ref='A', alt='AT'))
+            (cache / 'info.txt').write_text((cache / 'info.txt').read_text() + 'changed\tyes\n')
+            with self.assertRaisesRegex(ValueError, 'Stale'):
+                adapter.VariationCache(cache, reference, index).annotate(dict(chrom='chr1', pos=3, ref='AA', alt='A'))
+
+    def test_repeat_left_alignment_crosses_cache_block_boundary(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args, _ = fixture(root)
+            cache = Path(args.variation_cache)
+            reference = root / 'long.fa'
+            reference.write_text('>chr1\nC' + 'A' * 1000010 + 'G\n')
+            pysam.faidx(str(reference))
+            columns = dict(line.split('\t', 1) for line in (cache / 'info.txt').read_text().splitlines())['variation_cols'].split(',')
+            with gzip.open(cache / '1/1-1000000_var.gz', 'wt') as out:
+                pass
+            record = dict(variation_name='rsBoundary', start='1000001', end='1000001', allele_string='A/-', strand='1', gnomADg='-:0.05')
+            with gzip.open(cache / '1/1000001-2000000_var.gz', 'wt') as out:
+                out.write(' '.join(record.get(c, '') for c in columns) + '\n')
+            index = root / 'index'
+            build_chromosome(cache, reference, index, '1')
+            source = adapter.VariationCache(cache, reference, index)
+            self.assertEqual(source.annotate(dict(chrom='chr1', pos=1, ref='CA', alt='C'))['gnomADg_AF'], '0.05')
 
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()

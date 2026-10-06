@@ -4,7 +4,7 @@ set -euo pipefail
 annotation_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 students_root="$(dirname "$annotation_root")"
 run_dir="${RUN_DIR:-/tmp/mtb-fastvep-validation-$(date -u +%Y%m%dT%H%M%S)}"
-annotation_image="${ANNOTATION_IMAGE:-mtb-wgs-fastvep:0.1.2}"
+annotation_image="${ANNOTATION_IMAGE:-mtb-wgs-fastvep:0.1.3}"
 launcher_image="${LAUNCHER_IMAGE:-takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33}"
 mkdir -p "$run_dir"
 run_dir="$(cd "$run_dir" && pwd)"
@@ -32,6 +32,10 @@ docker run --rm --network none -u "$(id -u):$(id -g)" -v "$run_dir:$run_dir" \
     "$annotation_image" fastvep cache --gff3 "$run_dir/reference.gff3" \
     --fasta "$run_dir/reference.fa" --output "$run_dir/transcripts.cache" --no-progress
 
+docker run --rm --network none -u "$(id -u):$(id -g)" -v "$run_dir:$run_dir" \
+    "$annotation_image" build_variation_index.py --variation-cache "$run_dir/cache/homo_sapiens/112_GRCh38" \
+    --reference "$run_dir/reference.fa" --output "$run_dir/variation-index" --workers 1
+
 for kind in germline somatic; do
     if [[ "$kind" == germline ]]; then
         pipeline="$students_root/backend_wgs/pipeline"
@@ -52,6 +56,7 @@ for kind in germline somatic; do
         --vep_plugin_data "$run_dir/plugins" --fastvep_gff3 "$run_dir/reference.gff3" \
         --fastvep_transcript_cache "$run_dir/transcripts.cache" \
         --fastvep_transcript_metadata "$run_dir/transcripts.jsonl" \
+        --fastvep_variation_index "$run_dir/variation-index" \
         --fastvep_cpus 1 --fastvep_memory '2 GB' --vep_contigs chr1 \
         "${extras[@]}" -ansi-log false
 done

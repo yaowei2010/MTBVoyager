@@ -68,3 +68,15 @@ or substitute empty scores. Replacement sources must preserve raw GRCh38 scores,
 pass their published checksums, and match readable original regions before use.
 The comparison repair uses a separate chr10 data overlay; production databases
 are not overwritten. The original indel frequency normalization limitation remains.
+
+
+Adapter 0.1.3 adds a reference-checked normalized non-SNV SQLite index. The raw
+cache ALT is retained separately from the normalized query key for allele-specific
+ClinVar and population frequencies. This supersedes the 0.1.2 indel normalization
+limitation above. Reference mismatches and unsupported cache alleles are counted
+in the index manifest and never receive fabricated frequencies. Missing/stale
+indexes fail. Legacy direct cache matching without an index remains available
+only for Python compatibility tests; CLI/Nextflow require the index and FASTA.
+Synthetic germline and somatic Nextflow workflows passed on 2026-10-06 at
+`/tmp/mtb-fastvep-validation-20261006T023515`.
+The real-sample acceptance results are recorded in the project protocol.

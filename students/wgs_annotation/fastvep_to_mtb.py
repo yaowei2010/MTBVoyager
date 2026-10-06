@@ -12,13 +12,16 @@ import hashlib
 import itertools
 import json
 import re
+import sqlite3
+
+from variation_index import Normalizer, reference_identity, INDEX_VERSION
 from collections import Counter, defaultdict
 from pathlib import Path
 
 import ijson
 import pysam
 
-ADAPTER_VERSION = "0.1.2"
+ADAPTER_VERSION = "0.1.3"
 FASTVEP_COMMIT = "ac2e2b64a9c4c27163a3df16e0a559113af19625"
 DB_FIELDS = ["REVEL_score", "CADD_phred", "ClinPred_score",
              "phyloP100way_vertebrate_rankscore", "phastCons100way_vertebrate_rankscore"]
@@ -203,7 +206,7 @@ class SpliceTable:
 
 class VariationCache:
     """Read the current VEP 112 plain gzip blocks without altering the cache."""
-    def __init__(self, path):
+    def __init__(self, path, reference=None, index=None):
         self.path = Path(path)
         info = {}
         for line in (self.path / "info.txt").read_text().splitlines():
@@ -230,8 +233,37 @@ class VariationCache:
                     self.chromosome_aliases[a].add(b)
                     self.chromosome_aliases[b].add(a)
         self.info = info
+        if bool(reference) != bool(index):
+            raise ValueError('Reference and normalized variation index must be provided together')
+        self.index = Path(index) if index else None
+        self.normalizer = Normalizer(reference, self.chromosome_aliases) if reference else None
+        self.reference_identity = reference_identity(reference) if reference else None
+        self.index_connections = {}
+        self.index_blocks = {}
         self.block = None
         self.records = {}
+
+    def indexed_matches(self, chrom, key):
+        if chrom not in self.index_connections:
+            path = self.index / (chrom + '.sqlite')
+            if not path.is_file():
+                raise ValueError(f'Missing normalized variation index: {chrom}')
+            connection = sqlite3.connect(path.resolve().as_uri() + '?mode=ro&immutable=1', uri=True)
+            metadata = json.loads(connection.execute('select value from metadata').fetchone()[0])
+            blocks = sorted((self.path / chrom).glob('*_var.gz'), key=lambda p: int(p.name.split('-')[0]))
+            fingerprints = [[p.name, p.stat().st_size, p.stat().st_mtime_ns] for p in blocks]
+            if (metadata.get('status') != 'complete' or metadata.get('chromosome') != chrom or metadata.get('index_version') != INDEX_VERSION
+                    or metadata.get('reference') != self.reference_identity
+                    or metadata.get('cache_info_sha256') != hashlib.sha256((self.path / 'info.txt').read_bytes()).hexdigest()
+                    or metadata.get('blocks') != fingerprints):
+                connection.close()
+                raise ValueError(f'Stale or incompatible normalized variation index: {chrom}')
+            self.index_connections[chrom] = connection
+            self.index_blocks[chrom] = {int(p[0].split('-')[0]) for p in metadata['blocks']}
+        return [(dict(zip(self.columns, (clean(x) for x in raw.split(' ')))), allele)
+                for raw, allele in self.index_connections[chrom].execute(
+                    'select r.raw,a.allele from alleles a join records r on r.id=a.record_id '
+                    'where a.pos=? and a.ref=? and a.alt=?', key)]
 
     def at(self, v):
         pos, ref, alt = minimal(v["pos"], v["ref"], v["alt"])
@@ -252,6 +284,15 @@ class VariationCache:
                 self.unavailable_contigs[v["chrom"]] += 1
                 return []
             raise ValueError(f"Variation cache has no chromosome {v['chrom']}")
+        indexed = []
+        if self.index:
+            key = self.normalizer.key(v['chrom'], v['pos'], v['ref'], v['alt'])
+            indexed = self.indexed_matches(chrom, key)
+            query_block = (v['pos'] - 1) // 1000000 * 1000000 + 1
+            if query_block not in self.index_blocks[chrom]:
+                raise ValueError(f'Missing variation cache block: {chrom}/{query_block}-{query_block + 999999}_var.gz')
+            if len(v['ref']) != 1 or len(v['alt']) != 1:
+                return indexed
         # Include an insertion's adjacent base and a deletion's span at block boundaries.
         results = []
         for block_index in sorted({(max(1, pos - 1) - 1) // 1000000, (pos - 1) // 1000000}):
@@ -274,7 +315,7 @@ class VariationCache:
                         records[rec_start].append(raw)
                 self.records, self.block = records, block
             results.extend(self.records.get(pos, []))
-        matched = []
+        matched = indexed
         for record in results:
             data = dict(zip(self.columns, (clean(x) for x in record.split(" "))))
             if data.get("failed") not in ("", "0"):
@@ -288,6 +329,8 @@ class VariationCache:
                 continue
             for candidate in cached[1:]:
                 r, a = cached[0], candidate
+                if self.index and (len(r) != 1 or len(a) != 1 or r not in 'ACGTN' or a not in 'ACGTN'):
+                    continue
                 if data.get("strand") == "-1":
                     r, a = reverse_complement(r), reverse_complement(a)
                 if r == ref and a == alt:
@@ -332,7 +375,7 @@ def reverse_complement(value):
 
 
 class Supplementary:
-    def __init__(self, plugin_dir, cache, metadata):
+    def __init__(self, plugin_dir, cache, metadata, reference=None, variation_index=None):
         directory = Path(plugin_dir)
         self.db = IndexedTable(directory / "dbNSFP5.3.1a_grch38.gz",
                                ["pos(1-based)", "ref", "alt", "aaref", "aaalt"] + DB_FIELDS, "pos(1-based)")
@@ -342,7 +385,7 @@ class Supplementary:
                                     ["pos", "ref", "alt", "primateDL_score"], "pos")
         self.splice_snv = SpliceTable(directory / "spliceai_scores.raw.snv.hg38.vcf.gz")
         self.splice_indel = SpliceTable(directory / "spliceai_scores.raw.indel.hg38.vcf.gz")
-        self.variation = VariationCache(cache)
+        self.variation = VariationCache(cache, reference, variation_index)
         self.metadata = {}
         with gzip.open(metadata, "rt") if str(metadata).endswith(".gz") else open(metadata) as handle:
             for line in handle:
@@ -496,7 +539,8 @@ def convert_record(obj, v, sources):
 
 
 def run(args):
-    sources = Supplementary(args.plugin_data, args.variation_cache, args.transcript_metadata)
+    sources = Supplementary(args.plugin_data, args.variation_cache, args.transcript_metadata,
+                            getattr(args, "reference", None), getattr(args, "variation_index", None))
     output = Path(args.output)
     temporary = output.with_name(output.name + ".partial")
     counts, nonmissing, metadata_sources = Counter(), Counter(), Counter()
@@ -526,7 +570,9 @@ def run(args):
                "adapter_version": ADAPTER_VERSION, "genome_build": "GRCh38", "ensembl_release": 112,
                "status": "complete", "counts": dict(counts), "nonmissing_rows": dict(nonmissing),
                "transcript_metadata_sources": dict(metadata_sources),
-               "sources": sources.sources, "variation_cache_releases": sources.variation.info,
+               "sources": dict(sources.sources, normalized_variation_index=str(sources.variation.index)),
+               "variation_cache_releases": sources.variation.info,
+               "variation_matching": "reference-checked minimal alleles and repeat-left-aligned indels" if sources.variation.index else "legacy_raw_cache",
                "variation_cache_unavailable_contigs": dict(sources.variation.unavailable_contigs),
                "transcript_metadata_sha256": hashlib.sha256(Path(args.transcript_metadata).read_bytes()).hexdigest(),
                "sift_polyphen_source": "dbNSFP transcript-matched; differs from VEP transcript-cache predictors",
@@ -536,7 +582,7 @@ def run(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ("input-json", "vcf", "output", "summary", "plugin-data", "variation-cache", "transcript-metadata"):
+    for name in ("input-json", "vcf", "output", "summary", "plugin-data", "variation-cache", "transcript-metadata", "reference", "variation-index"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--vcf-sample")
     run(parser.parse_args())
