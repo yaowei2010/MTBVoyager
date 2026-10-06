@@ -13,11 +13,15 @@ def main():
     args = parser.parse_args()
     root = Path(args.run_dir)
     report = json.loads((root/'reports/comparison_summary.json').read_text())
+    selected = json.loads((root/'inputs.json').read_text())
+    inferred = 'primary_only' if all(s['shard'] != 'other' for m in selected for s in m['shards']) else 'all_shards'
+    scope = json.loads((root/'ANNOTATION_COMPLETE.json').read_text()).get('scope', inferred)
     lines = ['# INDEL 修正驗證結果', '', '更新：2026-10-06。', '',
              '20 項單元/比對測試及兩條完整 synthetic Nextflow 流程通過。',
              '公開 cache 案例 rs1481478962：gnomADg_AF 從缺失補回 0.0662（6.62%）。', '',
              '本輪只重算 cache 欄位；consequence、transcript、HGVS、plugin 和 genotype 保留。',
              '以下為匿名彙總；病例級輸出不納入 Git。', '']
+    lines += ['驗收範圍：' + ('chr1–22、X、Y、M；other 不納入此次驗收。' if scope == 'primary_only' else '全部分段。'), '']
     for sample, data in report.items():
         kind = 'Germline' if 'all_candidates' in data['downstream'] else 'Somatic'
         counts = data['annotation']['counts']

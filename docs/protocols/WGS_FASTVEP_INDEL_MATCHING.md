@@ -106,3 +106,32 @@ SpliceAI indel overlay；原 SpliceAI indel 檔案其他缺少的 contig coverag
 已修正 padded input 縮短後為 SNV 時漏查一般 SNV cache 的邊界情況，新增測試通過。
 重跑工具會檢查 summary 的完成狀態、adapter/索引來源，以及比對報告的來源和時間，
 不再只因檔案存在就跳過工作。真實資料索引/新比對完成前仍不可作正式切換依據。
+
+
+## 2026-10-06 驗收範圍與 SpliceAI 資料盤點
+
+依使用者目前只關注主要染色體的範圍，此輪驗收使用 `--primary-only`，比較
+chr1–22、X、Y、M，共兩個樣本 50 個分段。other 的原始檔案/歷史結果保留，
+不改正式 pipeline 的 contig 規則。other 是主染色體之外的序列，許多仍以 chr 開頭
+（例如 chr11_GL383547v1_alt），不是根據有沒有 chr 前綴分類。
+
+`run_cache_refresh_comparison.py --wait-for-index` 可在每個 contig 的索引原子完成後
+先處理該 contig；每個索引仍會檢查 reference/cache 指紋，不使用 `.partial` 檔。
+不必等全體索引 manifest 完成才開始。50 分段全完成且下游比對成功才標記驗證完成。
+
+SpliceAI 現有來源為 `database/VEP/database/Plugins`：SNV 索引有 1–22/X/Y；indel
+索引只有 1–10，而且壓縮檔在 chr10 被截斷。前次 chr10 替代資料已通過 checksum
+與舊檔可讀區段比對，但不是全體 indel 資料補齊。
+
+補齊方式：取得與原來源相符的 GRCh38 raw indel 完整 VCF 與 index，下載至獨立
+資料目錄，核對來源/checksum、完整解壓縮檢查、tabix 查詢與可讀舊區段的分數一致性，
+通過後才將新的 plugin data 路徑用於測試流程。不能只對被截斷的檔案重建 index，
+也不能將 masked/raw 或不同版本混用。SNV 的 contig 名單不代表已完成全檔完整性檢查。
+
+官方資料/格式說明：
+https://github.com/Illumina/SpliceAI/blob/master/README.md
+https://grch37.ensembl.org/info/docs/tools/vep/script/vep_plugins.html
+
+預計算資料涵蓋基因內 SNV、1 bp insertion 和 1–4 bp deletion，不能保證所有長 INDEL
+都有分數。未收錄不等於零分。fastVEP 可以查詢現有 VEP 用的 VCF，不需要執行 VEP
+plugin 或另外訓練模型。此輪 INDEL AF 驗證保留先前 plugin 分數，沒有改動其來源。
