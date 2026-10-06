@@ -8,6 +8,28 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 
+def completed_refresh(summary, output, index):
+    try:
+        data = json.loads(summary.read_text())
+        return (output.is_file() and data.get('status') == 'complete'
+                and data.get('adapter_version') == '0.1.3'
+                and 'cache_refresh_audit' in data
+                and data.get('sources', {}).get('normalized_variation_index') == str(index))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
+def completed_comparison(report, baseline, output):
+    try:
+        data = json.loads(report.read_text())
+        return (report.stat().st_mtime_ns >= output.stat().st_mtime_ns
+                and data.get('baseline') == str(baseline)
+                and data.get('fastvep') == str(output)
+                and 'counts' in data and 'selected_variant_fields' in data)
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ['baseline-run', 'output-dir', 'project-root', 'reference', 'variation-cache', 'variation-index']:
@@ -37,7 +59,9 @@ def main():
         summary = target/(name+'.annotation.summary.json')
         log = root/'logs'/name
         log.parent.mkdir(exist_ok=True)
-        if not summary.exists():
+        output = target/(name+".vep.tsv.gz")
+        refreshed = not completed_refresh(summary, output, Path(args.variation_index))
+        if refreshed:
             command = ['docker','run','--rm','--network','none','-u','1000:1000',
                        '-v', args.project_root+':'+args.project_root, args.image,
                        'python',str(source/'refresh_variation_annotations.py'),
@@ -50,7 +74,7 @@ def main():
                 subprocess.run(command,stdout=handle,stderr=subprocess.STDOUT,check=True)
         prefix = root/'comparison'/sample/shard['shard']
         prefix.parent.mkdir(parents=True, exist_ok=True)
-        if not prefix.with_suffix('.json').exists():
+        if refreshed or not completed_comparison(prefix.with_suffix('.json'), Path(shard['baseline']), output):
             with Path(str(log)+'.compare.log').open('w') as handle:
                 subprocess.run([sys.executable,str(source/'compare_annotations.py'),
                                 '--baseline',shard['baseline'],'--fastvep',str(target/(name+'.vep.tsv.gz')),

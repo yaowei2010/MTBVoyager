@@ -191,6 +191,17 @@ class AdapterTests(unittest.TestCase):
             source = adapter.VariationCache(cache, reference, index)
             self.assertEqual(source.annotate(dict(chrom='chr1', pos=1, ref='CA', alt='C'))['gnomADg_AF'], '0.05')
 
+    def test_padded_query_can_match_an_ordinary_cached_snv(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            args, _ = fixture(root)
+            index = root / 'index'
+            build_chromosome(args.variation_cache, root/'reference.fa', index, '1')
+            source = adapter.VariationCache(args.variation_cache, root/'reference.fa', index)
+            result = source.annotate(dict(chrom='chr1', pos=4, ref='AAA', alt='AGA'))
+            self.assertEqual(result['gnomADg_AF'], '0.002')
+            self.assertEqual(result['CLIN_SIG'], 'pathogenic')
+
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
