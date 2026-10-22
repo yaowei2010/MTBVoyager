@@ -102,11 +102,7 @@ workflow GERMLINE_SNV {
         PHARMCAT_STANDARD(pharmcatInput)
         if (params.clinpgx_variant_annotations) {
             clinpgx_ch = Channel.value(file(params.clinpgx_variant_annotations, checkIfExists: true))
-            pharmcat_dirs = PHARMCAT_STANDARD.out.results.map { result ->
-                def sample = result.name.replaceFirst(/^pharmcat_/, '')
-                tuple([id: sample], result)
-            }
-            CLINPGX_ANNOTATE(pharmcat_dirs, clinpgx_ch)
+            CLINPGX_ANNOTATE(PHARMCAT_STANDARD.out.results, clinpgx_ch)
         }
     }
 

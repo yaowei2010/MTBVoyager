@@ -6,7 +6,7 @@ process PHARMCAT_STANDARD {
     tuple val(meta), path(vcf)
 
     output:
-    path "pharmcat_${meta.id}/**", emit: results
+    tuple val(meta), path("pharmcat_${meta.id}"), emit: results
 
     script:
     """
