@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   backend:
-    image: takeshi945/nckumtb:backend-wgs-germline-20260722-acmg-sf-v33
+    image: mtb-backend:wgs-fastvep-research-20261022
     pull_policy: never
     build:
       context: ../../backend_wgs
@@ -80,6 +80,10 @@ services:
       WGS_DATA_ROOT: "${DATA_ROOT}/wgs_germline"
       WGS_SOMATIC_DATA_ROOT: "${DATA_ROOT}/wgs_somatic"
       WGS_REFERENCE_FASTA: "${WGS_REFERENCE_ROOT}/hg38.fa"
+      WGS_ANNOTATION_ENGINE: "fastvep"
+      WGS_FASTVEP_IMAGE: "mtb-wgs-fastvep:0.2.0-research-sa-20261022"
+      WGS_FASTVEP_REFERENCE_ROOT: "${FASTVEP_DATA_ROOT}/reference"
+      WGS_FASTVEP_SA_DIR: "${FASTVEP_DATA_ROOT}/sa-mtb"
       WGS_VEP_CACHE: "${DATA_ROOT}/VEP/database"
       WGS_VEP_PLUGIN_DATA: "${DATA_ROOT}/VEP/database/Plugins"
       WGS_VEP_PLUGIN_ARGS: "${WGS_VEP_PLUGIN_ARGS}"
@@ -110,6 +114,7 @@ services:
       - ${DATA_ROOT}/tmp:${DATA_ROOT}/tmp
       - ${DATA_ROOT}:${DATA_ROOT}
       - ${WGS_REFERENCE_ROOT}:${WGS_REFERENCE_ROOT}:ro
+      - ${FASTVEP_DATA_ROOT}:${FASTVEP_DATA_ROOT}:ro
       - ${DATA_ROOT}/backend/db.sqlite3:/miRTI/db.sqlite3
     # 如果你要從宿主機直接打到 Django，打開這行
     # ports:
