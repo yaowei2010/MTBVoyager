@@ -11,7 +11,9 @@ process CLINPGX_ANNOTATE {
 
     script:
     """
-    phenotype_json=\$(find '${pharmcat_dir}' -name '*.phenotype.json' -print -quit)
+    # Nextflow stages a directory input as a symlink; follow it to locate
+    # PharmCAT's phenotype JSON inside the published directory.
+    phenotype_json=\$(find -L '${pharmcat_dir}' -name '*.phenotype.json' -print -quit)
     test -n "\${phenotype_json}"
     annotate_clinpgx.py --pharmcat-phenotype "\${phenotype_json}" \
       --variant-annotations '${variant_annotations}' --sample '${meta.id}' \
