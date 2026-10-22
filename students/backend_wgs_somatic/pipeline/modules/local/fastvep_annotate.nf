@@ -12,6 +12,7 @@ process FASTVEP_ANNOTATE_SHARD {
     path cache
     path variation_index
     path plugin_data
+    path sa_dir
 
     output:
     tuple val(meta), val(shard), path("${meta.id}.${shard}.vep.tsv.gz"), emit: tsv
@@ -25,6 +26,7 @@ process FASTVEP_ANNOTATE_SHARD {
         --input '${vcf}' --output annotations.json \
         --gff3 '${gff3}' --fasta '${reference}' \
         --transcript-cache '${transcript_cache}' \
+        --sa-dir '${sa_dir}' \
         --hgvs --symbol --canonical --output-format json \
         --buffer-size ${params.buffer_size} --no-progress
     fastvep_to_mtb.py \
