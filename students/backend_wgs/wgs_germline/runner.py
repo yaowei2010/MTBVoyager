@@ -41,7 +41,7 @@ def launch(job_id: str, metadata: dict) -> int:
 
     reference = os.environ.get("WGS_REFERENCE_FASTA", "/wgs_reference/hg38.fa")
     cmd = [
-        "nextflow", "run", str(pipeline / "main.nf"), "-profile", "docker",
+        "nextflow", "run", str(pipeline / "main.nf"), "-resume", "-profile", "docker",
         "-work-dir", str(work), "--input", str(sheet), "--outdir", str(output),
         "--reference", reference,
         "--vep_cache", os.environ.get("WGS_VEP_CACHE", "/wgs_reference/vep"),
