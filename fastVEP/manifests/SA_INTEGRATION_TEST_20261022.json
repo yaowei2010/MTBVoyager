@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-22",
+  "assembly": "GRCh38",
+  "image": "mtb-fastvep:0.3.0-mtb-grch38-20261019",
+  "fixture": "work/sa-integration-positive.vcf",
+  "variant_count": 8,
+  "loaded_provider_count": 55,
+  "provider_load_seconds": 9.0,
+  "expected_keys": [
+    "alphaMissense",
+    "clinvar",
+    "dbnsfp",
+    "gnomad",
+    "phylop",
+    "primateAI",
+    "revel",
+    "spliceAI"
+  ],
+  "result": "PASS",
+  "notes": [
+    "The fixture contains one positive variant for each supplementary source type.",
+    "All 55 .osa2 providers were opened in the same annotation run.",
+    "The invalid 267-byte legacy gnomAD artifact was quarantined before this run."
+  ]
+}

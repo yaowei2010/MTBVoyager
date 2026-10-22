@@ -1,0 +1,51 @@
+[package]
+name = "fastvep-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "CLI binary for fastVEP: annotate, sa-build, filter, cache, web commands"
+
+[lib]
+name = "fastvep_cli"
+path = "src/lib.rs"
+
+[[bin]]
+name = "fastvep"
+path = "src/main.rs"
+
+[dependencies]
+fastvep-annotate = { workspace = true }
+fastvep-classification = { workspace = true }
+fastvep-core = { workspace = true }
+fastvep-genome = { workspace = true }
+fastvep-cache = { workspace = true }
+fastvep-consequence = { workspace = true }
+fastvep-hgvs = { workspace = true }
+fastvep-io = { workspace = true }
+fastvep-filter = { workspace = true }
+fastvep-sa = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
+flate2 = { workspace = true }
+rayon = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+fastvep-sa = { workspace = true }
+# Building a bgzipped + tabix-indexed GFF3 fixture in-process, so the
+# region-restricted load path is covered without an htslib dependency.
+noodles-bgzf = { workspace = true }
+noodles-core = { workspace = true }
+noodles-csi = { workspace = true }
+noodles-tabix = { workspace = true }
+# Writing a pre-#90 FSTVEP02 cache by hand, to prove it is rejected rather than
+# read. The point of the test is that such a file is perfectly well-formed, so
+# the fixture has to be built with the real codecs.
+zstd = { workspace = true }
+bincode = { workspace = true }
+
+[lints]
+workspace = true

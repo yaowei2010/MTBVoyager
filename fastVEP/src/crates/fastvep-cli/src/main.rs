@@ -1,0 +1,421 @@
+use anyhow::Result;
+use clap::{Parser, Subcommand};
+
+use fastvep_cli::{pipeline, webserver};
+
+#[derive(Parser)]
+#[command(name = "fastvep")]
+#[command(about = "fastVEP - A high-performance variant effect predictor")]
+#[command(version)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+// `Annotate` carries every CLI flag inline, so it is far larger than the other
+// variants. That is the shape clap's derive wants, and exactly one of these is
+// ever constructed, at startup, so the size difference costs nothing worth
+// boxing a field to avoid.
+#[allow(clippy::large_enum_variant)]
+#[derive(Subcommand)]
+enum Commands {
+    /// Annotate variants with predicted consequences
+    Annotate {
+        /// Input file (VCF format). Use "-" for stdin.
+        #[arg(short, long)]
+        input: String,
+
+        /// Output file. Use "-" for stdout.
+        #[arg(short, long, default_value = "-")]
+        output: String,
+
+        /// GFF3 annotation file(s) for transcript models. May be repeated
+        /// (`--gff3 a.gff3 --gff3 b.gff3`) or passed as a comma-separated
+        /// list to replicate VEP's `--merged` cache (e.g. Ensembl + RefSeq
+        /// in one annotation run). Each value may optionally be prefixed
+        /// with `LABEL=` to control the SOURCE column for that file
+        /// (e.g. `--gff3 Ensembl=ens.gff3 --gff3 RefSeq=refseq.gff3`); if
+        /// no label is given, it is auto-detected from the filename
+        /// (`refseq` / `gcf_` → RefSeq, `ensembl` / `gencode` → Ensembl,
+        /// otherwise the basename is used).
+        #[arg(long, num_args = 1.., value_delimiter = ',')]
+        gff3: Vec<String>,
+
+        /// Path to FASTA reference file
+        #[arg(long)]
+        fasta: Option<String>,
+
+        /// Output format (vcf, tab, json)
+        #[arg(long, default_value = "vcf")]
+        output_format: String,
+
+        /// Turn on all common annotation flags
+        #[arg(long)]
+        everything: bool,
+
+        /// Number of variants to buffer
+        #[arg(long, default_value_t = 5000)]
+        buffer_size: usize,
+
+        /// Pick one consequence per variant, by `--pick-order` (not by severity:
+        /// severity is that order's last tie-break, as in VEP)
+        #[arg(long)]
+        pick: bool,
+
+        /// Include gene symbol in output
+        #[arg(long)]
+        symbol: bool,
+
+        /// Include HGVS notations
+        #[arg(long)]
+        hgvs: bool,
+
+        /// Include canonical transcript flag
+        #[arg(long)]
+        canonical: bool,
+
+        /// Upstream/downstream distance (bp)
+        #[arg(long, default_value_t = 5000)]
+        distance: u64,
+
+        /// Path to VEP cache directory for known variant annotation
+        #[arg(long)]
+        cache_dir: Option<String>,
+
+        /// Path to binary transcript cache file (auto-generated if not specified)
+        #[arg(long)]
+        transcript_cache: Option<String>,
+
+        /// Directory containing supplementary annotation files (.osa, .osi, .oga)
+        #[arg(long)]
+        sa_dir: Option<String>,
+
+        /// Skip the default 49-field CSQ annotation pipeline (transcript
+        /// consequence, HGVS, ACMG, VEP variation cache) and emit only
+        /// supplementary annotations from --sa-dir. Requires --sa-dir.
+        #[arg(long)]
+        sa_only: bool,
+
+        /// Enable ACMG-AMP variant classification
+        #[arg(long)]
+        acmg: bool,
+
+        /// Path to ACMG configuration file (TOML) for custom thresholds
+        #[arg(long)]
+        acmg_config: Option<String>,
+
+        /// Order of criteria used by --pick, VEP's `--pick_order` syntax.
+        ///
+        /// Default: mane_select,mane_plus_clinical,canonical,appris,tsl,biotype,ccds,rank
+        /// (identical to VEP, where transcript status outranks consequence severity).
+        /// For clinical reporting put `rank` first, so a variant that disrupts a
+        /// transcript is never reported as merely neighbouring a MANE one.
+        #[arg(long)]
+        pick_order: Option<String>,
+
+        /// Path to a curated functional-evidence TSV supplying PS3/BS3.
+        ///
+        /// Columns: chrom, pos, ref, alt, criterion (PS3|BS3), strength, pmid, note.
+        /// An entry also suppresses PP3/BP4/BP7 for that variant, since ClinGen SVI
+        /// ranks experimental evidence above computational prediction.
+        #[arg(long)]
+        functional_evidence: Option<String>,
+
+        /// Proband sample name for trio analysis (enables de novo / compound-het detection)
+        #[arg(long)]
+        proband: Option<String>,
+
+        /// Mother sample name for trio analysis
+        #[arg(long)]
+        mother: Option<String>,
+
+        /// Father sample name for trio analysis
+        #[arg(long)]
+        father: Option<String>,
+
+        /// Path to a gene-panel file (one gene symbol or Ensembl gene ID per
+        /// line; `#` comments and blank lines ignored). When set, tab output
+        /// keeps only rows whose transcript belongs to a gene in the panel.
+        #[arg(long)]
+        gene_list: Option<String>,
+
+        /// Add an explicit REF column to tab output (after the Allele/ALT
+        /// column) so spreadsheets can see REF/ALT side-by-side without
+        /// reparsing the Location string.
+        #[arg(long)]
+        explicit_alleles: bool,
+
+        /// Path to a QC rules TOML file. When set, tab output gains a
+        /// `QC_CLASS` column populated by the first class whose
+        /// INFO-field thresholds the variant satisfies (variant-level,
+        /// no per-sample parsing).
+        #[arg(long)]
+        qc_rules: Option<String>,
+
+        /// Suppress periodic progress output
+        #[arg(long, default_value_t = false)]
+        no_progress: bool,
+    },
+
+    /// Launch the web interface for interactive variant annotation
+    Web {
+        /// Port to listen on
+        #[arg(long, default_value_t = 8080)]
+        port: u16,
+
+        /// GFF3 annotation file
+        #[arg(long)]
+        gff3: Option<String>,
+
+        /// Path to FASTA reference file
+        #[arg(long)]
+        fasta: Option<String>,
+    },
+
+    /// Build a binary transcript cache for fast startup
+    Cache {
+        /// GFF3 annotation file(s). May be repeated or comma-separated to
+        /// build a merged cache (Ensembl + RefSeq); each value may be
+        /// `LABEL=path` to control the SOURCE column.
+        #[arg(long, num_args = 1.., value_delimiter = ',')]
+        gff3: Vec<String>,
+
+        /// Path to FASTA reference file (for pre-building sequences)
+        #[arg(long)]
+        fasta: Option<String>,
+
+        /// VEP-style chromosome synonyms file (e.g. Ensembl `chr_synonyms.txt`):
+        /// one line per contig, whitespace-separated equivalent names. Used to
+        /// reconcile GFF3 seqids (e.g. RefSeq `NC_000017.11`) with the FASTA's
+        /// contig names. Only takes effect together with `--fasta`.
+        #[arg(long)]
+        synonyms: Option<String>,
+
+        /// Output cache file path
+        #[arg(short, long)]
+        output: String,
+
+        /// Suppress periodic progress output
+        #[arg(long, default_value_t = false)]
+        no_progress: bool,
+    },
+
+    /// Build a supplementary annotation database (.osa or .osi) from a source file
+    SaBuild {
+        /// Source type. Known sources (clinvar, gnomad, dbsnp, …) use their
+        /// dedicated parsers; `custom_vcf` and `custom_bed` accept any
+        /// well-formed VCF/BED file and produce a generic `.osa` or `.osi`
+        /// keyed by `--name`. `custom` is an alias that auto-detects VCF vs
+        /// BED from the input extension.
+        #[arg(long)]
+        source: String,
+
+        /// Input file (VCF, typically gzipped)
+        #[arg(short, long)]
+        input: String,
+
+        /// Output base path (will create .osa and .osa.idx, or .osi for BED)
+        #[arg(short, long)]
+        output: String,
+
+        /// Genome assembly (e.g., GRCh38)
+        #[arg(long, default_value = "GRCh38")]
+        assembly: String,
+
+        /// Display + JSON key name for custom_vcf / custom_bed sources.
+        /// Optional — when omitted, the name is derived from the input
+        /// filename (extensions stripped). Ignored for built-in sources.
+        /// Becomes the `json_key` of the resulting database and the
+        /// prefix of the column / INFO field on output.
+        #[arg(long)]
+        name: Option<String>,
+
+        /// Comma-separated list of INFO fields to extract from a custom VCF.
+        /// Empty (default) means "include every INFO key found on each record"
+        /// — useful for quick exploration, but each record's JSON object will
+        /// vary by which INFO keys it carries.
+        #[arg(long, value_delimiter = ',')]
+        info_fields: Vec<String>,
+
+        /// On-disk format: `auto` (default), `osa` (v1), or `osa2` (v2).
+        /// `auto` builds v2 for the sources that support it — smaller and
+        /// faster to query at genome scale — and v1 for the rest, so you get
+        /// the best format per source automatically. Pass `osa` to force v1
+        /// (e.g. for a faster one-time build) or `osa2` to force v2.
+        #[arg(long, default_value = "auto")]
+        format: String,
+
+        /// Suppress periodic progress output
+        #[arg(long, default_value_t = false)]
+        no_progress: bool,
+    },
+
+    /// Convert an existing v1 `.osa` supplementary annotation database to v2 `.osa2`
+    SaConvert {
+        /// Input v1 `.osa` file (its `.osa.idx` must sit alongside it)
+        #[arg(short, long)]
+        input: String,
+
+        /// Output base path (`.osa2` is appended). Defaults to the input path
+        /// with its extension replaced, i.e. `foo.osa` -> `foo.osa2`.
+        #[arg(short, long)]
+        output: Option<String>,
+
+        /// Genomic width of one chunk, as a power of two (1..=20). A chunk is
+        /// the unit a query loads, and a conversion stores whole-record JSON
+        /// blobs, so the whole chunk's blobs are decompressed to read one
+        /// record. The default of 20 (1 Mb) suits the sparse sources - dbSNP,
+        /// ClinVar, COSMIC, REVEL - and keeps them compact. A source that
+        /// scores nearly every base, SpliceAI above all, puts so much in one
+        /// megabase that queries slow to a crawl and can exceed the blob
+        /// decompression limit outright; pass 16 (65 kb) for those. Measured on
+        /// a SpliceAI-density source, 300 scattered queries went from 9.7s
+        /// (with most lookups failing) to 0.5s, for 12% more file size.
+        #[arg(long, default_value_t = 20, value_parser = clap::value_parser!(u32).range(1..=20))]
+        chunk_bits: u32,
+
+        /// Suppress periodic progress output
+        #[arg(long, default_value_t = false)]
+        no_progress: bool,
+    },
+
+    /// Filter annotated VEP output
+    Filter {
+        /// Input file (VEP-annotated VCF)
+        #[arg(short, long)]
+        input: String,
+
+        /// Output file
+        #[arg(short, long, default_value = "-")]
+        output: String,
+
+        /// Filter expression
+        #[arg(long)]
+        filter: String,
+    },
+}
+
+fn main() -> Result<()> {
+    env_logger::init();
+    let cli = Cli::parse();
+
+    match cli.command {
+        Commands::Annotate {
+            input,
+            output,
+            gff3,
+            fasta,
+            output_format,
+            everything: _,
+            buffer_size: _,
+            pick,
+            symbol: _,
+            hgvs,
+            canonical: _,
+            distance,
+            cache_dir,
+            transcript_cache,
+            sa_dir,
+            sa_only,
+            acmg,
+            acmg_config,
+            pick_order,
+            functional_evidence,
+            proband,
+            mother,
+            father,
+            gene_list,
+            explicit_alleles,
+            qc_rules,
+            no_progress,
+        } => {
+            pipeline::run_annotate(pipeline::AnnotateConfig {
+                input,
+                output,
+                gff3,
+                fasta,
+                output_format,
+                pick,
+                hgvs,
+                distance,
+                cache_dir,
+                transcript_cache,
+                sa_dir,
+                sa_only,
+                acmg,
+                acmg_config,
+                pick_order,
+                functional_evidence,
+                proband,
+                mother,
+                father,
+                gene_list,
+                explicit_alleles,
+                qc_rules,
+                show_progress: !no_progress,
+            })?;
+        }
+        Commands::Cache {
+            gff3,
+            fasta,
+            synonyms,
+            output,
+            no_progress,
+        } => {
+            pipeline::run_cache_build(
+                &gff3,
+                fasta.as_deref(),
+                synonyms.as_deref(),
+                &output,
+                !no_progress,
+            )?;
+        }
+        Commands::Web { port, gff3, fasta } => {
+            webserver::run_server(port, gff3, fasta)?;
+        }
+        Commands::SaBuild {
+            source,
+            input,
+            output,
+            assembly,
+            name,
+            info_fields,
+            format,
+            no_progress,
+        } => pipeline::run_sa_build_format(
+            &format,
+            &source,
+            &input,
+            &output,
+            &assembly,
+            name.as_deref(),
+            &info_fields,
+            !no_progress,
+        )?,
+        Commands::SaConvert {
+            input,
+            output,
+            chunk_bits,
+            no_progress,
+        } => {
+            // Default the output alongside the input: `foo.osa` -> `foo.osa2`.
+            // `run_sa_convert` appends the extension, so hand it the stem.
+            let output = output.unwrap_or_else(|| {
+                std::path::Path::new(&input)
+                    .with_extension("")
+                    .to_string_lossy()
+                    .into_owned()
+            });
+            pipeline::run_sa_convert(&input, &output, chunk_bits, !no_progress)?
+        }
+        Commands::Filter {
+            input,
+            output,
+            filter,
+        } => {
+            pipeline::run_filter(&input, &output, &filter)?;
+        }
+    }
+
+    Ok(())
+}

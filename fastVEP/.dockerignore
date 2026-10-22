@@ -1,0 +1,7 @@
+.git
+data/**
+work/**
+results/**
+src/.git
+src/target
+*.log

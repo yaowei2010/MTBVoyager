@@ -1,0 +1,6 @@
+organism,variants,fastvep_time_sec,fastvep_vps
+yeast,260526,3.03,85934
+drosophila,4438427,57.28,77486
+arabidopsis,12883854,168.68,76378
+mouse,26062054,337.97,77113
+human,4048342,86.29,46917

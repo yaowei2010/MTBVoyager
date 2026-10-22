@@ -1,0 +1,149 @@
+use clap::Parser;
+use std::path::PathBuf;
+use std::sync::atomic::AtomicU64;
+use std::sync::{Arc, RwLock};
+
+use fastvep_web::build_router;
+use fastvep_web::context::AnnotationContext;
+use fastvep_web::handlers::{AppState, SharedState};
+
+#[derive(Parser)]
+#[command(name = "fastvep-web")]
+#[command(about = "fastVEP production web server for variant annotation")]
+struct Cli {
+    /// Port to listen on
+    #[arg(long, default_value_t = 8080, env = "FASTVEP_PORT")]
+    port: u16,
+
+    /// Bind address
+    #[arg(long, default_value = "0.0.0.0", env = "FASTVEP_BIND")]
+    bind: String,
+
+    /// GFF3 annotation file to load at startup
+    #[arg(long, env = "FASTVEP_GFF3")]
+    gff3: Option<String>,
+
+    /// FASTA reference file (requires .fai index for mmap)
+    #[arg(long, env = "FASTVEP_FASTA")]
+    fasta: Option<String>,
+
+    /// Supplementary annotation directory (.osa/.osa2 files)
+    #[arg(long, env = "FASTVEP_SA_DIR")]
+    sa_dir: Option<String>,
+
+    /// Directory containing genome data (subdirs with GFF3 + FASTA per organism)
+    #[arg(long, env = "FASTVEP_DATA_DIR")]
+    data_dir: Option<String>,
+
+    /// Upstream/downstream distance in bp
+    #[arg(long, default_value_t = 5000)]
+    distance: u64,
+
+    /// Maximum request body size in bytes
+    #[arg(long, default_value_t = 10_485_760)]
+    max_body_size: usize,
+
+    /// Maximum concurrent annotation requests
+    #[arg(long, default_value_t = 64)]
+    max_concurrent: usize,
+
+    /// Path to a file for persistent statistics tracking
+    #[arg(long, default_value = "stats.json", env = "FASTVEP_STATS_FILE")]
+    stats_file: PathBuf,
+
+    /// Allow `/api/upload-gff3` and `/api/load-genome` to replace the active
+    /// gene model.
+    ///
+    /// Off by default. A replacement is process-wide and permanent, so on a
+    /// shared server one client trying out a gene model changes what every
+    /// other client is answered against - with no error, and nothing in an
+    /// `/api/annotate` response to say the model moved. Turn it on for a
+    /// single-user desktop run, where the browser UI's own genome switching
+    /// needs it; leave it off for anything several people share, and the gene
+    /// model becomes a property of how the server was started.
+    #[arg(long, default_value_t = false, env = "FASTVEP_ALLOW_MODEL_REPLACEMENT")]
+    allow_model_replacement: bool,
+}
+
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "fastvep_web=info".into()),
+        )
+        .init();
+
+    let cli = Cli::parse();
+
+    tracing::info!("Loading annotation data...");
+    let ctx = AnnotationContext::new(
+        cli.gff3.as_deref(),
+        cli.fasta.as_deref(),
+        cli.sa_dir.as_deref(),
+        cli.distance,
+    )?;
+
+    let data_dir = cli.data_dir.map(PathBuf::from);
+    let sa_dir = cli.sa_dir.as_ref().map(PathBuf::from);
+    if let Some(ref dir) = data_dir {
+        tracing::info!("Data directory: {}", dir.display());
+    }
+    if let Some(ref dir) = sa_dir {
+        tracing::info!("SA directory: {}", dir.display());
+    }
+
+    // Load persistent stats
+    let mut initial_variants = 0;
+    let mut initial_genomes = 0;
+    if cli.stats_file.exists() {
+        if let Ok(data) = std::fs::read_to_string(&cli.stats_file) {
+            if let Ok(stats) = serde_json::from_str::<serde_json::Value>(&data) {
+                initial_variants = stats["total_variants"].as_u64().unwrap_or(0);
+                initial_genomes = stats["total_genomes"].as_u64().unwrap_or(0);
+                tracing::info!(
+                    "Loaded persistent stats: {} variants, {} genomes",
+                    initial_variants,
+                    initial_genomes
+                );
+            }
+        }
+    }
+
+    if cli.allow_model_replacement {
+        tracing::warn!(
+            "--allow-model-replacement is set: any client may replace the gene model for every \
+             other client. Intended for a single-user run."
+        );
+    }
+
+    let state: AppState = Arc::new(SharedState {
+        ctx: RwLock::new(ctx),
+        data_dir,
+        sa_dir,
+        stats_file: Some(cli.stats_file),
+        total_variants: AtomicU64::new(initial_variants),
+        total_genomes: AtomicU64::new(initial_genomes),
+        allow_model_replacement: cli.allow_model_replacement,
+        gene_model_generation: AtomicU64::new(0),
+    });
+
+    let app = build_router(state, cli.max_body_size, cli.max_concurrent);
+
+    let addr = format!("{}:{}", cli.bind, cli.port);
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    tracing::info!("fastVEP web server listening on http://{}", addr);
+
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
+
+    Ok(())
+}
+
+async fn shutdown_signal() {
+    tokio::signal::ctrl_c()
+        .await
+        .expect("Failed to listen for ctrl-c");
+    tracing::info!("Shutdown signal received, draining connections...");
+}

@@ -1,0 +1,4 @@
+/upstream-src/
+/work/
+/data/*
+!/data/README.md

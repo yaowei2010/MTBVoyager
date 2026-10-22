@@ -1,0 +1,28 @@
+[package]
+name = "fastvep-annotate"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared annotation engine for fastVEP: loads data and annotates variants"
+
+[dependencies]
+fastvep-core = { workspace = true }
+fastvep-genome = { workspace = true }
+fastvep-cache = { workspace = true }
+fastvep-consequence = { workspace = true }
+fastvep-hgvs = { workspace = true }
+fastvep-io = { workspace = true }
+fastvep-sa = { workspace = true }
+fastvep-classification = { workspace = true }
+
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+rayon = { workspace = true }
+tracing = "0.1"
+flate2.workspace = true
+
+[dev-dependencies]
+tempfile = { workspace = true }
+
+[lints]
+workspace = true

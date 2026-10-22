@@ -1,0 +1,54 @@
+{
+  "profile": "MTB-fastVEP-GRCh38",
+  "updated_at": "2026-10-22",
+  "fastvep_version": "0.3.0",
+  "fastvep_commit": "ac2e2b64a9c4c27163a3df16e0a559113af19625",
+  "ensembl_release": 112,
+  "assembly": "GRCh38",
+  "runtime_mounts": {
+    "fasta": "/mtb-reference/hg38.fa",
+    "gff3": "/data/reference/Homo_sapiens.GRCh38.112.canonical.gff3",
+    "transcript_cache": "/data/reference/grch38_ensembl112.canonical.mtb.cache",
+    "supplementary_annotations": "/data/sa-mtb"
+  },
+  "files": [
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/Homo_sapiens.GRCh38.112.canonical.gff3",
+      "sha256": "6848f42e1d1f2d239389ee3bd050fbb3ce8685a19ebc919f73006695c6d7fa06"
+    },
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/grch38_ensembl112.canonical.mtb.cache",
+      "sha256": "3b94c6b324021dd34254840aac1b49d053a885bc6a23b3e5e8900ba79df7c451"
+    },
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/Homo_sapiens.GRCh38.112.gff3",
+      "sha256": "f0e35bb2ee1e6863561b608a3f2e8c579d4aa7bc2f6b91f915694c2e01f3f6fe"
+    },
+    {
+      "path": "/home/hpz8g5/project/WGS/reference/hg38.fa",
+      "sha256": "5be01555d98347fdb3714dc84c6f77c9d8bc774adcf32c6f7a8fa06f5baf5e51"
+    },
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/grch38_ensembl112.mtb.cache",
+      "sha256": "cae2f6b89314be055acf7956f915a0270941dd38c99ab2374a23891df544dff3"
+    },
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/vep112.transcript_metadata.complete.jsonl",
+      "sha256": "3c2d37acb910a5571377a5ae25196583896b21aec1fab188569a26c8010808e1"
+    },
+    {
+      "path": "/home/hpz8g5/tools/fastVEP/manifests/SA_MTB_SHA256SUMS.txt",
+      "contents": "55 supplementary .osa2 SHA-256 entries"
+    }
+  ],
+  "notes": [
+    "The production test profile accepts only chr1-chr22, chrX, chrY and chrM/MT input records.",
+    "The canonical GFF3/cache excludes alternate, random, patch and unplaced contigs.",
+    "The historical data/reference/hg38.fa symlink is not used by the pinned MTB profile.",
+    "The transcript cache and the runtime FASTA must both be supplied; the cache does not replace the FASTA for coding consequence and HGVS generation.",
+    "The default supplementary directory contains 55 converted .osa2 files covering eight source types.",
+    "gnomAD exomes v4.1 and phyloP100way are stored as chr1-22, chrX and chrY shards.",
+    "SpliceAI indel was built from a repair copy with the final incomplete BGZF block removed; a fresh licensed BaseSpace source is required for archival completeness.",
+    "The positive integration fixture observed alphaMissense, clinvar, dbnsfp, gnomad, phylop, primateAI, revel and spliceAI in one run on 2026-10-22."
+  ]
+}

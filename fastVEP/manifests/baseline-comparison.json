@@ -1,0 +1,41 @@
+{
+  "comparison_scope": "same Location + Allele; VEP input was separately filtered",
+  "vep_file": "/home/hpz8g5/project/MTB/database/wgs_somatic/jobs/somwgs_f07ed28decd74372/results/26GF0138/annotation/26GF0138.vep.tsv.gz",
+  "fastvep_file": "/home/hpz8g5/tools/fastVEP/work/26GF0138_benchmark/fastvep.tsv",
+  "vep_transcript_rows": 24655385,
+  "vep": {
+    "variant": {
+      "unique": 5519157
+    },
+    "feature": {
+      "unique": 24655385
+    },
+    "consequence": {
+      "unique": 24655385
+    },
+    "impact": {
+      "unique": 24655385
+    }
+  },
+  "fastvep_transcript_rows": 42685827,
+  "fastvep": {
+    "variant": {
+      "unique": 9950549
+    },
+    "feature": {
+      "unique": 42685827
+    },
+    "consequence": {
+      "unique": 42685827
+    },
+    "impact": {
+      "unique": 42685827
+    }
+  },
+  "shared": {
+    "variant": 5156827,
+    "feature": 21940592,
+    "consequence": 21940519,
+    "impact": 21940584
+  }
+}

@@ -1,0 +1,841 @@
+use crate::codon::{reverse_complement, CodonTable};
+use fastvep_core::Strand;
+use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+
+/// A gene model.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Gene {
+    pub stable_id: Arc<str>,
+    pub symbol: Option<Arc<str>>,
+    pub symbol_source: Option<String>,
+    pub hgnc_id: Option<String>,
+    pub biotype: Arc<str>,
+    pub chromosome: Arc<str>,
+    pub start: u64,
+    pub end: u64,
+    pub strand: Strand,
+}
+
+/// A transcript model with all data needed for consequence prediction.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Transcript {
+    pub stable_id: Arc<str>,
+    /// Version number from annotation (e.g., 7 for ENST00000348295.7)
+    pub version: Option<u32>,
+    pub gene: Gene,
+    pub biotype: Arc<str>,
+    pub chromosome: Arc<str>,
+    pub start: u64,
+    pub end: u64,
+    pub strand: Strand,
+    pub exons: Vec<Exon>,
+    pub translation: Option<Translation>,
+
+    // Pre-computed fields for consequence prediction
+    /// Start of the coding region in cDNA coordinates (1-based).
+    pub cdna_coding_start: Option<u64>,
+    /// End of the coding region in cDNA coordinates (1-based).
+    pub cdna_coding_end: Option<u64>,
+    /// Start of the coding region in genomic coordinates.
+    pub coding_region_start: Option<u64>,
+    /// End of the coding region in genomic coordinates.
+    pub coding_region_end: Option<u64>,
+
+    // Spliced and translated sequences
+    pub spliced_seq: Option<String>,
+    pub translateable_seq: Option<String>,
+    pub peptide: Option<String>,
+
+    // Annotation metadata
+    pub canonical: bool,
+    pub mane_select: Option<String>,
+    pub mane_plus_clinical: Option<String>,
+    pub tsl: Option<u8>,
+    pub appris: Option<String>,
+    pub ccds: Option<String>,
+    pub protein_id: Option<String>,
+    pub protein_version: Option<u32>,
+    pub swissprot: Vec<String>,
+    pub trembl: Vec<String>,
+    pub uniparc: Vec<String>,
+    pub refseq_id: Option<String>,
+    pub source: Option<String>,
+    pub gencode_primary: bool,
+    /// Flags like "cds_end_NF", "cds_start_NF" from annotation tags.
+    pub flags: Vec<String>,
+    /// Ensembl phase offset for CDS numbering (converted from GFF3 first CDS phase).
+    /// Added to the raw CDS position to account for incomplete CDS starts.
+    #[serde(default)]
+    pub codon_table_start_phase: u64,
+}
+
+/// Reinterpret an in-frame UGA that the annotation places *inside* the coding
+/// sequence as selenocysteine.
+///
+/// A GFF3 CDS is an assertion about where translation starts and ends. When it
+/// runs past an in-frame stop, the annotation is saying that codon is read
+/// through, and the only codon the genetic code reads through this way is UGA,
+/// which encodes selenocysteine. Translating it as a terminator instead makes
+/// the protein look like it ends partway: SELENOW is 87 residues and its UGA is
+/// at residue 13, so consumers that stop at the first `*` see a 13-residue
+/// protein. That is what blocked HGVSp normalisation past the Sec position, and
+/// it would make a substitution at the Sec codon look like `stop_lost` rather
+/// than the missense it is.
+///
+/// Three conditions, all read from the annotation rather than from a list of
+/// gene names:
+///
+///   1. The coding sequence is a whole number of codons.
+///   2. Its final codon is a terminator, so the annotated end is where
+///      translation really stops and the frame is corroborated.
+///   3. The internal codon is literally `TGA`, and the active codon table calls
+///      `TGA` a stop. Selenocysteine has no other codon, so `TAA`/`TAG` inside a
+///      CDS are left as terminators - they signal an annotation problem rather
+///      than readthrough, and silently translating them would invent residues.
+///
+/// A CDS failing 1 or 2 is untouched, which leaves incomplete and
+/// internally-inconsistent annotations exactly as they were. The vertebrate
+/// mitochondrial table reads `TGA` as Trp, so condition 3 never fires there.
+fn resolve_readthrough_selenocysteine(peptide: &mut [u8], cds: &[u8], table: &CodonTable) {
+    if !table.is_stop(b"TGA") {
+        return;
+    }
+    // A partial final codon means the annotated CDS is not a whole protein, so
+    // its interior is not trustworthy either.
+    if !cds.len().is_multiple_of(3) {
+        return;
+    }
+    // The last residue must be the terminator the annotation promises. Without
+    // it we cannot tell a readthrough codon from a CDS annotated in the wrong
+    // frame, and reading through would extend a protein that does end early.
+    match peptide.last() {
+        Some(b'*') => {}
+        _ => return,
+    }
+
+    let last = peptide.len() - 1;
+    for i in 0..last {
+        if peptide[i] != b'*' {
+            continue;
+        }
+        let codon = &cds[i * 3..i * 3 + 3];
+        if codon.eq_ignore_ascii_case(b"TGA") {
+            peptide[i] = b'U';
+        }
+    }
+}
+
+impl Transcript {
+    /// Whether this transcript is protein-coding.
+    pub fn is_coding(&self) -> bool {
+        self.translation.is_some()
+    }
+
+    /// Total number of exons.
+    pub fn exon_count(&self) -> usize {
+        self.exons.len()
+    }
+
+    /// Total number of introns (exons - 1, minimum 0).
+    pub fn intron_count(&self) -> usize {
+        self.exons.len().saturating_sub(1)
+    }
+
+    /// Get the cDNA length (sum of exon lengths).
+    pub fn cdna_length(&self) -> u64 {
+        self.exons.iter().map(|e| e.end - e.start + 1).sum()
+    }
+
+    /// Map a genomic position to a cDNA position.
+    /// Returns None if the position is not in an exon.
+    pub fn genomic_to_cdna(&self, genomic_pos: u64) -> Option<u64> {
+        let mut cdna_pos = 0u64;
+        let sorted_exons = self.sorted_exons();
+
+        for exon in &sorted_exons {
+            if genomic_pos >= exon.start && genomic_pos <= exon.end {
+                return match self.strand {
+                    Strand::Forward => Some(cdna_pos + (genomic_pos - exon.start) + 1),
+                    Strand::Reverse => Some(cdna_pos + (exon.end - genomic_pos) + 1),
+                };
+            }
+            cdna_pos += exon.end - exon.start + 1;
+        }
+        None
+    }
+
+    /// Map a cDNA position to a CDS position.
+    /// Returns None if the position is not in the coding region.
+    pub fn cdna_to_cds(&self, cdna_pos: u64) -> Option<u64> {
+        let coding_start = self.cdna_coding_start?;
+        let coding_end = self.cdna_coding_end?;
+        if cdna_pos >= coding_start && cdna_pos <= coding_end {
+            Some(cdna_pos - coding_start + 1 + self.codon_table_start_phase)
+        } else {
+            None
+        }
+    }
+
+    /// Map a CDS position (1-based) to a protein position (1-based).
+    pub fn cds_to_protein(cds_pos: u64) -> u64 {
+        (cds_pos - 1) / 3 + 1
+    }
+
+    /// Length of the full-length peptide in residues, excluding the stop codon.
+    ///
+    /// Prefers the translated peptide when sequences have been built, and
+    /// otherwise derives it from the coding cDNA span, so the value is
+    /// available whether or not the run was given a FASTA. `None` for
+    /// non-coding transcripts.
+    pub fn peptide_length(&self) -> Option<u64> {
+        if let Some(pep) = self.peptide.as_deref() {
+            let residues = pep.trim_end_matches('*').chars().count() as u64;
+            if residues > 0 {
+                return Some(residues);
+            }
+        }
+        let cds_len = self.cdna_coding_end?.checked_sub(self.cdna_coding_start?)?
+            + 1
+            + self.codon_table_start_phase;
+        // A complete CDS ends in a stop codon, which is not a residue.
+        (cds_len / 3).checked_sub(1).filter(|n| *n > 0)
+    }
+
+    /// Whether a premature termination codon at `cdna_pos` (1-based cDNA
+    /// coordinate) is predicted to escape nonsense-mediated decay.
+    ///
+    /// This is the 50-nucleotide rule the ClinGen SVI's PVS1 decision tree
+    /// runs on (Abou Tayoun 2018, Hum Mutat 39:1517): the surveillance complex
+    /// is deposited at exon-exon junctions, so decay is triggered only when the
+    /// PTC sits more than 50 nt upstream of the *final* junction. A PTC in the
+    /// last exon, in the last 50 nt of the penultimate exon, or in a
+    /// single-exon transcript therefore escapes.
+    ///
+    /// Returns `None` when the transcript has no exon structure to measure
+    /// against, which the caller must treat as "unknown" rather than "escapes".
+    pub fn escapes_nmd(&self, cdna_pos: u64) -> Option<bool> {
+        let sorted = self.sorted_exons();
+        let last = sorted.last()?;
+        if sorted.len() < 2 {
+            // No junction anywhere in the transcript, so nothing marks the
+            // message for decay however early the PTC falls.
+            return Some(true);
+        }
+        let last_exon_len = last.end.checked_sub(last.start)? + 1;
+        // cDNA coordinate of the final base before the last exon-exon junction.
+        let last_junction = self.cdna_length().checked_sub(last_exon_len)?;
+        // Escape window is the 50 bases ending at the junction, plus everything
+        // downstream of it.
+        Some(cdna_pos + 50 > last_junction)
+    }
+
+    /// Build spliced_seq, translateable_seq, and peptide from a FASTA reference.
+    ///
+    /// The `fetch_seq` closure takes (chrom, start, end) using 1-based inclusive
+    /// coordinates and returns the genomic sequence as uppercase bytes.
+    pub fn build_sequences<F>(&mut self, fetch_seq: F) -> Result<(), String>
+    where
+        F: Fn(&str, u64, u64) -> Result<Vec<u8>, String>,
+    {
+        let sorted = self.sorted_exons_owned();
+
+        // Build spliced sequence by concatenating exon sequences in transcript order
+        let mut spliced = Vec::new();
+        for exon in &sorted {
+            let seq = fetch_seq(&self.chromosome, exon.start, exon.end)?;
+            match self.strand {
+                Strand::Forward => spliced.extend_from_slice(&seq),
+                Strand::Reverse => spliced.extend_from_slice(&reverse_complement(&seq)),
+            }
+        }
+
+        let spliced_str = String::from_utf8(spliced)
+            .map_err(|e| format!("Invalid UTF-8 in spliced sequence: {}", e))?;
+        self.spliced_seq = Some(spliced_str.clone());
+
+        // Extract translateable sequence (coding portion of spliced cDNA)
+        // When codon_table_start_phase > 0, CDS numbering includes bases before
+        // cdna_coding_start. Start extraction earlier by the phase offset so that
+        // CDS position N maps to translateable_seq index N-1.
+        if let (Some(cs), Some(ce)) = (self.cdna_coding_start, self.cdna_coding_end) {
+            let phase = self.codon_table_start_phase as usize;
+            let cs_idx = (cs - 1) as usize;
+            let ce_idx = ce as usize;
+            if ce_idx <= spliced_str.len() {
+                // For incomplete CDS starts (phase > 0), pad with N bases so
+                // CDS position 1 maps to translateable index phase (aligning codons).
+                let padding = "N".repeat(phase);
+                let raw_translateable = &spliced_str[cs_idx..ce_idx];
+                let translateable = format!("{}{}", padding, raw_translateable);
+                self.translateable_seq = Some(translateable.to_string());
+
+                // Translate to peptide. Mitochondrial transcripts use the
+                // vertebrate mitochondrial genetic code (NCBI table 2) —
+                // AGA/AGG are stop codons, ATA is Met, and TGA is Trp there,
+                // unlike the standard nuclear table.
+                let codon_table = if crate::mitochondrial::is_mitochondrial(&self.chromosome) {
+                    crate::mitochondrial::mitochondrial_codon_table()
+                } else {
+                    CodonTable::standard()
+                };
+                let mut peptide_bytes = codon_table.translate_seq(translateable.as_bytes());
+                resolve_readthrough_selenocysteine(
+                    &mut peptide_bytes,
+                    translateable.as_bytes(),
+                    &codon_table,
+                );
+                self.peptide = Some(String::from_utf8_lossy(&peptide_bytes).to_string());
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Get exons sorted by transcript order, returning owned Exons.
+    fn sorted_exons_owned(&self) -> Vec<Exon> {
+        let mut exons: Vec<Exon> = self.exons.clone();
+        match self.strand {
+            Strand::Forward => exons.sort_by_key(|e| e.start),
+            Strand::Reverse => exons.sort_by_key(|e| std::cmp::Reverse(e.start)),
+        }
+        exons
+    }
+
+    /// Get exons sorted by transcript order (forward for +, reverse for -).
+    fn sorted_exons(&self) -> Vec<&Exon> {
+        let mut exons: Vec<&Exon> = self.exons.iter().collect();
+        match self.strand {
+            Strand::Forward => exons.sort_by_key(|e| e.start),
+            Strand::Reverse => exons.sort_by_key(|e| std::cmp::Reverse(e.start)),
+        }
+        exons
+    }
+
+    /// Determine which exon (0-indexed rank) a genomic position falls in.
+    /// Returns (exon_index, total_exons) or None if intronic/outside.
+    pub fn exon_at(&self, genomic_pos: u64) -> Option<(usize, usize)> {
+        let sorted = self.sorted_exons();
+        for (i, exon) in sorted.iter().enumerate() {
+            if genomic_pos >= exon.start && genomic_pos <= exon.end {
+                return Some((i, sorted.len()));
+            }
+        }
+        None
+    }
+
+    /// Check if a genomic range [start, end] overlaps any exon.
+    /// Returns the first overlapping exon info, or None.
+    pub fn exon_overlapping(&self, range_start: u64, range_end: u64) -> Option<(usize, usize)> {
+        let (start, end) = (range_start.min(range_end), range_start.max(range_end));
+        let sorted = self.sorted_exons();
+        for (i, exon) in sorted.iter().enumerate() {
+            if start <= exon.end && end >= exon.start {
+                return Some((i, sorted.len()));
+            }
+        }
+        None
+    }
+
+    /// Map a genomic position in an intron to HGVSc offset notation.
+    ///
+    /// Returns `(nearest_exon_boundary_cdna_pos, signed_offset)`:
+    /// - Positive offset: relative to donor end of upstream exon (e.g., c.151+5)
+    /// - Negative offset: relative to acceptor start of downstream exon (e.g., c.152-3)
+    pub fn genomic_to_intronic_cdna(&self, genomic_pos: u64) -> Option<(u64, i64)> {
+        let sorted = self.sorted_exons();
+        let n_introns = sorted.len().saturating_sub(1);
+
+        for i in 0..n_introns {
+            // Intron genomic range depends on strand-based sort order
+            let (intron_start, intron_end) = match self.strand {
+                Strand::Forward => (sorted[i].end + 1, sorted[i + 1].start - 1),
+                Strand::Reverse => (sorted[i + 1].end + 1, sorted[i].start - 1),
+            };
+
+            if genomic_pos >= intron_start && genomic_pos <= intron_end {
+                // "Upstream" in transcript order = sorted[i], "downstream" = sorted[i+1]
+                // For forward: donor is sorted[i].end, acceptor is sorted[i+1].start
+                // For reverse: donor is sorted[i].start (lower genomic), acceptor is sorted[i+1].end (higher genomic)
+                let dist_from_donor = match self.strand {
+                    Strand::Forward => genomic_pos - sorted[i].end,
+                    Strand::Reverse => sorted[i].start - genomic_pos,
+                };
+                let dist_from_acceptor = match self.strand {
+                    Strand::Forward => sorted[i + 1].start - genomic_pos,
+                    Strand::Reverse => genomic_pos - sorted[i + 1].end,
+                };
+
+                if dist_from_donor <= dist_from_acceptor {
+                    // Closer to donor (upstream exon end): c.X+offset
+                    let donor_genomic = match self.strand {
+                        Strand::Forward => sorted[i].end,
+                        Strand::Reverse => sorted[i].start,
+                    };
+                    let donor_cdna = self.genomic_to_cdna(donor_genomic)?;
+                    return Some((donor_cdna, dist_from_donor as i64));
+                } else {
+                    // Closer to acceptor (downstream exon start): c.X-offset
+                    let acceptor_genomic = match self.strand {
+                        Strand::Forward => sorted[i + 1].start,
+                        Strand::Reverse => sorted[i + 1].end,
+                    };
+                    let acceptor_cdna = self.genomic_to_cdna(acceptor_genomic)?;
+                    return Some((acceptor_cdna, -(dist_from_acceptor as i64)));
+                }
+            }
+        }
+        None
+    }
+
+    /// The signed offset from the nearest exon boundary that a genomic span
+    /// reaches: `+N` on the donor side, `-N` on the acceptor side, `None` for a
+    /// span that touches no intronic base.
+    ///
+    /// What is returned for a range is the smallest |offset| it *covers*, not
+    /// the smaller of its two endpoints, matching
+    /// `fastvep_core::parse_intronic_offset` - the two have to agree, because
+    /// the criteria that read this also read offsets parsed out of ClinVar's
+    /// own HGVS strings. A span with one end in an exon and the other in an
+    /// intron runs continuously into it, so the nearest intronic base it
+    /// reaches is the first one, `+1` or `-1`, whatever its far end reads.
+    ///
+    /// This is the same number the criteria used to recover by parsing a `+N` /
+    /// `-N` token out of the HGVSc, and it is not the same answer: `c.` is a
+    /// display form, 3'-shifted, so the offset can be shifted away entirely.
+    pub fn intronic_offset_covered(&self, start: u64, end: u64) -> Option<i64> {
+        let (lo, hi) = (start.min(end), start.max(end));
+        let ends = (
+            self.genomic_to_intronic_cdna(lo).map(|(_, off)| off),
+            self.genomic_to_intronic_cdna(hi).map(|(_, off)| off),
+        );
+        match ends {
+            (None, None) => None,
+            (None, Some(o)) | (Some(o), None) => Some(o.signum()),
+            (Some(x), Some(y)) => Some(if x.abs() <= y.abs() { x } else { y }),
+        }
+    }
+
+    /// Get the genomic boundaries (start, end) of the intron containing the given position.
+    /// Returns None if the position is not in an intron.
+    pub fn intron_bounds_at(&self, genomic_pos: u64) -> Option<(u64, u64)> {
+        let sorted = self.sorted_exons();
+        let n_introns = sorted.len().saturating_sub(1);
+        for i in 0..n_introns {
+            let (intron_start, intron_end) = match self.strand {
+                Strand::Forward => (sorted[i].end + 1, sorted[i + 1].start - 1),
+                Strand::Reverse => (sorted[i + 1].end + 1, sorted[i].start - 1),
+            };
+            if genomic_pos >= intron_start && genomic_pos <= intron_end {
+                return Some((intron_start, intron_end));
+            }
+        }
+        None
+    }
+
+    /// Determine which intron (0-indexed rank) a genomic position falls in.
+    /// Returns (intron_index, total_introns) or None if exonic/outside.
+    pub fn intron_at(&self, genomic_pos: u64) -> Option<(usize, usize)> {
+        let sorted = self.sorted_exons();
+        let n_introns = sorted.len().saturating_sub(1);
+        for i in 0..n_introns {
+            // For forward strand: sorted by ascending start, intron is between sorted[i].end and sorted[i+1].start
+            // For reverse strand: sorted by descending start, intron is between sorted[i+1].end and sorted[i].start
+            let (intron_start, intron_end) = match self.strand {
+                Strand::Forward => (sorted[i].end + 1, sorted[i + 1].start - 1),
+                Strand::Reverse => (sorted[i + 1].end + 1, sorted[i].start - 1),
+            };
+            if genomic_pos >= intron_start && genomic_pos <= intron_end {
+                return Some((i, n_introns));
+            }
+        }
+        None
+    }
+}
+
+/// An exon within a transcript.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Exon {
+    pub stable_id: String,
+    pub start: u64,
+    pub end: u64,
+    pub strand: Strand,
+    /// Reading frame phase at start of exon (-1, 0, 1, 2).
+    pub phase: i8,
+    /// Reading frame phase at end of exon.
+    pub end_phase: i8,
+    /// 1-based rank of the exon in the transcript.
+    pub rank: u32,
+}
+
+impl Exon {
+    pub fn length(&self) -> u64 {
+        self.end - self.start + 1
+    }
+}
+
+/// Translation metadata for a protein-coding transcript.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Translation {
+    pub stable_id: String,
+    /// Genomic start of the translation (start codon first base).
+    pub genomic_start: u64,
+    /// Genomic end of the translation (stop codon last base).
+    pub genomic_end: u64,
+    /// The exon rank where translation starts.
+    pub start_exon_rank: u32,
+    /// Offset within the start exon (0-based).
+    pub start_exon_offset: u64,
+    /// The exon rank where translation ends.
+    pub end_exon_rank: u32,
+    /// Offset within the end exon (0-based).
+    pub end_exon_offset: u64,
+}
+
+#[cfg(test)]
+mod tests {
+    /// Translate then resolve, the way `build_sequences` does, so the tests
+    /// exercise the same pairing of peptide and CDS.
+    fn translated(cds: &str) -> String {
+        let table = CodonTable::standard();
+        let mut pep = table.translate_seq(cds.as_bytes());
+        super::resolve_readthrough_selenocysteine(&mut pep, cds.as_bytes(), &table);
+        String::from_utf8(pep).unwrap()
+    }
+
+    #[test]
+    fn an_internal_tga_inside_a_complete_cds_is_selenocysteine() {
+        // The shape of every real selenoprotein in Ensembl 115: a UGA partway
+        // through a CDS the annotation carries on past, and a real stop at the
+        // end. SELENOW is exactly this, with the UGA at residue 13 of 87.
+        // ATG AAA TGA CGG TAA -> M K * R *  ->  M K U R *
+        assert_eq!(translated("ATGAAATGACGGTAA"), "MKUR*");
+
+        // Several of them, as in TXNRD2 and the multi-Sec transcripts.
+        // ATG TGA AAA TGA CGG TAA
+        assert_eq!(translated("ATGTGAAAATGACGGTAA"), "MUKUR*");
+
+        // Case-insensitively, since soft-masked reference sequence is lowercase.
+        assert_eq!(translated("atgaaatgacggtaa"), "MKUR*");
+    }
+
+    #[test]
+    fn only_tga_reads_through_and_only_inside_a_complete_cds() {
+        // TAA and TAG are not selenocysteine codons. Inside a CDS they signal an
+        // annotation problem, and inventing a residue there would be a guess.
+        // ATG AAA TAA CGG TAA / ATG AAA TAG CGG TAA
+        assert_eq!(translated("ATGAAATAACGGTAA"), "MK*R*");
+        assert_eq!(translated("ATGAAATAGCGGTAA"), "MK*R*");
+
+        // The terminator the annotation promises is never itself read through,
+        // even though it is a TGA.
+        // ATG AAA CGG TGA
+        assert_eq!(translated("ATGAAACGGTGA"), "MKR*");
+
+        // No terminator at the end: the frame is uncorroborated, so an internal
+        // TGA could equally be a CDS annotated in the wrong frame. Left alone.
+        // ATG AAA TGA CGG CGG
+        assert_eq!(translated("ATGAAATGACGGCGG"), "MK*RR");
+
+        // A partial final codon means the annotated CDS is not a whole protein.
+        // ATG AAA TGA CGG TA
+        assert_eq!(translated("ATGAAATGACGGTA"), "MK*R");
+    }
+
+    #[test]
+    fn the_mitochondrial_table_has_no_readthrough_to_resolve() {
+        // NCBI table 2 reads TGA as Trp, so it never produces the internal
+        // terminator this resolves, and AGA/AGG stops must not be touched.
+        let table = crate::mitochondrial::mitochondrial_codon_table();
+        let cds = "ATGAAATGACGGAGA";
+        let mut pep = table.translate_seq(cds.as_bytes());
+        let before = pep.clone();
+        super::resolve_readthrough_selenocysteine(&mut pep, cds.as_bytes(), &table);
+        assert_eq!(pep, before, "mitochondrial translation must be untouched");
+        assert!(
+            !pep.contains(&b'U'),
+            "no selenocysteine in the mitochondrial table: {:?}",
+            String::from_utf8_lossy(&pep)
+        );
+    }
+
+    use super::*;
+
+    fn make_test_transcript() -> Transcript {
+        Transcript {
+            stable_id: "ENST00000001".into(),
+            version: None,
+            gene: Gene {
+                stable_id: "ENSG00000001".into(),
+                symbol: Some("TESTGENE".into()),
+                symbol_source: Some("HGNC".into()),
+                hgnc_id: Some("HGNC:1".into()),
+                biotype: "protein_coding".into(),
+                chromosome: "chr1".into(),
+                start: 1000,
+                end: 5000,
+                strand: Strand::Forward,
+            },
+            biotype: "protein_coding".into(),
+            chromosome: "chr1".into(),
+            start: 1000,
+            end: 5000,
+            strand: Strand::Forward,
+            exons: vec![
+                Exon {
+                    stable_id: "ENSE00000001".into(),
+                    start: 1000,
+                    end: 1200,
+                    strand: Strand::Forward,
+                    phase: -1,
+                    end_phase: 0,
+                    rank: 1,
+                },
+                Exon {
+                    stable_id: "ENSE00000002".into(),
+                    start: 2000,
+                    end: 2300,
+                    strand: Strand::Forward,
+                    phase: 0,
+                    end_phase: 1,
+                    rank: 2,
+                },
+                Exon {
+                    stable_id: "ENSE00000003".into(),
+                    start: 4000,
+                    end: 5000,
+                    strand: Strand::Forward,
+                    phase: 1,
+                    end_phase: -1,
+                    rank: 3,
+                },
+            ],
+            translation: Some(Translation {
+                stable_id: "ENSP00000001".into(),
+                genomic_start: 1050,
+                genomic_end: 4500,
+                start_exon_rank: 1,
+                start_exon_offset: 50,
+                end_exon_rank: 3,
+                end_exon_offset: 500,
+            }),
+            cdna_coding_start: Some(51),
+            cdna_coding_end: Some(952),
+            coding_region_start: Some(1050),
+            coding_region_end: Some(4500),
+            spliced_seq: None,
+            translateable_seq: None,
+            peptide: None,
+            canonical: true,
+            mane_select: None,
+            mane_plus_clinical: None,
+            tsl: Some(1),
+            appris: None,
+            ccds: None,
+            protein_id: Some("ENSP00000001".into()),
+            protein_version: None,
+            swissprot: vec![],
+            trembl: vec![],
+            uniparc: vec![],
+            refseq_id: None,
+            source: None,
+            gencode_primary: false,
+            flags: vec![],
+            codon_table_start_phase: 0,
+        }
+    }
+
+    #[test]
+    fn test_is_coding() {
+        let tr = make_test_transcript();
+        assert!(tr.is_coding());
+    }
+
+    #[test]
+    fn test_peptide_length_from_coding_span() {
+        // cDNA coding span 51..=952 is 902 bases; the trailing stop codon is
+        // not a residue, so 902 / 3 - 1 = 299.
+        assert_eq!(make_test_transcript().peptide_length(), Some(299));
+    }
+
+    #[test]
+    fn test_peptide_length_prefers_the_translated_peptide() {
+        let mut tr = make_test_transcript();
+        tr.peptide = Some("MKVLA*".to_string());
+        assert_eq!(
+            tr.peptide_length(),
+            Some(5),
+            "the stop codon is not a residue"
+        );
+    }
+
+    #[test]
+    fn test_peptide_length_is_none_for_noncoding() {
+        let mut tr = make_test_transcript();
+        tr.translation = None;
+        tr.cdna_coding_start = None;
+        tr.cdna_coding_end = None;
+        assert_eq!(tr.peptide_length(), None);
+    }
+
+    #[test]
+    fn test_escapes_nmd_50nt_rule() {
+        // Exons are 201 + 301 + 1001 = 1503 cDNA bases, so the final
+        // exon-exon junction sits at cDNA position 502.
+        let tr = make_test_transcript();
+        assert_eq!(
+            tr.escapes_nmd(452),
+            Some(false),
+            "51 nt upstream of the junction decays"
+        );
+        assert_eq!(
+            tr.escapes_nmd(453),
+            Some(true),
+            "50 nt upstream is the escape window"
+        );
+        assert_eq!(
+            tr.escapes_nmd(502),
+            Some(true),
+            "the junction itself escapes"
+        );
+        assert_eq!(tr.escapes_nmd(900), Some(true), "the last exon escapes");
+        assert_eq!(tr.escapes_nmd(10), Some(false), "far upstream decays");
+    }
+
+    #[test]
+    fn test_escapes_nmd_single_exon_transcript() {
+        // With no exon-exon junction the surveillance complex is never
+        // deposited, so no PTC triggers decay however early it falls.
+        let mut tr = make_test_transcript();
+        tr.exons.truncate(1);
+        assert_eq!(tr.escapes_nmd(10), Some(true));
+    }
+
+    #[test]
+    fn test_escapes_nmd_on_the_reverse_strand() {
+        // Transcript order is reversed, so the last exon is the 1000..=1200
+        // one (201 bases) and the junction lands at 1503 - 201 = 1302.
+        let mut tr = make_test_transcript();
+        tr.strand = Strand::Reverse;
+        for e in &mut tr.exons {
+            e.strand = Strand::Reverse;
+        }
+        assert_eq!(tr.escapes_nmd(1252), Some(false));
+        assert_eq!(tr.escapes_nmd(1253), Some(true));
+    }
+
+    #[test]
+    fn test_exon_count() {
+        let tr = make_test_transcript();
+        assert_eq!(tr.exon_count(), 3);
+        assert_eq!(tr.intron_count(), 2);
+    }
+
+    #[test]
+    fn test_genomic_to_cdna_forward() {
+        let tr = make_test_transcript();
+        // Position in first exon
+        assert_eq!(tr.genomic_to_cdna(1000), Some(1));
+        assert_eq!(tr.genomic_to_cdna(1200), Some(201));
+        // Position in second exon
+        assert_eq!(tr.genomic_to_cdna(2000), Some(202));
+        // Position in intron
+        assert_eq!(tr.genomic_to_cdna(1500), None);
+    }
+
+    #[test]
+    fn test_exon_at() {
+        let tr = make_test_transcript();
+        assert_eq!(tr.exon_at(1100), Some((0, 3)));
+        assert_eq!(tr.exon_at(2100), Some((1, 3)));
+        assert_eq!(tr.exon_at(4500), Some((2, 3)));
+        assert_eq!(tr.exon_at(1500), None); // intron
+    }
+
+    #[test]
+    fn test_intron_at() {
+        let tr = make_test_transcript();
+        assert_eq!(tr.intron_at(1500), Some((0, 2)));
+        assert_eq!(tr.intron_at(3000), Some((1, 2)));
+        assert_eq!(tr.intron_at(1100), None); // exon
+    }
+
+    #[test]
+    fn test_cds_to_protein() {
+        assert_eq!(Transcript::cds_to_protein(1), 1);
+        assert_eq!(Transcript::cds_to_protein(3), 1);
+        assert_eq!(Transcript::cds_to_protein(4), 2);
+        assert_eq!(Transcript::cds_to_protein(6), 2);
+        assert_eq!(Transcript::cds_to_protein(7), 3);
+    }
+
+    #[test]
+    fn test_build_sequences_forward() {
+        let mut tr = make_test_transcript();
+        // Mock FASTA: return known sequences for each exon
+        let result = tr.build_sequences(|_chrom, start, end| {
+            let len = (end - start + 1) as usize;
+            match start {
+                1000 => {
+                    // Exon 1: 1000-1200 (201 bases)
+                    // UTR: first 50 bases, CDS starts at offset 50
+                    let mut seq = vec![b'N'; len];
+                    // Put ATG at offset 50 (genomic 1050)
+                    seq[50] = b'A';
+                    seq[51] = b'T';
+                    seq[52] = b'G';
+                    // Fill rest of CDS with GCT (Ala)
+                    for (i, base) in seq.iter_mut().enumerate().skip(53) {
+                        *base = b"GCT"[(i - 53) % 3];
+                    }
+                    Ok(seq)
+                }
+                2000 => {
+                    // Exon 2: 2000-2300 (301 bases), all CDS
+                    let mut seq = vec![b'A'; len];
+                    for (i, base) in seq.iter_mut().enumerate() {
+                        *base = b"AAG"[i % 3]; // Lys
+                    }
+                    Ok(seq)
+                }
+                4000 => {
+                    // Exon 3: 4000-5000 (1001 bases)
+                    let mut seq = vec![b'N'; len];
+                    // CDS: first 501 bases (4000-4500)
+                    for (i, base) in seq.iter_mut().enumerate().take(501) {
+                        *base = b"GGT"[i % 3]; // Gly
+                    }
+                    Ok(seq)
+                }
+                _ => Ok(vec![b'N'; len]),
+            }
+        });
+
+        assert!(result.is_ok());
+        assert!(tr.spliced_seq.is_some());
+        assert!(tr.translateable_seq.is_some());
+        assert!(tr.peptide.is_some());
+
+        let ts = tr.translateable_seq.as_ref().unwrap();
+        // translateable_seq should start with ATG
+        assert!(
+            ts.starts_with("ATG"),
+            "translateable_seq starts with: {}",
+            &ts[..6]
+        );
+        // Length should be cdna_coding_end - cdna_coding_start + 1 = 952 - 51 + 1 = 902
+        // Actually: cdna_coding_end = 952 in the test fixture
+        let expected_len =
+            (tr.cdna_coding_end.unwrap() - tr.cdna_coding_start.unwrap() + 1) as usize;
+        // Wait, the slice is [cs-1..ce] which is ce - (cs-1) = ce - cs + 1 items
+        assert_eq!(ts.len(), expected_len);
+
+        let peptide = tr.peptide.as_ref().unwrap();
+        // Peptide should start with M (Met)
+        assert!(
+            peptide.starts_with('M'),
+            "peptide starts with: {}",
+            &peptide[..1]
+        );
+    }
+}

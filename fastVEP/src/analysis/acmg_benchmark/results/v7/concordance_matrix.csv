@@ -1,0 +1,6 @@
+truth,Pathogenic,Likely_pathogenic,VUS,Likely_benign,Benign,NoCall
+Pathogenic,6450,44684,28520,150,18,1
+Likely_pathogenic,670,6604,6691,24,0,0
+VUS,73,3238,271659,17609,2719,0
+Likely_benign,2,55,73367,47473,7141,0
+Benign,5,59,64025,28942,63481,0

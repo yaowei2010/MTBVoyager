@@ -1,0 +1,31 @@
+services:
+  fastvep-web:
+    image: ${FASTVEP_IMAGE:-mtb-fastvep:0.3.0-ac2e2b6}
+    user: "${FASTVEP_UID:-1000}:${FASTVEP_GID:-1000}"
+    command:
+      - fastvep-web
+      - --bind
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --fasta
+      - /mtb-reference/${FASTVEP_FASTA_FILE:-hg38.fa}
+      - --transcript-cache
+      - /data/reference/${FASTVEP_TRANSCRIPT_CACHE:-grch38_ensembl112.canonical.mtb.cache}
+      - --sa-dir
+      - /data/sa
+      - --stats-file
+      - /work/fastvep-web.stats.json
+    ports:
+      - "127.0.0.1:${FASTVEP_PORT:-8080}:8080"
+    volumes:
+      - ${FASTVEP_DATA_DIR:-./data}/reference:/data/reference:ro
+      - ${FASTVEP_SA_DIR:-./data/sa-mtb}:/data/sa:ro
+      - ${MTB_HG38_DIR:-/home/hpz8g5/project/WGS/reference}:/mtb-reference:ro
+      - ${FASTVEP_WORK_DIR:-./work}:/work
+    read_only: true
+    tmpfs:
+      - /tmp:size=1g,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
