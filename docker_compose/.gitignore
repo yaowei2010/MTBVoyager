@@ -1,3 +1,4 @@
 .env
+hrd-transfer.htpasswd
 dbrestore_work/public_schema.list
 tls/
