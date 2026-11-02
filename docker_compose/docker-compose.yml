@@ -84,6 +84,7 @@ services:
       WGS_FASTVEP_IMAGE: "mtb-wgs-fastvep:0.2.1-research-no-spliceai-20261102"
       WGS_FASTVEP_REFERENCE_ROOT: "${FASTVEP_DATA_ROOT}/reference"
       WGS_FASTVEP_SA_DIR: "${FASTVEP_DATA_ROOT}/sa-mtb"
+      WGS_FASTVEP_MAX_PARALLEL: "4"
       WGS_VEP_CACHE: "${DATA_ROOT}/VEP/database"
       WGS_VEP_PLUGIN_DATA: "${DATA_ROOT}/VEP/database/Plugins"
       WGS_VEP_PLUGIN_ARGS: "${WGS_VEP_PLUGIN_ARGS}"
