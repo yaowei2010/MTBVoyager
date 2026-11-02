@@ -14,7 +14,7 @@ def annotation_arguments():
         data_root = cache.parents[1] if str(cache).endswith("/VEP/database") else cache.parent
         variation_index = str(data_root / "fastvep/vep112-normalized-variation-v1")
         for parameter, env, default in (
-            ("fastvep_image", "WGS_FASTVEP_IMAGE", "mtb-wgs-fastvep:0.2.0-research-sa-20261022"),
+            ("fastvep_image", "WGS_FASTVEP_IMAGE", "mtb-wgs-fastvep:0.2.1-research-no-spliceai-20261102"),
             ("fastvep_gff3", "WGS_FASTVEP_GFF3", reference + "/Homo_sapiens.GRCh38.112.canonical.gff3"),
             ("fastvep_transcript_cache", "WGS_FASTVEP_TRANSCRIPT_CACHE", reference + "/grch38_ensembl112.canonical.mtb.cache"),
             ("fastvep_transcript_metadata", "WGS_FASTVEP_TRANSCRIPT_METADATA", reference + "/vep112.transcript_metadata.complete.jsonl"),

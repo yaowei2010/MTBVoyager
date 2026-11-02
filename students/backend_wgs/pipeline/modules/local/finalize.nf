@@ -13,7 +13,7 @@ process FINALIZE {
     python - '${meta.id}' '${snv_summary}' '${structural_summary}' > pipeline_complete.json <<'PY'
 import json, sys
 sample, snv_path, structural_path = sys.argv[1:]
-print(json.dumps({"sample_id": sample, "status": "complete", "annotation_engine": "${params.skip_vep.toString().toBoolean() ? 'test-fixture' : params.annotation_engine}", "pipeline_version": "0.4.0-fastvep", "snv": json.load(open(snv_path)), "structural": json.load(open(structural_path))}, indent=2))
+print(json.dumps({"sample_id": sample, "status": "complete", "annotation_engine": "${params.skip_vep.toString().toBoolean() ? 'test-fixture' : params.annotation_engine}", "pipeline_version": "0.4.3-fastvep", "snv": json.load(open(snv_path)), "structural": json.load(open(structural_path))}, indent=2))
 PY
     """
 }

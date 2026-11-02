@@ -236,6 +236,20 @@ class AdapterTests(unittest.TestCase):
             adapter.run(self.args)
         self.assertFalse(Path(self.args.output).exists())
 
+    def test_spliceai_can_be_disabled_without_opening_legacy_files(self):
+        for name in ("spliceai_scores.raw.snv.hg38.vcf.gz", "spliceai_scores.raw.indel.hg38.vcf.gz"):
+            Path(self.args.plugin_data, name).unlink()
+            Path(self.args.plugin_data, name + ".tbi").unlink()
+        self.args.disable_spliceai = True
+        adapter.run(self.args)
+        with gzip.open(self.args.output, "rt") as handle:
+            row = next(csv.DictReader((line for line in handle if not line.startswith("##")), delimiter="\t"))
+        self.assertEqual(row["SpliceAI_pred"], "-")
+        self.assertEqual(row["SpliceAI_cutoff"], "-")
+        summary = json.loads(Path(self.args.summary).read_text())
+        self.assertEqual(summary["spliceai_status"], "disabled_by_policy")
+        self.assertEqual(summary["sources"]["SpliceAI"], "disabled_by_policy")
+
     def test_record_loss_and_reordering_fail_without_partial_output(self):
         for annotations in ([], [dict(self.obj, start=6)]):
             Path(self.args.input_json).write_text(json.dumps(annotations))

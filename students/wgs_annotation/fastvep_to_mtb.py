@@ -21,7 +21,7 @@ from pathlib import Path
 import ijson
 import pysam
 
-ADAPTER_VERSION = "0.1.3"
+ADAPTER_VERSION = "0.1.4"
 FASTVEP_COMMIT = "ac2e2b64a9c4c27163a3df16e0a559113af19625"
 DB_FIELDS = ["REVEL_score", "CADD_phred", "ClinPred_score",
              "phyloP100way_vertebrate_rankscore", "phastCons100way_vertebrate_rankscore"]
@@ -375,7 +375,8 @@ def reverse_complement(value):
 
 
 class Supplementary:
-    def __init__(self, plugin_dir, cache, metadata, reference=None, variation_index=None):
+    def __init__(self, plugin_dir, cache, metadata, reference=None, variation_index=None,
+                 disable_spliceai=False):
         directory = Path(plugin_dir)
         self.db = IndexedTable(directory / "dbNSFP5.3.1a_grch38.gz",
                                ["pos(1-based)", "ref", "alt", "aaref", "aaalt"] + DB_FIELDS, "pos(1-based)")
@@ -383,8 +384,9 @@ class Supplementary:
                                   ["POS", "REF", "ALT", "protein_variant", "am_pathogenicity", "am_class"], "POS")
         self.primate = IndexedTable(directory / "PrimateAI_scores_v0.2_GRCh38_sorted.tsv.bgz",
                                     ["pos", "ref", "alt", "primateDL_score"], "pos")
-        self.splice_snv = SpliceTable(directory / "spliceai_scores.raw.snv.hg38.vcf.gz")
-        self.splice_indel = SpliceTable(directory / "spliceai_scores.raw.indel.hg38.vcf.gz")
+        self.splice_snv = None if disable_spliceai else SpliceTable(directory / "spliceai_scores.raw.snv.hg38.vcf.gz")
+        self.splice_indel = None if disable_spliceai else SpliceTable(directory / "spliceai_scores.raw.indel.hg38.vcf.gz")
+        self.spliceai_status = "disabled_by_policy" if disable_spliceai else "enabled"
         self.variation = VariationCache(cache, reference, variation_index)
         self.metadata = {}
         with gzip.open(metadata, "rt") if str(metadata).endswith(".gz") else open(metadata) as handle:
@@ -396,8 +398,11 @@ class Supplementary:
         if not self.metadata:
             raise ValueError("Transcript metadata is empty")
         self.sources = {"variation_cache": str(cache), "transcript_metadata": str(metadata),
-                        **{name: str(table.path) for name, table in (("dbNSFP", self.db), ("AlphaMissense", self.alpha),
-                        ("PrimateAI", self.primate), ("SpliceAI_snv", self.splice_snv), ("SpliceAI_indel", self.splice_indel))}}
+                        "dbNSFP": str(self.db.path), "AlphaMissense": str(self.alpha.path),
+                        "PrimateAI": str(self.primate.path), "SpliceAI": self.spliceai_status}
+        if not disable_spliceai:
+            self.sources.update({"SpliceAI_snv": str(self.splice_snv.path),
+                                 "SpliceAI_indel": str(self.splice_indel.path)})
 
     def variant_data(self, v):
         snv = len(v["ref"]) == len(v["alt"]) == 1
@@ -406,7 +411,8 @@ class Supplementary:
                 "db": self.db.at(v["chrom"], v["pos"]) if snv else [],
                 "alpha": self.alpha.at(v["chrom"], v["pos"]) if snv else [],
                 "primate": self.primate.at(v["chrom"], v["pos"]) if snv else [],
-                "splice": (self.splice_snv if snv else self.splice_indel).at(v)}
+                "splice": [] if self.spliceai_status != "enabled" else
+                    (self.splice_snv if snv else self.splice_indel).at(v)}
 
     def annotate(self, row, v, data):
         row.update(data["known"])
@@ -540,7 +546,8 @@ def convert_record(obj, v, sources):
 
 def run(args):
     sources = Supplementary(args.plugin_data, args.variation_cache, args.transcript_metadata,
-                            getattr(args, "reference", None), getattr(args, "variation_index", None))
+                            getattr(args, "reference", None), getattr(args, "variation_index", None),
+                            getattr(args, "disable_spliceai", False))
     output = Path(args.output)
     temporary = output.with_name(output.name + ".partial")
     counts, nonmissing, metadata_sources = Counter(), Counter(), Counter()
@@ -574,6 +581,7 @@ def run(args):
                "variation_cache_releases": sources.variation.info,
                "variation_matching": "reference-checked minimal alleles and repeat-left-aligned indels" if sources.variation.index else "legacy_raw_cache",
                "variation_cache_unavailable_contigs": dict(sources.variation.unavailable_contigs),
+               "spliceai_status": sources.spliceai_status,
                "transcript_metadata_sha256": hashlib.sha256(Path(args.transcript_metadata).read_bytes()).hexdigest(),
                "sift_polyphen_source": "dbNSFP transcript-matched; differs from VEP transcript-cache predictors",
                "pick_tie_breaker": "transcript_id (deterministic; exact VEP ties require validation)"}
@@ -585,4 +593,6 @@ if __name__ == "__main__":
     for name in ("input-json", "vcf", "output", "summary", "plugin-data", "variation-cache", "transcript-metadata", "reference", "variation-index"):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--vcf-sample")
+    parser.add_argument("--disable-spliceai", action="store_true",
+                        help="Leave SpliceAI fields empty and do not open the legacy raw SpliceAI files")
     run(parser.parse_args())

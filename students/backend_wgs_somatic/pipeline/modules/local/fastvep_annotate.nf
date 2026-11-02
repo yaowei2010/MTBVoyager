@@ -36,7 +36,8 @@ process FASTVEP_ANNOTATE_SHARD {
         --plugin-data '${plugin_data}' \
         --variation-cache '${cache}/homo_sapiens/112_GRCh38' \
         --reference '${reference}' --variation-index '${variation_index}' \
-        --transcript-metadata '${transcript_metadata}'
+        --transcript-metadata '${transcript_metadata}' \
+        --disable-spliceai
     python -c "from pathlib import Path; Path('annotations.json').unlink()"
     """
 }
