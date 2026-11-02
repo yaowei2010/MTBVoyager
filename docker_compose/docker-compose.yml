@@ -178,6 +178,7 @@ services:
       - ./tls/platform.key:/etc/nginx/tls/platform.key:ro
       - ./hrd-transfer.htpasswd:/etc/nginx/auth/hrd-transfer.htpasswd:ro
       - ${HRD_TRANSFER_ROOT}:/srv/hrd-transfer:ro
+      - ${MXIC_TABLE_ROOT}:/srv/mxic-table:ro
     restart: unless-stopped
 
 volumes:
