@@ -20,7 +20,7 @@ def annotation_arguments():
             ("fastvep_transcript_metadata", "WGS_FASTVEP_TRANSCRIPT_METADATA", reference + "/vep112.transcript_metadata.complete.jsonl"),
             ("fastvep_variation_index", "WGS_FASTVEP_VARIATION_INDEX", variation_index),
             ("fastvep_sa_dir", "WGS_FASTVEP_SA_DIR", "/home/hpz8g5/tools/fastVEP/data/sa-mtb"),
-            ("fastvep_max_parallel", "WGS_FASTVEP_MAX_PARALLEL", "2"),
+            ("fastvep_max_parallel", "WGS_FASTVEP_MAX_PARALLEL", "4"),
             ("fastvep_cpus", "WGS_FASTVEP_CPUS", "8"),
             ("fastvep_memory", "WGS_FASTVEP_MEMORY", "20 GB"),
         ):
