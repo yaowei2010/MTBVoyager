@@ -9,6 +9,7 @@ RUN chmod 0755 /usr/local/bin/nextflow && NXF_VER=${NEXTFLOW_VERSION} nextflow -
 
 COPY wgs_germline /miRTI/wgs_germline
 COPY --from=wgs_somatic wgs_somatic /miRTI/wgs_somatic
+COPY accounts_overlay /miRTI/accounts
 COPY uploadfunction/urls.py /miRTI/uploadfunction/urls.py
 # Narrow compatibility fixes for the legacy Tissue-only workflow.  These files
 # are deliberately isolated from WGS Germline/Somatic and Exome/Trio code.
