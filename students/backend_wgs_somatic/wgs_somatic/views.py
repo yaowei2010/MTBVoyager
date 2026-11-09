@@ -4,7 +4,7 @@ from pathlib import Path
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from hw1.models import existJobs
-from accounts.access import require_capability
+from accounts.access import register_analysis, require_analysis_access, require_capability
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
 from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity, is_high_risk as is_legacy_high_risk
@@ -27,7 +27,7 @@ def subject(request):
         data=body(request); sample=str(data.get('subject_id','')).strip()
         if not sample or len(sample)>80:raise ValueError('Subject ID is required and must be at most 80 characters')
         draft=new_id('draft'); directory=draft_dir(draft); directory.mkdir(parents=True)
-        metadata={'draft_id':draft,'created_at':datetime.now(timezone.utc).isoformat(),'subject':{'subject_id':sample,'dob':str(data.get('dob',''))[:20],'gender':str(data.get('gender','unknown'))[:20],'history':str(data.get('history',''))[:10000],'user_id':str(data.get('user_id') or 'N/A')[:100],'protocol':'WGS Somatic Tumor-Only','genome_build':'GRCh38'}}
+        metadata={'draft_id':draft,'created_at':datetime.now(timezone.utc).isoformat(),'subject':{'subject_id':sample,'dob':str(data.get('dob',''))[:20],'gender':str(data.get('gender','unknown'))[:20],'history':str(data.get('history',''))[:10000],'user_id':str(request.user.id),'protocol':'WGS Somatic Tumor-Only','genome_build':'GRCh38'}}
         write_json(directory/'metadata.json',metadata); return JsonResponse({'draft_id':draft},status=201)
     except ValueError as exc:return error(exc)
 
@@ -60,6 +60,7 @@ def jobs(request):
         job=new_id('somwgs'); destination=job_dir(job); destination.mkdir(parents=True); shutil.move(str(source/'uploads'/upload_id),str(destination/'inputs'))
         metadata.update({'analysis_id':job,'status':'starting','settings':settings,'started_at':datetime.now(timezone.utc).isoformat()}); write_json(destination/'metadata.json',metadata)
         s=metadata['subject']; record=existJobs.jobs.create(jobID=job,subject_id=s['subject_id'],name='WGS Somatic Tumor-Only',dob=s['dob'],gender=s['gender'],history=s['history'],uploadFile_url=str(destination/'inputs'),resultFile_url=str(destination/'pipeline.finished'),user_id=s['user_id'],genome_build='hg38',status='running')
+        register_analysis(job, request.user)
         try: pid=launch(job,metadata)
         except Exception:
             # Make a failed launch retryable: restore the uploaded files to the
@@ -76,11 +77,13 @@ def metadata_for(job):
     try: directory=job_dir(job)
     except ValueError:return None,None
     return directory,read_json(directory/'metadata.json')
+@require_analysis_access
 def job_detail(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     result=dict(metadata);result['log_available']=(directory/'nextflow.log').exists();result['available_sections']=['high_risk','snv_actionable','oncogenicity_all','hereditary_high_risk','in_silico_candidates']+[kind for kind in ('sv','cnv') if kind in metadata.get('files',{})];return JsonResponse(result)
 
+@require_analysis_access
 def results(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
@@ -91,11 +94,13 @@ def results(request,analysis_id):
     rows=tsv_rows(paths[section])
     if section not in ('sv','cnv'):rows=tumor_format_rows(directory,sample,rows)
     return JsonResponse({'status':metadata['status'],'results':rows})
+@require_analysis_access
 def summary(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
     sample=metadata['subject']['subject_id'];return JsonResponse(read_json(directory/'results'/sample/'pipeline_complete.json',{'status':metadata['status']}))
 
+@require_analysis_access
 def downstream(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
@@ -137,6 +142,7 @@ def downstream(request,analysis_id):
     })
 
 @csrf_exempt
+@require_analysis_access
 @require_capability("report.generate_ai", methods={"POST"})
 @require_capability("report.edit", methods={"PUT"})
 def mtb_report(request,analysis_id):
@@ -154,6 +160,7 @@ def mtb_report(request,analysis_id):
     except Exception as exc:return error(f'Unable to generate MTB draft: {exc}',500)
 
 @csrf_exempt
+@require_analysis_access
 @require_capability("analysis.run")
 def legacy_oncogenicity(request):
     if request.method!='POST':return error('POST required',405)
@@ -177,6 +184,7 @@ def legacy_oncogenicity(request):
     except Exception as exc:return error(f'Unable to calculate legacy oncogenicity: {exc}',500)
 
 @csrf_exempt
+@require_analysis_access
 @require_capability("report.generate_ai", methods={"POST"})
 @require_capability("report.edit", methods={"PUT"})
 def legacy_mtb_report(request,analysis_id):

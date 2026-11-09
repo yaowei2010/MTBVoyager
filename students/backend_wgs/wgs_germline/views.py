@@ -8,7 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from hw1.models import existJobs
-from accounts.access import require_capability
+from accounts.access import register_analysis, require_analysis_access, require_capability
 
 from .mondo import resolve_genes, search
 from .literature import summarize
@@ -67,7 +67,7 @@ def subject(request):
                 "dob": str(data.get("dob", ""))[:20],
                 "gender": str(data.get("gender", "unknown"))[:20],
                 "history": str(data.get("history", ""))[:10000],
-                "user_id": str(data.get("user_id") or "N/A")[:100],
+                "user_id": str(request.user.id),
                 "protocol": "WGS Germline",
                 "genome_build": "hg38",
             },
@@ -126,6 +126,7 @@ def literature_status(request):
 
 
 @csrf_exempt
+@require_analysis_access
 @require_capability("report.generate_ai")
 def literature_summary(request, analysis_id):
     if request.method != "POST":
@@ -189,6 +190,7 @@ def jobs(request):
             uploadFile_url=str(destination / "inputs"), resultFile_url=str(destination / "pipeline.finished"),
             user_id=subject_data.get("user_id", "N/A"), genome_build="hg38", status="running",
         )
+        register_analysis(job_id, request.user)
         try:
             pid = launch(job_id, metadata)
         except Exception:
@@ -242,6 +244,7 @@ def _process_is_running(pid):
         return False
 
 
+@require_analysis_access
 def job_detail(request, analysis_id):
     directory, metadata = _metadata(analysis_id)
     if not metadata:
@@ -265,6 +268,7 @@ def _sample_result_path(metadata, directory, section, suffix):
     return directory / "results" / sample / section / f"{sample}.{suffix}.tsv"
 
 
+@require_analysis_access
 def snv_results(request, analysis_id):
     category = request.GET.get("category", "")
     if category not in SNV_FILES:
@@ -276,6 +280,7 @@ def snv_results(request, analysis_id):
     return JsonResponse({"results": tsv_rows(path), "status": metadata["status"]})
 
 
+@require_analysis_access
 def sv_results(request, analysis_id):
     category = request.GET.get("category", "")
     if category not in SV_FILES:
@@ -287,6 +292,7 @@ def sv_results(request, analysis_id):
     return JsonResponse({"results": tsv_rows(path), "status": metadata["status"]})
 
 
+@require_analysis_access
 def pharmcat_results(request, analysis_id):
     directory, metadata = _metadata(analysis_id)
     if not metadata:

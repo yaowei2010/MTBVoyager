@@ -14,4 +14,6 @@ urlpatterns = [
     path("users/<int:user_id>/", views.user_detail, name="account_user_detail"),
     path("users/<int:user_id>/reset-password/", views.reset_password, name="account_reset_password"),
     path("audit-logs/", views.audit_logs, name="account_audit_logs"),
+    path("cases/", views.case_access_list, name="case_access_list"),
+    path("cases/<str:analysis_id>/access/", views.case_access_detail, name="case_access_detail"),
 ]

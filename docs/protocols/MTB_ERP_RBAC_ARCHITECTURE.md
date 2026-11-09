@@ -60,4 +60,10 @@ Phase 1 establishes identity, roles, account administration, route-level UI rest
 
 Job submission enforcement uses the `analysis.run` capability. Users and admins may create subjects, upload inputs and submit general, WGS germline and WGS tumor-only jobs. Viewers do not have this capability and receive HTTP 403 even if they call a submission API directly. Report generation and editing similarly require `report.generate_ai` and `report.edit`.
 
-Phase 2 must add ownership/assignment relationships to analysis cases and enforce object-level permissions on every legacy and WGS analysis/result/download endpoint. Client-supplied `user_id` must not be trusted; API ownership decisions must use `request.user`.
+Phase 2 adds `AnalysisAccess`, with one owner and zero or more assigned users for each Analysis ID. New WGS and supported legacy jobs derive their owner from the authenticated `request.user`; client-supplied `user_id` is not trusted. The shared job list is filtered as follows:
+
+- admin: every analysis;
+- user: owned or explicitly assigned analyses;
+- viewer: explicitly assigned analyses only (view-only).
+
+WGS result and report APIs enforce this object-level rule and return HTTP 404 for an inaccessible Analysis ID. Existing jobs are migrated by matching the legacy `user_id` to a Django user ID or username. An administrator assigns additional viewers/users from `/variant/Admin/Cases`.

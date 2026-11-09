@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from .models import AuditLog, UserProfile
+from .models import AnalysisAccess, AuditLog, UserProfile
 from .permissions import IsAdminRole
 from .roles import get_permissions, get_role
 
@@ -169,6 +169,58 @@ def audit_logs(request):
         }
         for row in rows
     ])
+
+
+def _serialize_access(row):
+    return {
+        "analysis_id": row.analysis_id,
+        "owner": (
+            {"id": row.owner_id, "username": row.owner.username}
+            if row.owner_id else None
+        ),
+        "assigned_users": [
+            {"id": user.id, "username": user.username, "role": get_role(user)}
+            for user in row.assigned_users.all().order_by("username")
+        ],
+        "updated_at": row.updated_at,
+    }
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminRole])
+def case_access_list(request):
+    rows = AnalysisAccess.objects.select_related("owner").prefetch_related("assigned_users").order_by("-updated_at")
+    query = str(request.query_params.get("q", "")).strip()
+    if query:
+        rows = rows.filter(analysis_id__icontains=query)
+    return Response([_serialize_access(row) for row in rows[:500]])
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsAuthenticated, IsAdminRole])
+def case_access_detail(request, analysis_id):
+    try:
+        row = AnalysisAccess.objects.select_related("owner").prefetch_related("assigned_users").get(
+            analysis_id=analysis_id
+        )
+    except AnalysisAccess.DoesNotExist:
+        return Response({"detail": "Analysis not found."}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == "GET":
+        return Response(_serialize_access(row))
+
+    assigned_ids = request.data.get("assigned_user_ids", [])
+    if not isinstance(assigned_ids, list):
+        return Response({"assigned_user_ids": "Expected a list of user IDs."}, status=status.HTTP_400_BAD_REQUEST)
+    assigned = list(User.objects.filter(id__in=assigned_ids, is_active=True))
+    if len(assigned) != len(set(assigned_ids)):
+        return Response({"assigned_user_ids": "One or more users are invalid or inactive."}, status=status.HTTP_400_BAD_REQUEST)
+    row.assigned_users.set(assigned)
+    _audit(
+        request,
+        "analysis.assignment_updated",
+        detail={"analysis_id": row.analysis_id, "assigned_user_ids": sorted(assigned_ids)},
+    )
+    return Response(_serialize_access(row))
 
 
 @api_view(["POST"])

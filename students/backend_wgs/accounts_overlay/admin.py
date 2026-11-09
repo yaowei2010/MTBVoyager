@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AuditLog, UserProfile
+from .models import AnalysisAccess, AuditLog, UserProfile
 
 
 @admin.register(UserProfile)
@@ -18,3 +18,10 @@ class AuditLogAdmin(admin.ModelAdmin):
     readonly_fields = (
         "actor", "action", "target_type", "target_id", "detail", "ip_address", "created_at"
     )
+
+
+@admin.register(AnalysisAccess)
+class AnalysisAccessAdmin(admin.ModelAdmin):
+    list_display = ("analysis_id", "owner", "updated_at")
+    search_fields = ("analysis_id", "owner__username")
+    filter_horizontal = ("assigned_users",)

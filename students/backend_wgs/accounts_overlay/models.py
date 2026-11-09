@@ -39,3 +39,22 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.created_at} {self.action}"
+
+
+class AnalysisAccess(models.Model):
+    analysis_id = models.CharField(max_length=120, unique=True, db_index=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="owned_mtb_analyses",
+    )
+    assigned_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="assigned_mtb_analyses"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.analysis_id
