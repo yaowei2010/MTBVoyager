@@ -9,8 +9,8 @@ SA_CHECKSUMS=${FASTVEP_SA_CHECKSUMS:-${ROOT_DIR}/manifests/SA_MTB_SHA256SUMS.txt
 
 declare -A expected=(
   ["${MTB_HG38_DIR}/hg38.fa"]="5be01555d98347fdb3714dc84c6f77c9d8bc774adcf32c6f7a8fa06f5baf5e51"
-  ["${DATA_DIR}/reference/Homo_sapiens.GRCh38.112.canonical.gff3"]="6848f42e1d1f2d239389ee3bd050fbb3ce8685a19ebc919f73006695c6d7fa06"
-  ["${DATA_DIR}/reference/grch38_ensembl112.canonical.mtb.cache"]="3b94c6b324021dd34254840aac1b49d053a885bc6a23b3e5e8900ba79df7c451"
+  ["${DATA_DIR}/reference/Homo_sapiens.GRCh38.112.representative.gff3"]="10864779a12f0a932bcb29fdc6feba7329d4d02a3e131ea6d078c5c80a464048"
+  ["${DATA_DIR}/reference/grch38_ensembl112.representative.mtb.cache"]="7e746c067bb065fb175303415a262f7db5f8a66f2aed32981c6e07fd91a8e02b"
 )
 
 failed=0

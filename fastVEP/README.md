@@ -75,6 +75,24 @@ Build a reusable transcript cache:
   data/reference/grch38_ensembl112.fastvep.cache
 ```
 
+For MTB reporting, build the reduced cache that retains one representative
+transcript per gene. Selection is deterministic: MANE Select, MANE Plus
+Clinical, Ensembl canonical, protein coding, APPRIS, TSL, CCDS, length, then
+transcript ID. Only chromosomes 1-22, X, Y and MT are retained.
+
+```bash
+./scripts/build-representative-transcript-cache.sh \
+  data/reference/Homo_sapiens.GRCh38.112.gff3 \
+  data/reference/hg38.fa \
+  data/reference/Homo_sapiens.GRCh38.112.representative.gff3 \
+  data/reference/grch38_ensembl112.representative.mtb.cache \
+  data/reference/mtb.chrom_synonyms.txt
+```
+
+This is intentionally not the same as fastVEP `--pick`: `--pick` retains one
+transcript for the entire variant and can discard a second overlapping gene.
+The MTB cache retains one transcript for every affected gene.
+
 ## Build supplementary annotation databases
 
 The converter writes into `data/sa-mtb/` by default:

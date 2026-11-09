@@ -11,7 +11,7 @@ services:
       - --fasta
       - /mtb-reference/${FASTVEP_FASTA_FILE:-hg38.fa}
       - --transcript-cache
-      - /data/reference/${FASTVEP_TRANSCRIPT_CACHE:-grch38_ensembl112.canonical.mtb.cache}
+      - /data/reference/${FASTVEP_TRANSCRIPT_CACHE:-grch38_ensembl112.representative.mtb.cache}
       - --sa-dir
       - /data/sa
       - --stats-file

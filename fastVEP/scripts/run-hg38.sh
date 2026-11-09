@@ -37,7 +37,7 @@ trap 'rm -f "${filtered_host}"' EXIT
     --input "${filtered_container}" \
     --output "${OUTPUT}" \
     --fasta /mtb-reference/hg38.fa \
-    --transcript-cache /data/reference/grch38_ensembl112.canonical.mtb.cache \
+    --transcript-cache /data/reference/grch38_ensembl112.representative.mtb.cache \
     --sa-dir "/data/${SA_SUBDIR}" \
     --hgvs \
     --symbol \

@@ -230,6 +230,42 @@ class AdapterTests(unittest.TestCase):
         summary = json.loads(Path(self.args.summary).read_text())
         self.assertEqual(summary["counts"], {"variants": 1, "transcript_rows": 1})
 
+    def test_fastvep_sa_only_uses_embedded_gnomad_and_alphamissense(self):
+        tc = self.obj["transcript_consequences"][0]
+        tc.update({
+            "gnomad": {"allAf": 0.004, "easAf": 0.001, "nfeAf": 0.006},
+            "gnomadGenomes": {"AF": 0.003, "AF_eas": 0.0005, "AF_ami": [0.002]},
+            "alphaMissense": {"amPathogenicity": 0.91, "amClass": "likely_pathogenic"},
+            "dbnsfp": {"CADD_phred": 24.5, "REVEL_score": 0.82,
+                        "sift": "deleterious(0.01)", "polyphen": "probably_damaging(0.99)"},
+            "clinvar": {"significance": ["Pathogenic"], "phenotypes": ["Synthetic_disease"]},
+            "primateAI": {"score": 0.99},
+        })
+        Path(self.args.input_json).write_text(json.dumps([self.obj]))
+        self.args.fastvep_sa_only = True
+        self.args.disable_primateai = True
+        self.args.disable_spliceai = True
+        # Prove that no legacy plugin or variation database is opened.
+        for path in Path(self.args.plugin_data).iterdir():
+            path.unlink()
+        Path(self.args.variation_cache, "info.txt").unlink()
+        adapter.run(self.args)
+        row = self.rows()[0]
+        self.assertEqual(row["gnomADe_AF"], "0.004")
+        self.assertEqual(row["gnomADe_EAS_AF"], "0.001")
+        self.assertEqual(row["gnomADg_AF"], "0.003")
+        self.assertEqual(row["gnomADg_EAS_AF"], "0.0005")
+        self.assertEqual(row["gnomADg_AMI_AF"], "0.002")
+        self.assertEqual(row["am_pathogenicity"], "0.91")
+        self.assertEqual(row["am_class"], "likely_pathogenic")
+        self.assertEqual(row["CLIN_SIG"], "Pathogenic")
+        self.assertEqual(row["PrimateAI"], "-")
+        self.assertEqual(row["ANNOTATION_DATA_STATUS"], "fastvep_sa_loaded")
+        summary = json.loads(Path(self.args.summary).read_text())
+        self.assertEqual(summary["sources"]["gnomAD"], "fastvep_sa")
+        self.assertEqual(summary["sources"]["PrimateAI"], "disabled_by_policy")
+        self.assertEqual(summary["variation_matching"], "disabled_fastvep_sa_only")
+
     def test_missing_database_is_an_error_not_an_empty_score(self):
         Path(self.args.plugin_data, "dbNSFP5.3.1a_grch38.gz.tbi").unlink()
         with self.assertRaisesRegex(ValueError, "Missing indexed"):

@@ -15,8 +15,8 @@ def annotation_arguments():
         variation_index = str(data_root / "fastvep/vep112-normalized-variation-v1")
         for parameter, env, default in (
             ("fastvep_image", "WGS_FASTVEP_IMAGE", "mtb-wgs-fastvep:0.2.1-research-no-spliceai-20261102"),
-            ("fastvep_gff3", "WGS_FASTVEP_GFF3", reference + "/Homo_sapiens.GRCh38.112.canonical.gff3"),
-            ("fastvep_transcript_cache", "WGS_FASTVEP_TRANSCRIPT_CACHE", reference + "/grch38_ensembl112.canonical.mtb.cache"),
+            ("fastvep_gff3", "WGS_FASTVEP_GFF3", reference + "/Homo_sapiens.GRCh38.112.representative.gff3"),
+            ("fastvep_transcript_cache", "WGS_FASTVEP_TRANSCRIPT_CACHE", reference + "/grch38_ensembl112.representative.mtb.cache"),
             ("fastvep_transcript_metadata", "WGS_FASTVEP_TRANSCRIPT_METADATA", reference + "/vep112.transcript_metadata.complete.jsonl"),
             ("fastvep_variation_index", "WGS_FASTVEP_VARIATION_INDEX", variation_index),
             ("fastvep_sa_dir", "WGS_FASTVEP_SA_DIR", "/home/hpz8g5/tools/fastVEP/data/sa-mtb"),

@@ -1,24 +1,24 @@
 {
   "profile": "MTB-fastVEP-GRCh38",
-  "updated_at": "2026-10-22",
+  "updated_at": "2026-11-03",
   "fastvep_version": "0.3.0",
   "fastvep_commit": "ac2e2b64a9c4c27163a3df16e0a559113af19625",
   "ensembl_release": 112,
   "assembly": "GRCh38",
   "runtime_mounts": {
     "fasta": "/mtb-reference/hg38.fa",
-    "gff3": "/data/reference/Homo_sapiens.GRCh38.112.canonical.gff3",
-    "transcript_cache": "/data/reference/grch38_ensembl112.canonical.mtb.cache",
+    "gff3": "/data/reference/Homo_sapiens.GRCh38.112.representative.gff3",
+    "transcript_cache": "/data/reference/grch38_ensembl112.representative.mtb.cache",
     "supplementary_annotations": "/data/sa-mtb"
   },
   "files": [
     {
-      "path": "/home/hpz8g5/tools/fastVEP/data/reference/Homo_sapiens.GRCh38.112.canonical.gff3",
-      "sha256": "6848f42e1d1f2d239389ee3bd050fbb3ce8685a19ebc919f73006695c6d7fa06"
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/Homo_sapiens.GRCh38.112.representative.gff3",
+      "sha256": "10864779a12f0a932bcb29fdc6feba7329d4d02a3e131ea6d078c5c80a464048"
     },
     {
-      "path": "/home/hpz8g5/tools/fastVEP/data/reference/grch38_ensembl112.canonical.mtb.cache",
-      "sha256": "3b94c6b324021dd34254840aac1b49d053a885bc6a23b3e5e8900ba79df7c451"
+      "path": "/home/hpz8g5/tools/fastVEP/data/reference/grch38_ensembl112.representative.mtb.cache",
+      "sha256": "7e746c067bb065fb175303415a262f7db5f8a66f2aed32981c6e07fd91a8e02b"
     },
     {
       "path": "/home/hpz8g5/tools/fastVEP/data/reference/Homo_sapiens.GRCh38.112.gff3",
@@ -43,7 +43,8 @@
   ],
   "notes": [
     "The production test profile accepts only chr1-chr22, chrX, chrY and chrM/MT input records.",
-    "The canonical GFF3/cache excludes alternate, random, patch and unplaced contigs.",
+    "The representative GFF3/cache keeps one transcript per gene using MANE Select, MANE Plus Clinical, Ensembl canonical, protein-coding, APPRIS, TSL, CCDS, length and transcript-ID precedence.",
+    "The representative GFF3/cache excludes alternate, random, patch and unplaced contigs.",
     "The historical data/reference/hg38.fa symlink is not used by the pinned MTB profile.",
     "The transcript cache and the runtime FASTA must both be supplied; the cache does not replace the FASTA for coding consequence and HGVS generation.",
     "The default supplementary directory contains 55 converted .osa2 files covering eight source types.",

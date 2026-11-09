@@ -21,7 +21,7 @@ from pathlib import Path
 import ijson
 import pysam
 
-ADAPTER_VERSION = "0.1.4"
+ADAPTER_VERSION = "0.2.0"
 FASTVEP_COMMIT = "ac2e2b64a9c4c27163a3df16e0a559113af19625"
 DB_FIELDS = ["REVEL_score", "CADD_phred", "ClinPred_score",
              "phyloP100way_vertebrate_rankscore", "phastCons100way_vertebrate_rankscore"]
@@ -376,18 +376,20 @@ def reverse_complement(value):
 
 class Supplementary:
     def __init__(self, plugin_dir, cache, metadata, reference=None, variation_index=None,
-                 disable_spliceai=False):
+                 disable_spliceai=False, fastvep_sa_only=False, disable_primateai=False):
         directory = Path(plugin_dir)
-        self.db = IndexedTable(directory / "dbNSFP5.3.1a_grch38.gz",
+        self.fastvep_sa_only = fastvep_sa_only
+        self.disable_primateai = disable_primateai or fastvep_sa_only
+        self.db = None if fastvep_sa_only else IndexedTable(directory / "dbNSFP5.3.1a_grch38.gz",
                                ["pos(1-based)", "ref", "alt", "aaref", "aaalt"] + DB_FIELDS, "pos(1-based)")
-        self.alpha = IndexedTable(directory / "AlphaMissense_hg38.tsv.gz",
+        self.alpha = None if fastvep_sa_only else IndexedTable(directory / "AlphaMissense_hg38.tsv.gz",
                                   ["POS", "REF", "ALT", "protein_variant", "am_pathogenicity", "am_class"], "POS")
-        self.primate = IndexedTable(directory / "PrimateAI_scores_v0.2_GRCh38_sorted.tsv.bgz",
+        self.primate = None if self.disable_primateai else IndexedTable(directory / "PrimateAI_scores_v0.2_GRCh38_sorted.tsv.bgz",
                                     ["pos", "ref", "alt", "primateDL_score"], "pos")
         self.splice_snv = None if disable_spliceai else SpliceTable(directory / "spliceai_scores.raw.snv.hg38.vcf.gz")
         self.splice_indel = None if disable_spliceai else SpliceTable(directory / "spliceai_scores.raw.indel.hg38.vcf.gz")
         self.spliceai_status = "disabled_by_policy" if disable_spliceai else "enabled"
-        self.variation = VariationCache(cache, reference, variation_index)
+        self.variation = None if fastvep_sa_only else VariationCache(cache, reference, variation_index)
         self.metadata = {}
         with gzip.open(metadata, "rt") if str(metadata).endswith(".gz") else open(metadata) as handle:
             for line in handle:
@@ -397,25 +399,81 @@ class Supplementary:
                 self.metadata[data["Feature"]] = data
         if not self.metadata:
             raise ValueError("Transcript metadata is empty")
-        self.sources = {"variation_cache": str(cache), "transcript_metadata": str(metadata),
-                        "dbNSFP": str(self.db.path), "AlphaMissense": str(self.alpha.path),
-                        "PrimateAI": str(self.primate.path), "SpliceAI": self.spliceai_status}
+        if fastvep_sa_only:
+            self.sources = {"annotation_mode": "fastvep_sa_only", "transcript_metadata": str(metadata),
+                            "gnomAD": "fastvep_sa", "ClinVar": "fastvep_sa",
+                            "dbNSFP": "fastvep_sa", "AlphaMissense": "fastvep_sa",
+                            "PrimateAI": "disabled_by_policy", "SpliceAI": self.spliceai_status}
+        else:
+            self.sources = {"annotation_mode": "legacy_fallback", "variation_cache": str(cache),
+                            "transcript_metadata": str(metadata), "dbNSFP": str(self.db.path),
+                            "AlphaMissense": str(self.alpha.path),
+                            "PrimateAI": "disabled_by_policy" if self.disable_primateai else str(self.primate.path),
+                            "SpliceAI": self.spliceai_status}
         if not disable_spliceai:
             self.sources.update({"SpliceAI_snv": str(self.splice_snv.path),
                                  "SpliceAI_indel": str(self.splice_indel.path)})
 
     def variant_data(self, v):
+        if self.fastvep_sa_only:
+            return {"known": {}, "db": [], "alpha": [], "primate": [], "splice": []}
         snv = len(v["ref"]) == len(v["alt"]) == 1
         # Fetch once per variant; transcript matching is performed below.
         return {"known": self.variation.annotate(v),
                 "db": self.db.at(v["chrom"], v["pos"]) if snv else [],
                 "alpha": self.alpha.at(v["chrom"], v["pos"]) if snv else [],
-                "primate": self.primate.at(v["chrom"], v["pos"]) if snv else [],
+                "primate": self.primate.at(v["chrom"], v["pos"]) if snv and self.primate else [],
                 "splice": [] if self.spliceai_status != "enabled" else
                     (self.splice_snv if snv else self.splice_indel).at(v)}
 
-    def annotate(self, row, v, data):
+    @staticmethod
+    def annotate_fastvep_sa(row, tc):
+        def scalar(value):
+            if isinstance(value, list):
+                return value[0] if value else None
+            return value
+
+        gnomad = tc.get("gnomad") or {}
+        population_fields = {"allAf": "gnomADe_AF", "afrAf": "gnomADe_AFR_AF",
+                             "amrAf": "gnomADe_AMR_AF", "asjAf": "gnomADe_ASJ_AF",
+                             "easAf": "gnomADe_EAS_AF", "finAf": "gnomADe_FIN_AF",
+                             "nfeAf": "gnomADe_NFE_AF", "remainingAf": "gnomADe_OTH_AF",
+                             "sasAf": "gnomADe_SAS_AF", "midAf": "gnomADe_MID_AF"}
+        for source, target in population_fields.items():
+            if source in gnomad and gnomad[source] is not None:
+                row[target] = clean(gnomad[source])
+        genomes = tc.get("gnomadGenomes") or {}
+        genome_fields = {"AF": "gnomADg_AF", "AF_afr": "gnomADg_AFR_AF",
+                         "AF_amr": "gnomADg_AMR_AF", "AF_asj": "gnomADg_ASJ_AF",
+                         "AF_eas": "gnomADg_EAS_AF", "AF_fin": "gnomADg_FIN_AF",
+                         "AF_nfe": "gnomADg_NFE_AF", "AF_remaining": "gnomADg_OTH_AF",
+                         "AF_sas": "gnomADg_SAS_AF", "AF_ami": "gnomADg_AMI_AF",
+                         "AF_mid": "gnomADg_MID_AF"}
+        for source, target in genome_fields.items():
+            value = scalar(genomes.get(source))
+            if value is not None:
+                row[target] = clean(value)
+        dbnsfp = tc.get("dbnsfp") or {}
+        for field in DB_FIELDS:
+            if field in dbnsfp:
+                row[field] = clean(dbnsfp[field])
+        if dbnsfp.get("sift") is not None:
+            row["SIFT"] = clean(dbnsfp["sift"])
+        if dbnsfp.get("polyphen") is not None:
+            row["PolyPhen"] = clean(dbnsfp["polyphen"])
+        alpha = tc.get("alphaMissense") or {}
+        row["am_pathogenicity"] = clean(alpha.get("amPathogenicity"))
+        row["am_class"] = clean(alpha.get("amClass"))
+        clinvar = tc.get("clinvar") or {}
+        significance = clinvar.get("significance") or []
+        row["CLIN_SIG"] = ",".join(map(str, significance)) if isinstance(significance, list) else clean(significance)
+        phenotypes = clinvar.get("phenotypes") or []
+        row["PHENO"] = ",".join(map(str, phenotypes)) if isinstance(phenotypes, list) else clean(phenotypes)
+
+    def annotate(self, row, v, data, tc=None):
         row.update(data["known"])
+        if self.fastvep_sa_only:
+            self.annotate_fastvep_sa(row, tc or {})
         transcript = self.metadata.get(row["Feature"])
         if row["Feature"] not in ("", "-") and transcript is None:
             raise ValueError(f"Transcript absent from baseline metadata: {row['Feature']}")
@@ -529,7 +587,8 @@ def convert_record(obj, v, sources):
                     "Consequence": ",".join(tc["consequence_terms"]), "IMPACT": tc["impact"],
                     "GT": v["gt"], "ZYG": zygosity(v["gt"]), "IND": v["sample"],
                     "REF": v["ref"], "ALT": v["alt"], "ANNOTATION_ENGINE": "fastvep",
-                    "ANNOTATION_VERSION": "0.3.0-" + FASTVEP_COMMIT[:7], "ANNOTATION_DATA_STATUS": ("variation_cache_unavailable_contig"
+                    "ANNOTATION_VERSION": "0.3.0-" + FASTVEP_COMMIT[:7], "ANNOTATION_DATA_STATUS": (
+                        "fastvep_sa_loaded" if sources.fastvep_sa_only else "variation_cache_unavailable_contig"
                         if v["chrom"] in sources.variation.unavailable_contigs else "sources_loaded")})
         mapping = {"gene_symbol": "SYMBOL", "biotype": "BIOTYPE", "hgvsc": "HGVSc", "hgvsp": "HGVSp",
                    "hgvsg": "HGVSg", "amino_acids": "Amino_acids", "codons": "Codons", "exon": "EXON",
@@ -538,7 +597,7 @@ def convert_record(obj, v, sources):
             row[target] = clean(tc.get(source))
         for source, target in (("cdna", "cDNA_position"), ("cds", "CDS_position"), ("protein", "Protein_position")):
             row[target] = position(tc, source)
-        sources.annotate(row, v, data)
+        sources.annotate(row, v, data, tc)
         rows.append(row)
     mark_pick(rows)
     return rows
@@ -547,7 +606,9 @@ def convert_record(obj, v, sources):
 def run(args):
     sources = Supplementary(args.plugin_data, args.variation_cache, args.transcript_metadata,
                             getattr(args, "reference", None), getattr(args, "variation_index", None),
-                            getattr(args, "disable_spliceai", False))
+                            getattr(args, "disable_spliceai", False),
+                            getattr(args, "fastvep_sa_only", False),
+                            getattr(args, "disable_primateai", False))
     output = Path(args.output)
     temporary = output.with_name(output.name + ".partial")
     counts, nonmissing, metadata_sources = Counter(), Counter(), Counter()
@@ -577,10 +638,12 @@ def run(args):
                "adapter_version": ADAPTER_VERSION, "genome_build": "GRCh38", "ensembl_release": 112,
                "status": "complete", "counts": dict(counts), "nonmissing_rows": dict(nonmissing),
                "transcript_metadata_sources": dict(metadata_sources),
-               "sources": dict(sources.sources, normalized_variation_index=str(sources.variation.index)),
-               "variation_cache_releases": sources.variation.info,
-               "variation_matching": "reference-checked minimal alleles and repeat-left-aligned indels" if sources.variation.index else "legacy_raw_cache",
-               "variation_cache_unavailable_contigs": dict(sources.variation.unavailable_contigs),
+               "sources": dict(sources.sources, normalized_variation_index=(
+                   "disabled" if sources.variation is None else str(sources.variation.index))),
+               "variation_cache_releases": {} if sources.variation is None else sources.variation.info,
+               "variation_matching": "disabled_fastvep_sa_only" if sources.variation is None else
+                   "reference-checked minimal alleles and repeat-left-aligned indels" if sources.variation.index else "legacy_raw_cache",
+               "variation_cache_unavailable_contigs": {} if sources.variation is None else dict(sources.variation.unavailable_contigs),
                "spliceai_status": sources.spliceai_status,
                "transcript_metadata_sha256": hashlib.sha256(Path(args.transcript_metadata).read_bytes()).hexdigest(),
                "sift_polyphen_source": "dbNSFP transcript-matched; differs from VEP transcript-cache predictors",
@@ -595,4 +658,8 @@ if __name__ == "__main__":
     parser.add_argument("--vcf-sample")
     parser.add_argument("--disable-spliceai", action="store_true",
                         help="Leave SpliceAI fields empty and do not open the legacy raw SpliceAI files")
+    parser.add_argument("--fastvep-sa-only", action="store_true",
+                        help="Use fastVEP JSON supplementary annotations and do not query the legacy VEP/plugin databases")
+    parser.add_argument("--disable-primateai", action="store_true",
+                        help="Do not open or emit PrimateAI annotations")
     run(parser.parse_args())
