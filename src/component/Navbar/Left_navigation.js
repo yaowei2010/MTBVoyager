@@ -32,6 +32,8 @@ import AnalyticsIcon from '@mui/icons-material/Analytics';
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth';
 import MonitorIcon from '@mui/icons-material/Monitor';
 import BlockIcon from '@mui/icons-material/Block';
+import FactCheckIcon from '@mui/icons-material/FactCheck';
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import { AuthContext } from '../Auth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -191,6 +193,7 @@ function Left_navigation({ open, onOpen, onClose }) {
               ...(hasPermission('analysis.run') ? [{ text: 'Analyses', link: config.rootPathPrefix + "/Analysis/Protocol" , icon: <AnalyticsIcon />}] : []),
               { text: 'VUS monitor', link: config.rootPathPrefix + "/VUS" , icon: <MonitorIcon />},
               { text: 'Blacklist', link: config.rootPathPrefix + "/Blacklist" , icon: <BlockIcon /> },
+              ...(hasPermission('report.approve') ? [{ text: '待我簽核', link: config.rootPathPrefix + '/Approvals', icon: <FactCheckIcon /> }] : []),
             ].map((item, index) => (
               <ListItem key={index} disablePadding sx={{ display: 'block' }}>
                 <ListItemButton
@@ -241,6 +244,7 @@ function Left_navigation({ open, onOpen, onClose }) {
               { text: 'User', link: config.rootPathPrefix + '/User', icon: <AccountCircleIcon /> },
               ...(hasPermission('account.manage') ? [{ text: 'User Admin', link: config.rootPathPrefix + '/Admin/Users', icon: <AccountCircleIcon /> }] : []),
               ...(hasPermission('account.manage') ? [{ text: 'Case Access', link: config.rootPathPrefix + '/Admin/Cases', icon: <FolderSharedIcon /> }] : []),
+              ...(hasPermission('approval.manage') ? [{ text: 'Approval Settings', link: config.rootPathPrefix + '/Admin/ApprovalRules', icon: <AccountTreeIcon /> }] : []),
             ].map((item, index) => (
               <ListItem key={index} disablePadding sx={{ display: 'block' }}>
                 <ListItemButton

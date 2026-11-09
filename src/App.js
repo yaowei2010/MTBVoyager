@@ -46,6 +46,8 @@ import LoginPage from './component/Auth/LoginPage.js';
 import UserManagement from './component/Admin/UserManagement.js';
 import CaseAccessManagement from './component/Admin/CaseAccessManagement.js';
 import UserProfile from './component/User/UserProfile.js';
+import ApprovalInbox from './component/Approval/ApprovalInbox.js';
+import ApprovalRuleManagement from './component/Admin/ApprovalRuleManagement.js';
 
 import { AuthProvider } from './component/Auth/AuthContext.js';
 import BlacklistPage from "./component/Blacklist/Blacklist_main.js";
@@ -65,6 +67,9 @@ function App() {
           
             <Route path = { config.rootPathPrefix + "/home" } element = { <HomeComp /> }></Route>
             <Route path={config.rootPathPrefix + "/User"} element={<UserProfile />} />
+            <Route element={<PermissionRoute permission="report.approve" />}>
+              <Route path={config.rootPathPrefix + "/Approvals"} element={<ApprovalInbox />} />
+            </Route>
 
             <Route path = { config.rootPathPrefix + "/Job_results" } element = { <Job_results /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail_germline/:analysis_ID" } element = { <Job_results_detail_germline /> }></Route>
@@ -105,6 +110,7 @@ function App() {
             <Route element={<PermissionRoute permission="account.manage" />}>
               <Route path={config.rootPathPrefix + "/Admin/Users"} element={<UserManagement />} />
               <Route path={config.rootPathPrefix + "/Admin/Cases"} element={<CaseAccessManagement />} />
+              <Route path={config.rootPathPrefix + "/Admin/ApprovalRules"} element={<ApprovalRuleManagement />} />
             </Route>
 
             <Route path = { config.rootPathPrefix + "/VUS" } element = { <VUS /> }></Route>
