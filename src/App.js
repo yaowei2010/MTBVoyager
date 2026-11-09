@@ -37,12 +37,13 @@ import VUS from './component/VUS/vus.js';
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
 import { config } from './constant';
 import PrivateRoute from './privateRoute.js';
+import PermissionRoute from './permissionRoute.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { CssBaseline, ThemeProvider } from '@mui/material';
 import clinicalTheme from './clinicalTheme';
 
 import LoginPage from './component/Auth/LoginPage.js';
-import RegisterPage from './component/Auth/RegisterPage.js';
+import UserManagement from './component/Admin/UserManagement.js';
 
 import { AuthProvider } from './component/Auth/AuthContext.js';
 import BlacklistPage from "./component/Blacklist/Blacklist_main.js";
@@ -57,7 +58,6 @@ function App() {
         <Routes>
           <Route path={config.rootPathPrefix + "/"}element={<Navigate to={config.rootPathPrefix + "/login"} replace />}/>
           <Route path={config.rootPathPrefix + "/login"} element={<LoginPage />} />
-          <Route path={config.rootPathPrefix + "/register"} element={<RegisterPage />} />
           
           <Route element = { <PrivateRoute /> } >
           
@@ -74,6 +74,7 @@ function App() {
             <Route path = { config.rootPathPrefix + "/Job_results/detail/:analysis_ID/summary_report_germline_trio" } element = { <Job_results_detail_report_germline_trio /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail/:analysis_ID/summary_report_somatic" } element = { <Job_results_detail_report_somatic /> }></Route>
             
+            <Route element={<PermissionRoute permission="analysis.run" />}>
             <Route path = { config.rootPathPrefix + "/Analysis/Protocol" } element = { <Analysis_protocol /> }></Route>
 
             <Route path = { config.rootPathPrefix + "/Analysis/Exome/Subject" } element = { <Exome_subject /> }></Route>
@@ -96,6 +97,11 @@ function App() {
             <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Subject" } element = { <WgsSomaticSubject /> }></Route>
             <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Sample" } element = { <WgsSomaticSample /> }></Route>
             <Route path = { config.rootPathPrefix + "/Analysis/WGS_Somatic/Settings" } element = { <WgsSomaticSettings /> }></Route>
+            </Route>
+
+            <Route element={<PermissionRoute permission="account.manage" />}>
+              <Route path={config.rootPathPrefix + "/Admin/Users"} element={<UserManagement />} />
+            </Route>
 
             <Route path = { config.rootPathPrefix + "/VUS" } element = { <VUS /> }></Route>
             <Route path = { config.rootPathPrefix + "/Blacklist" } element = { <BlacklistPage  /> }></Route>

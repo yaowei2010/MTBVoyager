@@ -1,6 +1,6 @@
 // component/Auth/LoginPage.js
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
 import { Box, Button, Chip, Divider, TextField, Typography, Paper, Snackbar, Alert } from '@mui/material';
@@ -27,8 +27,7 @@ function LoginPage() {
         const userInfoRes = await axios.get(`${config.rootApiIP}/accounts/user-info`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const userId = userInfoRes.data.id;
-        login(token, userId);
+        login(token, userInfoRes.data);
 
         setAlert({ open: true, type: 'success', message: '登入成功！即將導向主頁' });
         setTimeout(() => navigate(config.rootPathPrefix + '/home'), 1000);
@@ -86,7 +85,7 @@ function LoginPage() {
         </Box>
 
         <Typography variant="body2" color="text.secondary" sx={{ mt: 2.5, textAlign: 'center' }}>
-          還沒有帳號？<Link to={config.rootPathPrefix + "/register"}>前往註冊</Link>
+          帳號由系統管理員建立；如需權限請聯絡管理員。
         </Typography>
       </Paper>
 

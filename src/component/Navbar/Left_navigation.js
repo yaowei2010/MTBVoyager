@@ -26,7 +26,6 @@ import Button from '@mui/material/Button';
 
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
-import SettingsIcon from '@mui/icons-material/Settings';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth';
@@ -129,7 +128,7 @@ function Left_navigation() {
     setOpen(false);
   };
 
-  const { logout } = React.useContext(AuthContext);
+  const { logout, user, hasPermission } = React.useContext(AuthContext);
   const navigate = useNavigate();
 
   return (
@@ -156,6 +155,10 @@ function Left_navigation() {
             </Typography>
             <Box sx={{ flexGrow: 1 }} />
             <Box sx={{ display: 'flex', gap: 1.5 }}>
+              <Box sx={{ textAlign: 'right', mr: 1 }}>
+                <Typography variant="body2" fontWeight={700}>{user?.username}</Typography>
+                <Typography variant="caption" sx={{ opacity: .8 }}>{user?.role}</Typography>
+              </Box>
               <Button
                 color="inherit"
                 onClick={() => {
@@ -185,7 +188,7 @@ function Left_navigation() {
             {[
               { text: 'Home', link:  config.rootPathPrefix + "/home" , icon: <HomeIcon /> },
               { text: 'Job Result', link: config.rootPathPrefix + "/Job_results" , icon: <CalendarViewMonthIcon />},
-              { text: 'Analyses', link: config.rootPathPrefix + "/Analysis/Protocol" , icon: <AnalyticsIcon />},
+              ...(hasPermission('analysis.run') ? [{ text: 'Analyses', link: config.rootPathPrefix + "/Analysis/Protocol" , icon: <AnalyticsIcon />}] : []),
               { text: 'VUS monitor', link: config.rootPathPrefix + "/VUS" , icon: <MonitorIcon />},
               { text: 'Blacklist', link: config.rootPathPrefix + "/Blacklist" , icon: <BlockIcon /> },
             ].map((item, index) => (
@@ -235,9 +238,7 @@ function Left_navigation() {
           <Divider />
           <List sx={{ marginTop: 'auto' }}>
             {[
-              
-              { text: 'Settings', link: config.rootPathPrefix + '/Settings' , icon: <SettingsIcon />},
-              { text: 'User', link: config.rootPathPrefix + '/User' , icon: <AccountCircleIcon />},
+              ...(hasPermission('account.manage') ? [{ text: 'User Admin', link: config.rootPathPrefix + '/Admin/Users', icon: <AccountCircleIcon /> }] : []),
             ].map((item, index) => (
               <ListItem key={index} disablePadding sx={{ display: 'block' }}>
                 <ListItemButton

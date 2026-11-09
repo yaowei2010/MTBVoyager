@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   backend:
-    image: mtb-backend:wgs-fastvep-research-20261022
+    image: mtb-backend:erp-rbac-20261109
     pull_policy: never
     build:
       context: ../../backend_wgs
@@ -65,7 +65,7 @@ services:
         wgs_somatic: ../../backend_wgs_somatic
     container_name: backend
     working_dir: /miRTI
-    command: ["bash", "-lc", "python manage.py runserver 0.0.0.0:8217"]
+    command: ["bash", "-lc", "python manage.py migrate --noinput && python manage.py bootstrap_rbac --admin-username $${MTB_BOOTSTRAP_ADMIN_USERNAME:-takeshi} && python manage.py runserver 0.0.0.0:8217"]
     depends_on:
       postgres:
         condition: service_healthy
@@ -106,6 +106,7 @@ services:
       MTB_REPORT_LLM_MODEL: "gemma4:e4b"
       MTB_REPORT_LLM_TIMEOUT: "1800"
       NCBI_EMAIL: "${NCBI_EMAIL:-}"
+      MTB_BOOTSTRAP_ADMIN_USERNAME: "${MTB_BOOTSTRAP_ADMIN_USERNAME:-takeshi}"
     volumes:
       - ${DATA_ROOT}/VEP:/VEP
       - ${DATA_ROOT}/annovar/annovar:/annovar
@@ -152,7 +153,7 @@ services:
     command: ["python", "--version"]
 
   frontend:
-    image: takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33
+    image: takeshi945/nckumtb:frontend-erp-rbac-20261109
     pull_policy: never
     build:
       context: ..
@@ -165,7 +166,7 @@ services:
     restart: unless-stopped
 
   gateway:
-    image: takeshi945/nckumtb:frontend-clinical-ui-20260722-acmg-sf-v33
+    image: takeshi945/nckumtb:frontend-erp-rbac-20261109
     pull_policy: never
     container_name: gateway
     depends_on:
