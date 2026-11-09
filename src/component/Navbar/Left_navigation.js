@@ -116,17 +116,16 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 
 
-function Left_navigation() {
+function Left_navigation({ open, onOpen, onClose }) {
   const theme = useTheme();
-  const [open, setOpen] = React.useState(false);
   const location = useLocation();
 
   const handleDrawerOpen = () => {
-    setOpen(true);
+    onOpen();
   };
 
   const handleDrawerClose = () => {
-    setOpen(false);
+    onClose();
   };
 
   const { logout, user, hasPermission } = React.useContext(AuthContext);
