@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from accounts.access import protect_legacy_analysis_patterns
+from hw1.urls import urlpatterns as legacy_urlpatterns
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ncku_hospital/wgs-germline/', include('wgs_germline.urls')),
     path('ncku_hospital/wgs-somatic/', include('wgs_somatic.urls')),
-    path('ncku_hospital/', include('hw1.urls')),
+    path('ncku_hospital/', include((protect_legacy_analysis_patterns(legacy_urlpatterns), 'hw1'))),
     path('ncku_hospital/accounts/', include('accounts.urls')),
 ]

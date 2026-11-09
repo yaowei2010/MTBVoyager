@@ -58,4 +58,6 @@ Account creation, role/status changes and password resets are written to `accoun
 
 Phase 1 establishes identity, roles, account administration, route-level UI restrictions and account audit events.
 
+Job submission enforcement uses the `analysis.run` capability. Users and admins may create subjects, upload inputs and submit general, WGS germline and WGS tumor-only jobs. Viewers do not have this capability and receive HTTP 403 even if they call a submission API directly. Report generation and editing similarly require `report.generate_ai` and `report.edit`.
+
 Phase 2 must add ownership/assignment relationships to analysis cases and enforce object-level permissions on every legacy and WGS analysis/result/download endpoint. Client-supplied `user_id` must not be trusted; API ownership decisions must use `request.user`.

@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from hw1.models import existJobs
+from accounts.access import require_capability
 
 from .mondo import resolve_genes, search
 from .literature import summarize
@@ -46,6 +47,7 @@ def _error(detail, status=400):
 
 
 @csrf_exempt
+@require_capability("analysis.run")
 def subject(request):
     if request.method != "POST":
         return _error("POST required", 405)
@@ -77,6 +79,7 @@ def subject(request):
 
 
 @csrf_exempt
+@require_capability("analysis.run")
 def upload(request):
     if request.method != "POST":
         return _error("POST required", 405)
@@ -123,6 +126,7 @@ def literature_status(request):
 
 
 @csrf_exempt
+@require_capability("report.generate_ai")
 def literature_summary(request, analysis_id):
     if request.method != "POST":
         return _error("POST required", 405)
@@ -141,6 +145,7 @@ def literature_summary(request, analysis_id):
 
 
 @csrf_exempt
+@require_capability("analysis.run")
 def jobs(request):
     if request.method != "POST":
         return _error("POST required", 405)

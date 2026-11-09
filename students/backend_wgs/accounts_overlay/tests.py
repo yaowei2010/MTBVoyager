@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.test import override_settings
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import AccessToken
 
 from .models import UserProfile
 
@@ -11,6 +12,11 @@ class RbacApiTests(APITestCase):
         self.admin = User.objects.create_user("admin_test", password="Strong-test-pass-529!", is_superuser=True)
         self.viewer = User.objects.create_user("viewer_test", password="Strong-test-pass-529!")
         UserProfile.objects.create(user=self.viewer, role=UserProfile.Role.VIEWER)
+        self.user = User.objects.create_user("user_test", password="Strong-test-pass-529!")
+        UserProfile.objects.create(user=self.user, role=UserProfile.Role.USER)
+
+    def bearer(self, user):
+        return {"HTTP_AUTHORIZATION": f"Bearer {AccessToken.for_user(user)}"}
 
     def test_me_returns_role_and_permissions(self):
         self.client.force_authenticate(self.viewer)
@@ -40,3 +46,11 @@ class RbacApiTests(APITestCase):
             f"/ncku_hospital/accounts/users/{self.admin.id}/", {"is_active": False}, format="json"
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_user_can_run_job(self):
+        response = self.client.post("/ncku_hospital/test/run-job", **self.bearer(self.user))
+        self.assertEqual(response.status_code, 202)
+
+    def test_viewer_cannot_run_job(self):
+        response = self.client.post("/ncku_hospital/test/run-job", **self.bearer(self.viewer))
+        self.assertEqual(response.status_code, 403)

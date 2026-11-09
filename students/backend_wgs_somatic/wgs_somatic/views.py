@@ -4,6 +4,7 @@ from pathlib import Path
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from hw1.models import existJobs
+from accounts.access import require_capability
 from .runner import launch
 from .storage import draft_dir,job_dir,new_id,read_json,save_upload,tsv_rows,validate_id,write_json
 from .legacy_oncogenicity import annotate as annotate_legacy_oncogenicity, is_high_risk as is_legacy_high_risk
@@ -19,6 +20,7 @@ def body(request):
 def error(detail,status=400):return JsonResponse({'detail':str(detail)},status=status)
 
 @csrf_exempt
+@require_capability("analysis.run")
 def subject(request):
     if request.method!='POST':return error('POST required',405)
     try:
@@ -30,6 +32,7 @@ def subject(request):
     except ValueError as exc:return error(exc)
 
 @csrf_exempt
+@require_capability("analysis.run")
 def upload(request):
     if request.method!='POST':return error('POST required',405)
     try:
@@ -47,6 +50,7 @@ def upload(request):
     except ValueError as exc:return error(exc)
 
 @csrf_exempt
+@require_capability("analysis.run")
 def jobs(request):
     if request.method!='POST':return error('POST required',405)
     try:
@@ -133,6 +137,8 @@ def downstream(request,analysis_id):
     })
 
 @csrf_exempt
+@require_capability("report.generate_ai", methods={"POST"})
+@require_capability("report.edit", methods={"PUT"})
 def mtb_report(request,analysis_id):
     directory,metadata=metadata_for(analysis_id)
     if not metadata:return error('Analysis not found',404)
@@ -148,6 +154,7 @@ def mtb_report(request,analysis_id):
     except Exception as exc:return error(f'Unable to generate MTB draft: {exc}',500)
 
 @csrf_exempt
+@require_capability("analysis.run")
 def legacy_oncogenicity(request):
     if request.method!='POST':return error('POST required',405)
     try:
@@ -170,6 +177,8 @@ def legacy_oncogenicity(request):
     except Exception as exc:return error(f'Unable to calculate legacy oncogenicity: {exc}',500)
 
 @csrf_exempt
+@require_capability("report.generate_ai", methods={"POST"})
+@require_capability("report.edit", methods={"PUT"})
 def legacy_mtb_report(request,analysis_id):
     if not re.fullmatch(r'[A-Za-z0-9_-]{1,80}',analysis_id):return error('Invalid legacy job identifier')
     directory=Path(os.environ.get('LEGACY_PATIENT_ROOT','/miRTI/media/patient'))/analysis_id
