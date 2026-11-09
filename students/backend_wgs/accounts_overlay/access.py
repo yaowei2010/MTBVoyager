@@ -125,6 +125,33 @@ LEGACY_ANALYSIS_WRITE_NAMES = {
     "delete_job",
 }
 
+LEGACY_RESULT_NAMES = {
+    "known_pathogenic_to_json",
+    "known_ACMG_variant",
+    "known_other_variant",
+    "other_variant",
+    "predicted_suspect_variant",
+    "predicted_ACMG_variant",
+    "predicted_other_variant",
+    "incidental_finding_variant",
+    "drug_response_variant",
+    "get_summary_info",
+    "get_summary_info_somatic",
+    "summary_page",
+    "summary_page_somatic",
+    "somatic_result",
+    "read_heredity",
+    "read_cosmic",
+    "read_suspect",
+    "read_germline_prediction",
+    "analysis_cosmic",
+    "mutisnp_civic",
+    "mutation_signature",
+    "fusion_gene",
+    "potential_treatment",
+    "cancertype_prediction",
+}
+
 
 def protect_legacy_analysis_patterns(patterns):
     for pattern in patterns:
@@ -143,4 +170,6 @@ def protect_legacy_analysis_patterns(patterns):
                     return response
                 protected = protected_and_register
             pattern._callback = protected
+        elif getattr(pattern, "name", None) in LEGACY_RESULT_NAMES:
+            pattern._callback = require_analysis_access(pattern.callback)
     return patterns

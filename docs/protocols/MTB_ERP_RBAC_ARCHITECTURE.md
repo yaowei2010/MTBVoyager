@@ -67,3 +67,5 @@ Phase 2 adds `AnalysisAccess`, with one owner and zero or more assigned users fo
 - viewer: explicitly assigned analyses only (view-only).
 
 WGS result and report APIs enforce this object-level rule and return HTTP 404 for an inaccessible Analysis ID. Existing jobs are migrated by matching the legacy `user_id` to a Django user ID or username. An administrator assigns additional viewers/users from `/variant/Admin/Cases`.
+
+Legacy Exome and tissue-only result APIs that carry an Analysis ID are protected by the same rule. The oldest Trio result handlers still rely on process-global state and omit the Analysis ID from several requests; they must be refactored to use an explicit Analysis ID before reliable object-level enforcement can be enabled for those endpoints.
