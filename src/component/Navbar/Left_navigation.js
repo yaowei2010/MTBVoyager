@@ -27,6 +27,7 @@ import Button from '@mui/material/Button';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
 import AnalyticsIcon from '@mui/icons-material/Analytics';
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth';
 import MonitorIcon from '@mui/icons-material/Monitor';
@@ -239,6 +240,7 @@ function Left_navigation() {
           <List sx={{ marginTop: 'auto' }}>
             {[
               ...(hasPermission('account.manage') ? [{ text: 'User Admin', link: config.rootPathPrefix + '/Admin/Users', icon: <AccountCircleIcon /> }] : []),
+              ...(hasPermission('account.manage') ? [{ text: 'Case Access', link: config.rootPathPrefix + '/Admin/Cases', icon: <FolderSharedIcon /> }] : []),
             ].map((item, index) => (
               <ListItem key={index} disablePadding sx={{ display: 'block' }}>
                 <ListItemButton

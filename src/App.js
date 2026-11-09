@@ -44,6 +44,7 @@ import clinicalTheme from './clinicalTheme';
 
 import LoginPage from './component/Auth/LoginPage.js';
 import UserManagement from './component/Admin/UserManagement.js';
+import CaseAccessManagement from './component/Admin/CaseAccessManagement.js';
 
 import { AuthProvider } from './component/Auth/AuthContext.js';
 import BlacklistPage from "./component/Blacklist/Blacklist_main.js";
@@ -101,6 +102,7 @@ function App() {
 
             <Route element={<PermissionRoute permission="account.manage" />}>
               <Route path={config.rootPathPrefix + "/Admin/Users"} element={<UserManagement />} />
+              <Route path={config.rootPathPrefix + "/Admin/Cases"} element={<CaseAccessManagement />} />
             </Route>
 
             <Route path = { config.rootPathPrefix + "/VUS" } element = { <VUS /> }></Route>

@@ -38,7 +38,7 @@ function createData(ID, analysis_ID, subject, protocol, phenotypes, status, geno
 
 function Job_results() {
   const [rows, setRows] = useState([]);
-  const { userId } = useContext(AuthContext);
+  const { userId, hasPermission } = useContext(AuthContext);
 
   const fetchData = async () => {
     try {
@@ -118,7 +118,7 @@ function Job_results() {
         <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ md: 'center' }} justifyContent="space-between" spacing={2} sx={{ mb: 3 }}>
           <Box><Chip label="ANALYSIS OPERATIONS" size="small" sx={{ mb: 1.5, bgcolor: '#e8f7f2', color: '#087f5b', fontWeight: 800, letterSpacing: '.06em' }} /><Typography variant="h3" sx={{ fontSize: { xs: 36, md: 50 }, fontWeight: 800 }}>Analysis jobs</Typography><Typography color="text.secondary">Monitor pipelines and review completed clinical interpretation results.</Typography></Box>
 
-          <Button
+          {hasPermission('analysis.run') && <Button
             variant="contained"
             startIcon={<AddCircleOutlineIcon />}
             style={{
@@ -128,7 +128,7 @@ function Job_results() {
             href={config.rootPathPrefix + '/Analysis/Protocol'}
           >
             Start new analysis
-          </Button>
+          </Button>}
         </Stack>
 
         {/* Job Table Section */}
