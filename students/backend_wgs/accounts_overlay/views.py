@@ -9,6 +9,7 @@ from rest_framework.response import Response
 
 from .models import AnalysisAccess, AuditLog, UserProfile
 from .permissions import IsAdminRole
+from .postgres_audit import sync_account
 from .roles import get_permissions, get_role
 
 
@@ -57,6 +58,24 @@ def me(request):
     return Response(_serialize_user(request.user))
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def change_own_password(request):
+    current_password = str(request.data.get("current_password", ""))
+    new_password = str(request.data.get("new_password", ""))
+    if not request.user.check_password(current_password):
+        return Response({"current_password": "Current password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        validate_password(new_password, user=request.user)
+    except ValidationError as exc:
+        return Response({"new_password": exc.messages}, status=status.HTTP_400_BAD_REQUEST)
+    request.user.set_password(new_password)
+    request.user.save(update_fields=["password"])
+    sync_account(request.user, get_role(request.user))
+    _audit(request, "account.password_changed", request.user)
+    return Response({"detail": "Password updated. Please sign in again."})
+
+
 # Backward-compatible endpoint used by the current UI.
 get_user_info = me
 
@@ -92,6 +111,7 @@ def users(request):
             last_name=str(data.get("last_name", "")).strip(),
         )
         UserProfile.objects.update_or_create(user=user, defaults={"role": role})
+        sync_account(user, role)
         _audit(request, "account.created", user, {"role": role})
     return Response(_serialize_user(user), status=status.HTTP_201_CREATED)
 
@@ -129,6 +149,7 @@ def user_detail(request, user_id):
         target.is_active = new_active
         target.save(update_fields=["email", "first_name", "last_name", "is_active"])
         UserProfile.objects.update_or_create(user=target, defaults={"role": new_role})
+        sync_account(target, new_role)
         _audit(request, "account.updated", target, {"role": new_role, "is_active": new_active})
     return Response(_serialize_user(target))
 
@@ -147,6 +168,7 @@ def reset_password(request, user_id):
         return Response({"password": exc.messages}, status=status.HTTP_400_BAD_REQUEST)
     target.set_password(password)
     target.save(update_fields=["password"])
+    sync_account(target, get_role(target))
     _audit(request, "account.password_reset", target)
     return Response({"detail": "Password updated."})
 

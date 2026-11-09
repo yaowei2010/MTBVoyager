@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import override_settings
+from unittest.mock import patch
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -83,3 +84,38 @@ class RbacApiTests(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["assigned_users"][0]["username"], "viewer_test")
+
+    @patch("accounts.views.sync_account")
+    def test_user_can_change_own_password(self, sync_account):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/ncku_hospital/accounts/me/password/",
+            {"current_password": "Strong-test-pass-529!", "new_password": "Different-strong-pass-731!"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("Different-strong-pass-731!"))
+        sync_account.assert_called_once()
+
+    @patch("accounts.token_views.sync_account")
+    @patch("accounts.token_views.record_login")
+    def test_successful_login_is_audited(self, record_login, sync_account):
+        response = self.client.post(
+            "/ncku_hospital/accounts/token/",
+            {"username": "user_test", "password": "Strong-test-pass-529!"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(record_login.call_args.kwargs["success"])
+        sync_account.assert_called_once()
+
+    @patch("accounts.token_views.record_login")
+    def test_failed_login_is_audited(self, record_login):
+        response = self.client.post(
+            "/ncku_hospital/accounts/token/",
+            {"username": "user_test", "password": "wrong-password"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertFalse(record_login.call_args.kwargs["success"])
