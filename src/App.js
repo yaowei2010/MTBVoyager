@@ -45,6 +45,7 @@ import clinicalTheme from './clinicalTheme';
 import LoginPage from './component/Auth/LoginPage.js';
 import UserManagement from './component/Admin/UserManagement.js';
 import CaseAccessManagement from './component/Admin/CaseAccessManagement.js';
+import UserProfile from './component/User/UserProfile.js';
 
 import { AuthProvider } from './component/Auth/AuthContext.js';
 import BlacklistPage from "./component/Blacklist/Blacklist_main.js";
@@ -63,6 +64,7 @@ function App() {
           <Route element = { <PrivateRoute /> } >
           
             <Route path = { config.rootPathPrefix + "/home" } element = { <HomeComp /> }></Route>
+            <Route path={config.rootPathPrefix + "/User"} element={<UserProfile />} />
 
             <Route path = { config.rootPathPrefix + "/Job_results" } element = { <Job_results /> }></Route>
             <Route path = { config.rootPathPrefix + "/Job_results/detail_germline/:analysis_ID" } element = { <Job_results_detail_germline /> }></Route>

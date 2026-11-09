@@ -65,7 +65,7 @@ services:
         wgs_somatic: ../../backend_wgs_somatic
     container_name: backend
     working_dir: /miRTI
-    command: ["bash", "-lc", "python manage.py migrate --noinput && python manage.py bootstrap_rbac --admin-username $${MTB_BOOTSTRAP_ADMIN_USERNAME:-takeshi} && python manage.py runserver 0.0.0.0:8217"]
+    command: ["bash", "-lc", "python manage.py migrate --noinput && python manage.py bootstrap_rbac --admin-username $${MTB_BOOTSTRAP_ADMIN_USERNAME:-takeshi} && python manage.py sync_erp_accounts && python manage.py runserver 0.0.0.0:8217"]
     depends_on:
       postgres:
         condition: service_healthy

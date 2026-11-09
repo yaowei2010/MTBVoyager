@@ -239,6 +239,7 @@ function Left_navigation() {
           <Divider />
           <List sx={{ marginTop: 'auto' }}>
             {[
+              { text: 'User', link: config.rootPathPrefix + '/User', icon: <AccountCircleIcon /> },
               ...(hasPermission('account.manage') ? [{ text: 'User Admin', link: config.rootPathPrefix + '/Admin/Users', icon: <AccountCircleIcon /> }] : []),
               ...(hasPermission('account.manage') ? [{ text: 'Case Access', link: config.rootPathPrefix + '/Admin/Cases', icon: <FolderSharedIcon /> }] : []),
             ].map((item, index) => (
