@@ -18,6 +18,7 @@ export const AuthProvider = ({ children }) => {
       return;
     }
     setToken(storedToken);
+    axios.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
     axios.get(`${config.rootApiIP}/accounts/me/`, {
       headers: { Authorization: `Bearer ${storedToken}` }
     }).then(({ data }) => {
@@ -28,6 +29,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
       setToken(null);
+      delete axios.defaults.headers.common.Authorization;
     }).finally(() => setIsLoading(false));
   }, []);
 
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }) => {
   const login = (newToken, userInfo) => {
     localStorage.setItem('token', newToken);
     setToken(newToken);
+    axios.defaults.headers.common.Authorization = `Bearer ${newToken}`;
     if (userInfo?.id) {
       localStorage.setItem('userId', userInfo.id);
       setUserId(userInfo.id);
@@ -48,6 +51,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUserId(null);
     setUser(null);
+    delete axios.defaults.headers.common.Authorization;
   };
 
   const hasPermission = useCallback(
