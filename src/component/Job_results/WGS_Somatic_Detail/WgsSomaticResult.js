@@ -177,11 +177,13 @@ export default function WgsSomaticResult(){
   const [reportLoading,setReportLoading]=useState(false);
   useEffect(()=>{
     axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}`).then(r=>setMeta(r.data)).catch(()=>setError('Unable to load analysis details.'));
-    axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/summary`).then(r=>setSummary(r.data)).catch(()=>{});
+    axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/summary`).then(r=>{
+      setSummary(r.data);
+      setHereditaryCount(r.data?.snv?.hereditary_high_risk??null);
+      setInSilicoCount(r.data?.snv?.in_silico_candidates??null);
+    }).catch(()=>{});
     axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/downstream`).then(r=>setDownstream(r.data)).catch(()=>{});
     axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/mtb-report`).then(r=>setMtbReport(r.data)).catch(()=>{});
-    axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/results`,{params:{section:'hereditary_high_risk'}}).then(r=>setHereditaryCount((r.data.results||[]).length)).catch(()=>{});
-    axios.get(`${config.rootApiIP}/wgs-somatic/jobs/${id}/results`,{params:{section:'in_silico_candidates'}}).then(r=>setInSilicoCount((r.data.results||[]).length)).catch(()=>{});
   },[id]);
   const sections=useMemo(()=>{
     const available=new Set(meta?.available_sections||[]);
