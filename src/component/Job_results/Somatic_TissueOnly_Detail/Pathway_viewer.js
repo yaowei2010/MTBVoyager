@@ -312,11 +312,12 @@ const dataGridSx = {
   },
 };
 
-export default function Pathway() {
+export default function Pathway({ analysisId = '' }) {
   const patientId = useMemo(() => {
+    if (analysisId) return analysisId;
     const parts = window.location.pathname.split("/").filter(Boolean);
     return parts[parts.length - 1] || "";
-  }, []);
+  }, [analysisId]);
 
   const { userId } = useContext(AuthContext);
 

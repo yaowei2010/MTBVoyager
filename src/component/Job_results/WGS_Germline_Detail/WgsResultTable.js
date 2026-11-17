@@ -72,7 +72,8 @@ export default function WgsResultTable({ rows, loading, error, analysisId, somat
     const variant = [row.chromosome, row.position || row.start, row.ref, row.alt].filter(Boolean).join(':');
     setLiterature({ open: true, gene, data: null, loading: true, error: '' });
     try {
-      const { data } = await axios.post(`${config.rootApiIP}/wgs-germline/jobs/${analysisId}/literature`, { gene, variant });
+      const resultApi = somatic ? 'wgs-somatic' : 'wgs-germline';
+      const { data } = await axios.post(`${config.rootApiIP}/${resultApi}/jobs/${analysisId}/literature`, { gene, variant });
       setLiterature({ open: true, gene, data, loading: false, error: '' });
     } catch (requestError) {
       const timedOut = requestError.response?.status === 504;
