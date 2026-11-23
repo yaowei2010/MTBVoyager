@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   backend:
-    image: mtb-backend:fastvep-downstream-0.8.0-20261120
+    image: mtb-backend:fastvep-downstream-0.8.3-20261123
     pull_policy: never
     build:
       context: ../../backend_wgs
@@ -107,6 +107,7 @@ services:
       MTB_REPORT_LLM_URL: "http://mtb_report_llm:11434/api/chat"
       MTB_REPORT_LLM_MODEL: "gemma4:e4b"
       MTB_REPORT_LLM_TIMEOUT: "1800"
+      SIGPROFILERMATRIXGENERATOR_VOLUME: "${DATA_ROOT}/reference/sigprofiler"
       NCBI_EMAIL: "${NCBI_EMAIL:-}"
       MTB_BOOTSTRAP_ADMIN_USERNAME: "${MTB_BOOTSTRAP_ADMIN_USERNAME:-takeshi}"
     volumes:
