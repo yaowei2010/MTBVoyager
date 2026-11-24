@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   backend:
-    image: mtb-backend:fastvep-downstream-0.8.3-20261123
+    image: mtb-backend:fastvep-downstream-0.8.4-20261124
     pull_policy: never
     build:
       context: ../../backend_wgs
