@@ -121,6 +121,8 @@ services:
       - ${WGS_REFERENCE_ROOT}:${WGS_REFERENCE_ROOT}:ro
       - ${FASTVEP_DATA_ROOT}:${FASTVEP_DATA_ROOT}:ro
       - ${DATA_ROOT}/backend/db.sqlite3:/miRTI/db.sqlite3
+      - /home/hpz8g5/project/MTB/tumor-only:/opt/mtb-tumor-only:ro
+      - /mnt/nas_wgs2/CGP:/mnt/nas_wgs2/CGP:ro
     # 如果你要從宿主機直接打到 Django，打開這行
     # ports:
     #   - "8217:8217"
