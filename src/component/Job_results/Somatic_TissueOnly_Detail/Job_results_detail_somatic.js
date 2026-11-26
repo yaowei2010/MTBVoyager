@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Outlet, useNavigate, useLocation, useParams } from 'react-router-dom';
 import { config } from '../../../constant.js'
 
 import Box from '@mui/material/Box';
@@ -16,6 +15,7 @@ import { styled } from '@mui/material/styles';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import Chip from '@mui/material/Chip';
 
 import Actionable_data from './Actionable_data.js';
 import Heredity_data from './Heredity_data.js'
@@ -56,6 +56,15 @@ function DirectionStack({ totalSelectedCount }) {
         <Item>Total Selected: {totalSelectedCount}</Item>
       </Stack>
     </div>
+  );
+}
+
+function ResultMetric({ label, value, tone = 'primary' }) {
+  return (
+    <Paper variant="outlined" sx={{ p: 2.25, height: '100%', borderTop: 4, borderTopColor: `${tone}.main` }}>
+      <Typography color="text.secondary" variant="body2" fontWeight={700}>{label}</Typography>
+      <Typography variant="h4" fontWeight={850} sx={{ mt: .5 }}>{value ?? '—'}</Typography>
+    </Paper>
   );
 }
 
@@ -101,7 +110,6 @@ function Job_results_detail_somatic() {
 
   const pathnameParts = window.location.pathname.split('/');
   const newJobID = pathnameParts[4];
-  const currentJobType = pathnameParts[3].includes('germline') ? 'Germline' : 'Somatic';
   const goToMutationSignature = () => {
     setValueOUT("3"); // 外層 Tab value="3" 就是 Mutation Signature
   };
@@ -450,51 +458,46 @@ function Job_results_detail_somatic() {
   }, []);
 
   return (
-    <div className="analysis-result-page" style={{ marginRight: '80px' }}>
+    <Box className="analysis-result-page" sx={{ p: { xs: 2, md: 4 }, maxWidth: 1600, mx: 'auto', bgcolor: '#f5f8fb', minHeight: '100vh' }}>
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
           <CircularProgress />
         </Box>
       ) : (
         <>
-          <div style={{ display: "flex", marginTop: '15px' }}>
-            <h1 style={{ display: "flex", marginTop: '15px' }}>Results</h1>
-            <Box className="analysis-result-meta"
-              sx={{
-                marginTop: '5px',
-                marginLeft: '40px',
-                padding: '20px',
-                border: '2px solid #1976d2',
-                borderRadius: '12px',
-                backgroundColor: '#f0f7ff',
-                width: '900px',
-                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={6} sm={6} md={3}>
-                  <Typography variant="subtitle2" sx={{ color: '#1976d2' }}>Current Job</Typography>
-                  <Typography variant="body1">{currentJobType}</Typography>
-                </Grid>
-                <Grid item xs={6} sm={6} md={3}>
-                  <Typography variant="subtitle2" sx={{ color: '#1976d2' }}>Sample ID</Typography>
-                  <Typography variant="body1">{newJobID}</Typography>
-                </Grid>
-                <Grid item xs={6} sm={6} md={3}>
-                  <Typography variant="subtitle2" sx={{ color: '#1976d2' }}>Syndrome</Typography>
-                  <Typography variant="body1">___________</Typography>
-                </Grid>
-                <Grid item xs={6} sm={6} md={3}>
-                  <Typography variant="subtitle2" sx={{ color: '#1976d2' }}>Gene Panel</Typography>
-                  <Typography variant="body1">___________</Typography>
-                </Grid>
-              </Grid>
+          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" spacing={2} alignItems={{ md: 'center' }}>
+            <Box>
+              <Stack direction="row" spacing={1} sx={{ mb: 1, flexWrap: 'wrap', gap: .5 }}>
+                <Chip label="TUMOR-ONLY" color="warning" />
+                <Chip label="GRCh37 / hg19" variant="outlined" />
+                <Chip label="PANEL" color="primary" variant="outlined" />
+              </Stack>
+              <Typography variant="h3" fontWeight={850}>Tumor-only report</Typography>
+              <Typography color="text.secondary">Legacy tumor-only analysis presented in the unified MTB result framework.</Typography>
             </Box>
-            <Stack className="analysis-result-actions" spacing={2} direction="row" style={{ marginLeft: '20px' }}>
+            <Paper variant="outlined" sx={{ p: 2, minWidth: 300 }}>
+              <Typography fontWeight={800}>{newJobID}</Typography>
+              <Typography variant="body2" color="text.secondary">Analysis {newJobID}</Typography>
+              <Chip size="small" sx={{ mt: 1 }} label="RESULT AVAILABLE" color="success" />
+            </Paper>
+          </Stack>
+
+          <Alert severity="warning" sx={{ my: 3 }}>
+            This is a GRCh37/hg19 tumor-only interpretation without liftover. Somatic origin and possible germline findings require confirmation with matched normal testing.
+          </Alert>
+
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={6} md={3}><ResultMetric label="Actionable candidates" value={SomaticDetailData.length} tone="success" /></Grid>
+            <Grid item xs={6} md={3}><ResultMetric label="High-risk candidates" value={oncogenicitySummary?.high_risk ?? OncogenicityData.length} tone="error" /></Grid>
+            <Grid item xs={6} md={3}><ResultMetric label="Hereditary candidates" value={HeredityData.length} tone="warning" /></Grid>
+            <Grid item xs={6} md={3}><ResultMetric label="Selected for report" value={selectedTotal} /></Grid>
+          </Grid>
+
+          <Stack className="analysis-result-actions" spacing={2} direction={{ xs: 'column', sm: 'row' }} sx={{ mb: 3 }}>
               <Button
                 variant="contained"
                 onClick={handleSaveToReport}
-                sx={{ width: '105px' }}
+                sx={{ minWidth: 160 }}
               >
                 Preview Summary
               </Button>
@@ -509,14 +512,13 @@ function Job_results_detail_somatic() {
               >
                 QC Report
               </Button>
-            </Stack>
-          </div>
+          </Stack>
 
-          <Paper className="analysis-result-panel" elevation={3} style={{ padding: '20px', marginTop: '40px', marginBottom: '80px' }}>
+          <Paper className="analysis-result-panel" sx={{ overflow: 'hidden', border: '1px solid #dbe6ee', mb: 10 }}>
             <Box sx={{ width: '100%', typography: 'body1' }}>
               <TabContext value={valueOUT}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList onChange={handleChangeOUT} aria-label="lab API tabs example" centered>
+                <Box sx={{ borderBottom: '1px solid #dbe6ee', bgcolor: '#fff', px: 1 }}>
+                  <TabList onChange={handleChangeOUT} aria-label="Tumor-only result sections" variant="scrollable" scrollButtons="auto">
                     <Tab label="single snp" value="1" />
                     <Tab label="Multiple-SNP Combination" value="2" />
                     <Tab label="Mutation Signature" value="3" />
@@ -524,7 +526,7 @@ function Job_results_detail_somatic() {
                     <Tab label="Potential Treatment from Guideline" value="5" />
                     <Tab label="Cancer Type Prediction" value="6" />
                     <Tab label="Pathway Viewer" value="7" />
-                    <Tab label="MTB Draft Report" value="8" />
+                    <Tab label="MTB Draft Report" value="8" sx={{ mx: .75, my: .75, minHeight: 42, borderRadius: 1.5, fontWeight: 850, bgcolor: '#fff0c2', color: '#7a4b00', '&:hover': { bgcolor: '#ffe49a' }, '&.Mui-selected': { bgcolor: '#f59e0b', color: '#fff' } }} />
                   </TabList>
                 </Box>
 
@@ -676,7 +678,7 @@ function Job_results_detail_somatic() {
           </Paper>
         </>
       )}
-    </div>
+    </Box>
   );
 }
 

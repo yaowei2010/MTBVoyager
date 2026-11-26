@@ -156,7 +156,7 @@ services:
     command: ["python", "--version"]
 
   frontend:
-    image: takeshi945/nckumtb:frontend-fastvep-filtered-20261117
+    image: takeshi945/nckumtb:frontend-unified-tumor-ui-20261126
     pull_policy: never
     build:
       context: ..
@@ -169,7 +169,7 @@ services:
     restart: unless-stopped
 
   gateway:
-    image: takeshi945/nckumtb:frontend-fastvep-filtered-20261117
+    image: takeshi945/nckumtb:frontend-unified-tumor-ui-20261126
     pull_policy: never
     container_name: gateway
     depends_on:
