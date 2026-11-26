@@ -56,7 +56,7 @@ services:
     restart: "no"
 
   backend:
-    image: mtb-backend:fastvep-downstream-0.8.4-20261124
+    image: mtb-backend:tumor-filter-v0.1-20261126
     pull_policy: never
     build:
       context: ../../backend_wgs
@@ -156,7 +156,7 @@ services:
     command: ["python", "--version"]
 
   frontend:
-    image: takeshi945/nckumtb:frontend-unified-tumor-ui-20261126
+    image: takeshi945/nckumtb:frontend-tumor-filter-v0.1-20261126
     pull_policy: never
     build:
       context: ..
@@ -169,7 +169,7 @@ services:
     restart: unless-stopped
 
   gateway:
-    image: takeshi945/nckumtb:frontend-unified-tumor-ui-20261126
+    image: takeshi945/nckumtb:frontend-tumor-filter-v0.1-20261126
     pull_policy: never
     container_name: gateway
     depends_on:

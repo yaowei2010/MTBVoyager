@@ -87,6 +87,8 @@ function Job_results_detail_somatic() {
   const [OncogenicityData, SetOncogenicityData] = useState([]);
   const [oncogenicitySummary, setOncogenicitySummary] = useState(null);
   const [oncogenicityError, setOncogenicityError] = useState('');
+  const [classificationSummary, setClassificationSummary] = useState(null);
+  const [classificationError, setClassificationError] = useState('');
   const [MultipleSNPActionableData, SetMultipleSNPActionableData] = useState([]);
   const [MultipleSNPCivicData, SetMultipleSNPCivicData] = useState([]);
 
@@ -369,11 +371,12 @@ function Job_results_detail_somatic() {
         setLoading(true);
         const jobId = window.location.pathname.split('/').pop();
 
-        const somatic_response = await axios
-          .post(`${config.rootApiIP}/somatic_result`, { newjobid: jobId })
+        const classification_response = await axios
+          .post(`${config.rootApiIP}/wgs-somatic/legacy-classification`, { newjobid: jobId })
           .catch((error) => {
-            console.error('Somatic API error:', error);
-            return { data: { data: [] } };
+            console.error('Tumor-only classification API error:', error);
+            setClassificationError(error.response?.data?.detail || 'Unable to classify the tumor-only variants.');
+            return { data: { data: {}, counts: null } };
           });
 
         const oncogenicity_response = await axios
@@ -382,34 +385,6 @@ function Job_results_detail_somatic() {
             console.error('Oncogenicity API error:', error);
             setOncogenicityError(error.response?.data?.detail || 'Unable to calculate oncogenicity.');
             return { data: { data: [], summary: null } };
-          });
-
-        const heredity_response = await axios
-          .post(`${config.rootApiIP}/read_heredity`, { newjobid: jobId })
-          .catch((error) => {
-            console.error('Heredity API error:', error);
-            return { data: { data: [] } };
-          });
-
-        const germlinePrediction_response = await axios
-          .post(`${config.rootApiIP}/read_germline_prediction`, { newjobid: jobId })
-          .catch((error) => {
-            console.error('Germline Prediction API error:', error);
-            return { data: { data: [] } };
-          });
-
-        const cosmic_response = await axios
-          .post(`${config.rootApiIP}/read_cosmic`, { newjobid: jobId })
-          .catch((error) => {
-            console.error('Cosmic API error:', error);
-            return { data: { data: [] } };
-          });
-
-        const prediction_response = await axios
-          .post(`${config.rootApiIP}/read_suspect`, { newjobid: jobId })
-          .catch((error) => {
-            console.error('Prediction API error:', error);
-            return { data: { data: [] } };
           });
 
         const multipleSNPActionable_response = await axios
@@ -427,11 +402,7 @@ function Job_results_detail_somatic() {
           });
 
         // 兼容某些 endpoint 回傳結構
-        const somaticData = extractData(somatic_response);
-        const heredityData = extractData(heredity_response);
-        const germlinePredictionData = extractData(germlinePrediction_response);
-        const cosmicData = extractData(cosmic_response);
-        const predictionData = extractData(prediction_response);
+        const classified = classification_response?.data?.data || {};
         const multiActionableData = extractData(multipleSNPActionable_response);
 
         // /mutisnp_civic 可能直接回 array 或 {data:{data:[]}}
@@ -439,11 +410,12 @@ function Job_results_detail_somatic() {
           ? multipleSNPCivic_response.data
           : extractData(multipleSNPCivic_response);
 
-        SetSomaticDetailData(formatSomaticData(somaticData));
-        SetHeredityData(formatData(heredityData));
-        SetGermlinePredictionData(formatData(germlinePredictionData));
-        SetCosmicData(formatData(cosmicData));
-        SetPredictionData(formatData(predictionData));
+        SetSomaticDetailData(formatSomaticData(classified.actionable || []));
+        SetHeredityData(formatData(classified.clinvar_p_lp || []));
+        SetGermlinePredictionData([]);
+        SetCosmicData(formatData(classified.cosmic || []));
+        SetPredictionData(formatData(classified.prediction || []));
+        setClassificationSummary(classification_response?.data?.counts || null);
         SetOncogenicityData(Array.isArray(oncogenicity_response?.data?.data) ? oncogenicity_response.data.data : []);
         setOncogenicitySummary(oncogenicity_response?.data?.summary || null);
         SetMultipleSNPActionableData(formatMultipleSNPActionableData(multiActionableData));
@@ -532,6 +504,12 @@ function Job_results_detail_somatic() {
 
                 {/* 外層 1 */}
                 <TabPanel value="1">
+                  {classificationError && <Alert severity="error" sx={{ mb: 2 }}>{classificationError}</Alert>}
+                  {classificationSummary && (
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                      SNP quality/coding gate retained {classificationSummary.filtered_candidates ?? 0} of {classificationSummary.input ?? 0} variants; phenotype-matched drug {classificationSummary.actionable ?? 0}, ClinVar P/LP {classificationSummary.clinvar_p_lp ?? 0}, COSMIC {classificationSummary.cosmic ?? 0}, damaging prediction {classificationSummary.prediction ?? 0}.
+                    </Alert>
+                  )}
                   <TabContext value={valueIN1}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                       <TabList
@@ -566,6 +544,9 @@ function Job_results_detail_somatic() {
                       />
                     </TabPanel>
                     <TabPanel value="3">
+                      <Alert severity="warning" sx={{ mb: 2 }}>
+                        Tumor-only data cannot establish germline origin. ClinVar P/LP candidates are listed under Heredity and require matched-normal confirmation; a missing germline-specific file is not reported as zero findings.
+                      </Alert>
                       <GermlinePrediction_data
                         data={GermlinePredictionData}
                         onSelectionChange={setSelectedGermlinePredictionData}
